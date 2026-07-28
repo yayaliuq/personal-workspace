@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50'>台</text></svg>">
 <title>个人工作台</title>
-<script src="https://web.sdk.qcloud.com/tcb-js-sdk/1.11.0/tcb.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/1.7.2/cloudbase.full.js"></script>
 <style>
 /* ========== Reset & Base ========== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -581,7 +581,7 @@ const Store = {
 
   // ---- CloudBase 初始化 ----
   getApp() {
-    if (!this.app) this.app = tcb.init({ env: this.envId });
+    if (!this.app) this.app = cloudbase.init({ env: this.envId });
     return this.app;
   },
   getAuth() {
