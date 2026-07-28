@@ -408,10 +408,10 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">数据文件夹</div>
-              <div class="desc">Markdown 数据文件存放在「数据/」目录中</div>
+              <div class="label">GitHub Token</div>
+              <div class="desc">用于通过 GitHub API 读写仓库中的 Markdown 数据文件</div>
             </div>
-            <div style="font-size:.85rem;color:var(--muted)">数据/</div>
+            <button class="btn btn-ghost" onclick="openTokenModal()" style="font-size:.8rem">设置 Token</button>
           </div>
         </div>
       </div>
@@ -436,10 +436,10 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">手动保存</div>
-              <div class="desc">立即将数据写入本地文件</div>
+              <div class="label">手动同步</div>
+              <div class="desc">立即将数据写入后端（本地服务或 GitHub）</div>
             </div>
-            <button class="btn btn-ghost" onclick="syncNow()">保存</button>
+            <button class="btn btn-ghost" onclick="syncNow()">同步</button>
           </div>
         </div>
       </div>
@@ -448,10 +448,10 @@ ul{list-style:none}
         <div class="settings-section">
           <h3>关于</h3>
           <div class="settings-row">
-            <div class="label">个人工作台 v2.0</div>
+            <div class="label">个人工作台 v3.0</div>
           </div>
           <div class="settings-row">
-            <div class="desc">本地服务模式 · 打开即用 · 数据存为 Markdown 文件</div>
+            <div class="desc">本地 + GitHub 双模式 · 打开即用 · 数据存为 Markdown 文件</div>
           </div>
         </div>
       </div>
@@ -495,8 +495,11 @@ const Store = {
   },
   serverBase: 'http://localhost:3100',
   serverConnected: false,
+  githubToken: localStorage.getItem('gh_token') || '',
+  githubRepo: 'yayaliuq/personal-workspace',
+  githubMode: false,  // true when using GitHub API instead of local server
 
-  // ---- Server API (primary) ----
+  // ---- Server API ----
   async apiRead(filename) {
     try {
       const res = await fetch(`${this.serverBase}/api/read?file=${encodeURIComponent(filename)}`);
@@ -517,6 +520,63 @@ const Store = {
   async ping() {
     try {
       const res = await fetch(`${this.serverBase}/api/ping`);
+      return res.ok;
+    } catch(e) { return false; }
+  },
+
+  // ---- GitHub API ----
+  setGithubToken(token) {
+    this.githubToken = token;
+    if (token) localStorage.setItem('gh_token', token);
+    else localStorage.removeItem('gh_token');
+  },
+  async githubRead(filename) {
+    if (!this.githubToken) return null;
+    try {
+      const path = '数据/' + filename;
+      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+        headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data.content) return atob(data.content.replace(/\n/g, ''));
+      return null;
+    } catch(e) { return null; }
+  },
+  async githubWrite(filename, content) {
+    if (!this.githubToken) return false;
+    try {
+      const path = '数据/' + filename;
+      // First get current file to obtain SHA
+      let sha = null;
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+          headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (getRes.ok) {
+          const data = await getRes.json();
+          sha = data.sha;
+        }
+      } catch(e) {}
+      const body = {
+        message: '更新 ' + filename,
+        content: btoa(unescape(encodeURIComponent(content)))
+      };
+      if (sha) body.sha = sha;
+      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+        method: 'PUT',
+        headers: { 'Authorization': 'token ' + this.githubToken, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
+        body: JSON.stringify(body)
+      });
+      return res.ok;
+    } catch(e) { return false; }
+  },
+  async githubPing() {
+    if (!this.githubToken) return false;
+    try {
+      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}`, {
+        headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
+      });
       return res.ok;
     } catch(e) { return false; }
   },
@@ -549,15 +609,53 @@ const Store = {
     ];
   },
 
-  // ---- Auto-connect to local server ----
+  // ---- Auto-connect ----
   async autoConnect() {
-    const connected = await this.ping();
-    this.serverConnected = connected;
-    this.updateStatusUI(connected);
-    if (connected) {
+    // Priority 1: Local server
+    const serverOk = await this.ping();
+    if (serverOk) {
+      this.serverConnected = true;
+      this.githubMode = false;
+      this.updateStatusUI('server');
       await this.loadFromServer();
+      return true;
     }
-    return connected;
+    // Priority 2: GitHub API
+    if (this.githubToken) {
+      const gitOk = await this.githubPing();
+      if (gitOk) {
+        this.githubMode = true;
+        this.updateStatusUI('github');
+        await this.loadFromGitHub();
+        return true;
+      }
+    }
+    // Fallback: localStorage only
+    this.serverConnected = false;
+    this.githubMode = false;
+    this.updateStatusUI('offline');
+    return false;
+  },
+
+  async loadFromGitHub() {
+    const tasksMD = await this.githubRead('待办任务.md');
+    if (tasksMD) this.data.tasks = Markdown.parseTasks(tasksMD);
+    const studyMD = await this.githubRead('学习进度.md');
+    if (studyMD) this.data.study = Markdown.parseStudy(studyMD);
+    const financeMD = await this.githubRead('理财记录.md');
+    if (financeMD) this.data.finance = Markdown.parseFinance(financeMD);
+    this.saveLocal();
+    this.updateSyncTime();
+  },
+
+  async saveToGitHub() {
+    if (!this.githubMode || !this.githubToken) return;
+    await Promise.all([
+      this.githubWrite('待办任务.md', Markdown.serializeTasks(this.data.tasks)),
+      this.githubWrite('学习进度.md', Markdown.serializeStudy(this.data.study)),
+      this.githubWrite('理财记录.md', Markdown.serializeFinance(this.data.finance)),
+    ]);
+    this.updateSyncTime();
   },
 
   async loadFromServer() {
@@ -581,20 +679,25 @@ const Store = {
     this.updateSyncTime();
   },
 
-  updateStatusUI(connected) {
+  updateStatusUI(mode) {
     const dot = document.getElementById('obsidian-dot');
     const text = document.getElementById('obsidian-text');
     const status = document.getElementById('settings-obsidian-status');
     const sdot = document.getElementById('settings-dot');
-    if (connected) {
+    dot.classList.remove('connected');
+    if (mode === 'server') {
       dot.classList.add('connected');
-      text.textContent = '本地数据已连接';
+      text.textContent = '本地服务已连接';
       if (status) status.textContent = '已连接 — 数据自动保存到本地文件';
       if (sdot) sdot.style.background = 'var(--success)';
+    } else if (mode === 'github') {
+      dot.classList.add('connected');
+      text.textContent = 'GitHub 同步已连接';
+      if (status) status.textContent = '通过 GitHub API 读写仓库文件';
+      if (sdot) sdot.style.background = 'var(--success)';
     } else {
-      dot.classList.remove('connected');
-      text.textContent = '未检测到本地服务';
-      if (status) status.textContent = '未连接 — 请运行 node server.js 启动服务';
+      text.textContent = '未连接数据源';
+      if (status) status.textContent = '离线模式 — 数据仅保存在浏览器中';
       if (sdot) sdot.style.background = 'var(--danger)';
     }
   },
@@ -607,10 +710,11 @@ const Store = {
   // ---- Unified save ----
   async save() {
     this.saveLocal();
-    if (this.serverConnected) {
-      clearTimeout(this._syncTimer);
-      this._syncTimer = setTimeout(() => this.saveToServer(), 500);
-    }
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(() => {
+      if (this.githubMode) this.saveToGitHub();
+      else if (this.serverConnected) this.saveToServer();
+    }, 500);
   },
 
   // ---- ID generator ----
@@ -1213,11 +1317,51 @@ function deleteFinance(id) {
 
 // ---- Settings ----
 function syncNow() {
-  if (!Store.serverConnected) {
-    toast('本地服务未启动，请运行 node server.js');
-    return;
+  if (Store.githubMode) {
+    Store.saveToGitHub().then(() => toast('数据已同步至 GitHub'));
+  } else if (Store.serverConnected) {
+    Store.saveToServer().then(() => toast('数据已保存至本地'));
+  } else {
+    toast('未连接数据源，数据仅保存在浏览器中');
   }
-  Store.saveToServer().then(() => toast('数据已保存至本地'));
+}
+
+function openTokenModal() {
+  const hasToken = !!Store.githubToken;
+  openModal(`
+    <h3>GitHub Token 设置</h3>
+    <div class="modal-field">
+      <label>Personal Access Token</label>
+      <input type="password" id="token-input" placeholder="ghp_..." value="${hasToken ? '••••••••' : ''}">
+      <div style="font-size:.7rem;color:var(--muted);margin-top:4px">
+        在 <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a> 创建，需勾选 <b>repo</b> 权限
+      </div>
+    </div>
+    <div class="modal-actions">
+      ${hasToken ? '<button class="btn btn-ghost" onclick="clearToken()" style="color:var(--danger)">清除 Token</button>' : '<button class="btn btn-ghost" onclick="closeModal()">取消</button>'}
+      <button class="btn btn-primary" onclick="saveToken()">保存</button>
+    </div>
+  `);
+}
+
+function saveToken() {
+  const token = document.getElementById('token-input').value.trim();
+  if (!token || token === '••••••••') { closeModal(); return; }
+  Store.setGithubToken(token);
+  closeModal();
+  toast('Token 已保存，重新连接中...');
+  // Reconnect with new token
+  Store.autoConnect().then(() => {
+    renderAll();
+    toast(Store.githubMode ? 'GitHub 连接成功！' : 'GitHub 连接失败，请检查 Token');
+  });
+}
+
+function clearToken() {
+  Store.setGithubToken('');
+  closeModal();
+  toast('Token 已清除');
+  Store.autoConnect().then(() => renderAll());
 }
 
 function exportMarkdown() {
@@ -1289,15 +1433,12 @@ function renderAll() {
 }
 
 // ============================================================
-// Init — auto-connect to local server
+// Init — auto-connect to data source
 // ============================================================
 (async function init() {
   Store.loadLocal();
-  const connected = await Store.autoConnect();
-  if (!connected) {
-    // Fallback: use localStorage only
-    Store.updateStatusUI(false);
-  }
+  await Store.autoConnect();
+  // Ensure data/ dir exists in repo on first GitHub save
   renderAll();
 })();
 
