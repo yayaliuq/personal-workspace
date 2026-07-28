@@ -1,4 +1,5 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
@@ -18,13 +19,16 @@ const DATA_DIR = path.join(PROJECT_DIR, '数据');
 // Obsidian Vault 镜像目录（仅用于每日/手动同步）
 const OBSIDIAN_DIR = '/Users/liuquan/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据';
 
+// ★ 快照目录：生成 JSON 副本供 GitHub Pages 同源读取（手机端回退方案）
+const SNAPSHOTS_DIR = path.join(PROJECT_DIR, 'snapshots');
+
 // SSH key 路径
 const SSH_KEY = path.join(PROJECT_DIR, 'github_key');
 
 // ============================================================
 // 目录初始化
 // ============================================================
-for (const dir of [DATA_DIR, OBSIDIAN_DIR]) {
+for (const dir of [DATA_DIR, OBSIDIAN_DIR, SNAPSHOTS_DIR]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -54,7 +58,7 @@ function gitPull() {
 }
 
 function gitPush() {
-  const status = git('git status --porcelain 数据/ 2>&1');
+  const status = git('git status --porcelain 数据/ snapshots/ 2>&1');
   if (status === null) return false;
   if (!status) {
     console.log('  [git] 无变更，跳过推送');
@@ -62,6 +66,8 @@ function gitPush() {
   }
 
   git('git add 数据/');
+  // ★ 同时推送快照目录
+  git('git add snapshots/');
   const ts = new Date().toLocaleString('zh-CN', { hour12: false });
   const result = git(`git commit -m "sync: ${ts}" 2>&1`);
   if (result === null && !result) {
@@ -77,8 +83,57 @@ function gitPush() {
 }
 
 // ============================================================
-// Obsidian 镜像同步（单向：GitHub → Obsidian）
+// JSON 快照生成（供 GitHub Pages 同源读取 — 手机端回退）
 // ============================================================
+function generateSnapshots() {
+  const files = ['待办任务.md', '学习进度.md', '理财记录.md'];
+  const allData = { tasks: [], study: [], finance: [], updated: new Date().toISOString() };
+
+  for (const f of files) {
+    const content = readFile(f);
+    if (!content) continue;
+
+    // 解析 Markdown 为结构化 JSON
+    const parsed = parseMarkdownToJSON(content);
+    const key = f.includes('待办') ? 'tasks' : f.includes('学习') ? 'study' : 'finance';
+    allData[key] = parsed;
+  }
+
+  // 写入快照目录
+  for (const key of ['tasks', 'study', 'finance']) {
+    const filepath = path.join(SNAPSHOTS_DIR, key + '.json');
+    const existing = fs.existsSync(filepath) ? fs.readFileSync(filepath, 'utf-8') : '';
+    const newContent = JSON.stringify(allData[key]);
+    // 只在内容变化时写入（避免无意义的 git commit）
+    if (existing !== newContent) {
+      fs.writeFileSync(filepath, newContent, 'utf-8');
+    }
+  }
+  console.log('  [snapshots] JSON 快照已更新');
+}
+
+// 简单 Markdown → JSON 解析
+function parseMarkdownToJSON(md) {
+  const items = [];
+  if (!md) return items;
+  let currentCat = '';
+  const lines = md.split('\n');
+  for (const line of lines) {
+    const catMatch = line.match(/^## (.+)/);
+    if (catMatch) { currentCat = catMatch[1].trim(); continue; }
+    const taskMatch = line.match(/^- \[([ x])\] \*\*\[(.+?)\]\*\*\s+(.+?)(?:\s+`due:(.+?)`)?$/);
+    if (taskMatch) {
+      items.push({
+        title: taskMatch[3].trim(),
+        category: currentCat || '其他',
+        completed: taskMatch[1] === 'x',
+        priority: taskMatch[2],
+        due: taskMatch[4] || null
+      });
+    }
+  }
+  return items;
+}
 function syncToObsidian() {
   const files = ['待办任务.md', '学习进度.md', '理财记录.md'];
   let synced = 0;
@@ -212,6 +267,7 @@ const server = http.createServer((req, res) => {
       try {
         const { file, content } = JSON.parse(body);
         writeFile(file, content);
+        generateSnapshots();  // 生成 JSON 快照供手机端回退读取
         schedulePush();  // 3 秒防抖，自动 git push + 同步 Obsidian
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true }));
@@ -240,7 +296,69 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ---- API: Health check ----
+  // ---- API: GitHub API 中继（手机端代理） ----
+  if (url.pathname === '/api/gh-relay' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const { method, path: ghPath, body: ghBody, token } = JSON.parse(body);
+        const options = {
+          hostname: 'api.github.com',
+          path: ghPath,
+          method: method || 'GET',
+          headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'PersonalWorkspace-Relay',
+            'Content-Type': 'application/json'
+          }
+        };
+        const ghReq = https.request(options, (ghRes) => {
+          let data = '';
+          ghRes.on('data', chunk => data += chunk);
+          ghRes.on('end', () => {
+            res.writeHead(ghRes.statusCode, {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            });
+            res.end(data);
+          });
+        });
+        ghReq.on('error', (e) => {
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'relay: ' + e.message }));
+        });
+        if (ghBody) ghReq.write(ghBody);
+        ghReq.end();
+      } catch (e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ---- API: 获取快照数据（手机端回退读取） ----
+  if (url.pathname === '/api/snapshot') {
+    const key = url.searchParams.get('key') || 'all';
+    const result = {};
+    if (key === 'all' || key === 'tasks') {
+      const fp = path.join(SNAPSHOTS_DIR, 'tasks.json');
+      result.tasks = fs.existsSync(fp) ? JSON.parse(fs.readFileSync(fp, 'utf-8')) : [];
+    }
+    if (key === 'all' || key === 'study') {
+      const fp = path.join(SNAPSHOTS_DIR, 'study.json');
+      result.study = fs.existsSync(fp) ? JSON.parse(fs.readFileSync(fp, 'utf-8')) : [];
+    }
+    if (key === 'all' || key === 'finance') {
+      const fp = path.join(SNAPSHOTS_DIR, 'finance.json');
+      result.finance = fs.existsSync(fp) ? JSON.parse(fs.readFileSync(fp, 'utf-8')) : [];
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(result));
+    return;
+  }
   if (url.pathname === '/api/ping') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, time: new Date().toISOString() }));
@@ -281,9 +399,10 @@ server.listen(PORT, HOST, () => {
   console.log('  Obsidian:  ' + OBSIDIAN_DIR + '  (每日镜像)');
   console.log('');
 
-  // 启动流程：拉取 GitHub → 同步到 Obsidian
+  // 启动流程：拉取 GitHub → 生成快照 → 同步到 Obsidian
   console.log('  [sync] 正在从 GitHub 拉取最新数据...');
   gitPull();
+  generateSnapshots();
   syncToObsidian();
   console.log('  [sync] 启动同步完成');
 
@@ -291,6 +410,7 @@ server.listen(PORT, HOST, () => {
   setInterval(() => {
     const pulled = gitPull();
     if (pulled) {
+      generateSnapshots();
       syncToObsidian();
     }
     // 每日固定时间也同步一次（兜底）

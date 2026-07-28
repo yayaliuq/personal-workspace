@@ -442,13 +442,9 @@ ul{list-style:none}
           <div class="settings-row">
             <div>
               <div class="label">API 代理地址</div>
-              <div class="desc">如果无法直连 api.github.com，可配置代理中转；留空则直连</div>
+              <div class="desc">手机无法直连 GitHub API 时，可通过 Mac 中继（需同WiFi）。<br>通常是 http://192.168.x.x:3100</div>
             </div>
-            <select id="proxy-select" onchange="onProxyChange(this.value)" style="font-size:.75rem;padding:4px 8px;border-radius:4px;border:1px solid var(--border);max-width:140px">
-              <option value="">直连（默认）</option>
-              <option value="https://gh-proxy.com/">gh-proxy</option>
-              <option value="custom">自定义...</option>
-            </select>
+            <input id="relay-url-input" type="text" placeholder="http://192.168.x.x:3100" onchange="setRelayUrl(this.value)" style="font-size:.75rem;padding:4px 8px;border-radius:4px;border:1px solid var(--border);max-width:200px">
           </div>
         </div>
       </div>
@@ -484,8 +480,12 @@ ul{list-style:none}
             <span id="diag-token" style="font-size:.8rem;color:var(--muted)">检测中...</span>
           </div>
           <div class="settings-row">
-            <div class="label">本地服务器</div>
-            <span id="diag-server" style="font-size:.8rem;color:var(--muted)">检测中...</span>
+            <div class="label">中继（Mac 中转）</div>
+            <span id="diag-relay" style="font-size:.8rem;color:var(--muted)">检测中...</span>
+          </div>
+          <div class="settings-row">
+            <div class="label">快照（Pages 只读）</div>
+            <span id="diag-snapshot" style="font-size:.8rem;color:var(--muted)">检测中...</span>
           </div>
         </div>
       </div>
@@ -569,10 +569,11 @@ const Store = {
   },
   serverBase: 'http://localhost:3100',
   serverConnected: false,
+  relayActive: false,    // true = 通过 Mac 服务器中继访问 GitHub API
   githubToken: localStorage.getItem('gh_token') || '',
-  githubApiBase: localStorage.getItem('gh_api_base') || 'https://api.github.com',
   githubRepo: 'yayaliuq/personal-workspace',
   githubMode: false,  // true when using GitHub API instead of local server
+  pagesBase: 'https://yayaliuq.github.io/personal-workspace',  // GitHub Pages 快照地址
 
   // ---- Server API ----
   async apiRead(filename) {
@@ -599,30 +600,35 @@ const Store = {
     } catch(e) { return false; }
   },
 
-  // ---- GitHub API ----
+  // ---- GitHub API (支持中继模式) ----
   setGithubToken(token) {
     this.githubToken = token;
     if (token) localStorage.setItem('gh_token', token);
     else localStorage.removeItem('gh_token');
   },
-  setApiBase(base) {
-    this.githubApiBase = base || 'https://api.github.com';
-    localStorage.setItem('gh_api_base', this.githubApiBase);
+  // 通过中继调用 GitHub API（手机同 WiFi 时可用）
+  async ghCall(method, path, body) {
+    const url = this.serverBase + '/api/gh-relay';
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ method, path, body, token: this.githubToken })
+    });
+    return res;
   },
-  ghUrl(path) {
-    // If using proxy mode, route full URL through proxy
-    if (this.githubApiBase !== 'https://api.github.com') {
-      return this.githubApiBase.replace(/\/$/, '') + '/https://api.github.com' + path;
-    }
-    return this.githubApiBase + path;
+  // 检查中继是否可用
+  async checkRelay() {
+    try {
+      if (!this.githubToken) return false;
+      const res = await this.ghCall('GET', '/repos/' + this.githubRepo);
+      return res.ok;
+    } catch(e) { return false; }
   },
   async githubRead(filename) {
     if (!this.githubToken) return null;
+    const ghPath = '/repos/' + this.githubRepo + '/contents/' + encodeURIComponent('数据/' + filename);
     try {
-      const path = '数据/' + filename;
-      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
-        headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
-      });
+      const res = await this.ghCall('GET', ghPath);
       if (!res.ok) return null;
       const data = await res.json();
       if (data.content) return atob(data.content.replace(/\n/g, ''));
@@ -631,40 +637,36 @@ const Store = {
   },
   async githubWrite(filename, content) {
     if (!this.githubToken) return false;
+    const ghPath = '/repos/' + this.githubRepo + '/contents/' + encodeURIComponent('数据/' + filename);
     try {
-      const path = '数据/' + filename;
-      // First get current file to obtain SHA
+      // Get current SHA
       let sha = null;
       try {
-        const getRes = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
-          headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
-        });
-        if (getRes.ok) {
-          const data = await getRes.json();
-          sha = data.sha;
-        }
+        const getRes = await this.ghCall('GET', ghPath);
+        if (getRes.ok) { const d = await getRes.json(); sha = d.sha; }
       } catch(e) {}
       const body = {
         message: '更新 ' + filename,
         content: btoa(unescape(encodeURIComponent(content)))
       };
       if (sha) body.sha = sha;
-      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
-        method: 'PUT',
-        headers: { 'Authorization': 'token ' + this.githubToken, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
-        body: JSON.stringify(body)
-      });
+      const res = await this.ghCall('PUT', ghPath, JSON.stringify(body));
       return res.ok;
     } catch(e) { return false; }
   },
   async githubPing() {
     if (!this.githubToken) return false;
+    return await this.checkRelay();
+  },
+
+  // ---- GitHub Pages 快照读取（手机端回退，只读但任何网络都可用） ----
+  async readSnapshot(key) {
     try {
-      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo), {
-        headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
-      });
-      return res.ok;
-    } catch(e) { return false; }
+      const url = `${this.pagesBase}/snapshots/${key}.json`;
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch(e) { return null; }
   },
 
   // ---- LocalStorage (fallback) ----
@@ -697,29 +699,59 @@ const Store = {
 
   // ---- Auto-connect ----
   async autoConnect() {
-    // Priority 1: Local server
+    // Priority 1: Local server (Mac 浏览器)
     const serverOk = await this.ping();
     if (serverOk) {
       this.serverConnected = true;
       this.githubMode = false;
+      this.relayActive = false;
       this.updateStatusUI('server');
       await this.loadFromServer();
       return true;
     }
-    // Priority 2: GitHub API
+    // Priority 2: Relay mode (手机同WiFi → Mac中转 GitHub API)
     if (this.githubToken) {
-      const gitOk = await this.githubPing();
-      if (gitOk) {
+      this.serverConnected = true;  // 服务器可达（ping 失败但 relay 可能通？不，需要先ping...）
+      const relayOk = await this.checkRelay();
+      if (relayOk) {
+        this.relayActive = true;
         this.githubMode = true;
-        this.updateStatusUI('github');
+        this.updateStatusUI('relay');
         await this.loadFromGitHub();
         return true;
       }
     }
-    // Fallback: localStorage only
+    // Priority 3: GitHub Pages 快照（手机任何网络 → 只读）
+    if (this.githubToken) {
+      const snapshotOk = await this.loadFromSnapshots();
+      if (snapshotOk) {
+        this.updateStatusUI('snapshot');
+        return true;
+      }
+    }
+    // Fallback: localStorage
     this.serverConnected = false;
+    this.relayActive = false;
     this.githubMode = false;
     this.updateStatusUI('offline');
+    return false;
+  },
+
+  // ---- 从 GitHub Pages 快照加载（只读回退） ----
+  async loadFromSnapshots() {
+    try {
+      const tasks = await this.readSnapshot('tasks');
+      const study = await this.readSnapshot('study');
+      const finance = await this.readSnapshot('finance');
+      if (tasks) this.data.tasks = tasks;
+      if (study) this.data.study = study;
+      if (finance) this.data.finance = finance;
+      if (tasks || study || finance) {
+        this.saveLocal();
+        this.updateSyncTime();
+        return true;
+      }
+    } catch(e) {}
     return false;
   },
 
@@ -735,7 +767,7 @@ const Store = {
   },
 
   async saveToGitHub() {
-    if (!this.githubMode || !this.githubToken) return;
+    if (!this.githubToken) return;
     await Promise.all([
       this.githubWrite('待办任务.md', Markdown.serializeTasks(this.data.tasks)),
       this.githubWrite('学习进度.md', Markdown.serializeStudy(this.data.study)),
@@ -784,6 +816,18 @@ const Store = {
       if (status) status.textContent = '通过 GitHub API 读写仓库文件';
       if (sdot) sdot.style.background = 'var(--success)';
       if (obsCard) obsCard.style.display = 'none';
+    } else if (mode === 'relay') {
+      dot.classList.add('connected');
+      text.textContent = '中继模式 — 通过 Mac 中转';
+      if (status) status.textContent = '数据通过 Mac 服务器中继访问 GitHub API（需要同 WiFi）';
+      if (sdot) sdot.style.background = 'var(--success)';
+      if (obsCard) obsCard.style.display = 'none';
+    } else if (mode === 'snapshot') {
+      dot.classList.add('connected');
+      text.textContent = '快照模式 — 只读';
+      if (status) status.textContent = '从 GitHub Pages 读取数据快照，可查看但暂不支持编辑';
+      if (sdot) sdot.style.background = '#f0ad4e';
+      if (obsCard) obsCard.style.display = 'none';
     } else {
       text.textContent = '未连接数据源';
       if (status) status.textContent = '离线模式 — 数据仅保存在浏览器中';
@@ -802,7 +846,7 @@ const Store = {
     this.saveLocal();
     clearTimeout(this._syncTimer);
     this._syncTimer = setTimeout(() => {
-      if (this.githubMode) this.saveToGitHub();
+      if (this.githubMode || this.relayActive) this.saveToGitHub();
       else if (this.serverConnected) this.saveToServer();
     }, 500);
   },
@@ -1446,21 +1490,27 @@ async function runDiagnostic() {
   // 1. Token check
   set('diag-token', Store.githubToken ? '已设置' : '未设置', !!Store.githubToken);
   
-  // 2. GitHub API reachability (via proxy if configured)
-  const testUrl = Store.githubApiBase === 'https://api.github.com' ? 'https://api.github.com/zen' : Store.ghUrl('/zen');
-  try {
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), 5000);
-    const resp = await fetch(testUrl, { 
-      signal: ctrl.signal,
-      headers: Store.githubToken ? { Authorization: 'token ' + Store.githubToken } : {}
-    });
-    set('diag-github', resp.ok ? '可访问' : 'HTTP ' + resp.status, resp.ok);
-  } catch(e) {
-    set('diag-github', '无法连接 (' + (e.name === 'AbortError' ? '超时' : '网络不通') + ')', false);
+  // 2. Relay (Mac中转) check
+  if (Store.githubToken) {
+    try {
+      const relayOk = await Store.checkRelay();
+      set('diag-relay', relayOk ? '已连接（可读写）' : '不可用', relayOk);
+    } catch(e) {
+      set('diag-relay', '不可用', false);
+    }
+  } else {
+    set('diag-relay', '需要先设置 Token', false);
   }
   
-  // 3. Local server
+  // 3. Snapshots (GitHub Pages) check
+  try {
+    const snap = await Store.readSnapshot('tasks');
+    set('diag-snapshot', snap ? '可读取（' + snap.length + '条任务）' : '无数据', !!snap);
+  } catch(e) {
+    set('diag-snapshot', '不可用', false);
+  }
+  
+  // 4. Local server check
   try {
     const ok = await Store.ping();
     set('diag-server', ok ? '已连接' : '未运行', ok);
@@ -1469,37 +1519,26 @@ async function runDiagnostic() {
   }
 }
 
-function onProxyChange(value) {
-  if (value === 'custom') {
-    const url = prompt('请输入代理地址（例如 https://example.com/）');
-    if (!url) {
-      updateProxySelect();
-      return;
-    }
-    Store.setApiBase(url);
-    updateProxySelect();
+// ========== 中继地址设置 ==========
+function setRelayUrl(value) {
+  if (value) {
+    Store.serverBase = value;
+    localStorage.setItem('relay_url', value);
   } else {
-    Store.setApiBase(value);
+    Store.serverBase = 'http://localhost:3100';
+    localStorage.removeItem('relay_url');
   }
-  toast('API 代理已更新，重新检测中...');
-  runDiagnostic();
-  // Reconnect with new proxy
+  toast('中继地址已更新，重新检测中...');
   Store.autoConnect().then(() => renderAll());
 }
 
-function updateProxySelect() {
-  const sel = document.getElementById('proxy-select');
-  if (!sel) return;
-  const cur = Store.githubApiBase;
-  if (!cur || cur === 'https://api.github.com') {
-    sel.value = '';
-  } else {
-    // Check if it matches a preset
-    const opt = sel.querySelector('option[value="' + cur.replace(/"/g, '\\"') + '"]');
-    if (opt) sel.value = cur;
-    else sel.value = 'custom';
-  }
-}
+// 初始化中继地址
+(function(){
+  const saved = localStorage.getItem('relay_url');
+  if (saved) Store.serverBase = saved;
+  const input = document.getElementById('relay-url-input');
+  if (input && saved) input.value = saved;
+})();
 
 function updateTokenBadge() {
   const badge = document.getElementById('token-status-badge');
@@ -1695,25 +1734,35 @@ document.addEventListener('touchend', async () => {
 async function refreshData() {
   try {
     let didSync = false;
-    // 优先尝试从 GitHub 拉取（手机端最常用的路径）
+    // 1. Try relay first (phone same WiFi → Mac proxies GitHub API)
     if (Store.githubToken) {
       try {
-        await Store.loadFromGitHub();
-        didSync = true;
-        if (!Store.githubMode) {
+        const relayOk = await Store.checkRelay();
+        if (relayOk) {
+          await Store.loadFromGitHub();
+          didSync = true;
+          Store.relayActive = true;
           Store.githubMode = true;
-          Store.updateStatusUI('github');
+          Store.updateStatusUI('relay');
         }
-      } catch(e) {
-        console.log('[refresh] GitHub 拉取失败:', e.message);
-      }
+      } catch(e) { console.log('[refresh] relay failed:', e.message); }
     }
-    // 如果 GitHub 失败，尝试本地服务器
+    // 2. Try local server (Mac browser)
     if (!didSync) {
       const serverOk = await Store.ping();
       if (serverOk) {
         await Store.loadFromServer();
         didSync = true;
+        Store.serverConnected = true;
+        Store.updateStatusUI('server');
+      }
+    }
+    // 3. Try snapshots (phone any network, read-only)
+    if (!didSync) {
+      const snapOk = await Store.loadFromSnapshots();
+      if (snapOk) {
+        didSync = true;
+        Store.updateStatusUI('snapshot');
       }
     }
     if (didSync) {
