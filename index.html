@@ -1570,13 +1570,34 @@ document.addEventListener('touchend', async () => {
 
 async function refreshData() {
   try {
-    if (Store.githubMode) {
-      await Store.loadFromGitHub();
-    } else if (Store.serverConnected) {
-      await Store.loadFromServer();
+    let didSync = false;
+    // 优先尝试从 GitHub 拉取（手机端最常用的路径）
+    if (Store.githubToken) {
+      try {
+        await Store.loadFromGitHub();
+        didSync = true;
+        if (!Store.githubMode) {
+          Store.githubMode = true;
+          Store.updateStatusUI('github');
+        }
+      } catch(e) {
+        console.log('[refresh] GitHub 拉取失败:', e.message);
+      }
     }
-    renderAll();
-    toast('数据已刷新');
+    // 如果 GitHub 失败，尝试本地服务器
+    if (!didSync) {
+      const serverOk = await Store.ping();
+      if (serverOk) {
+        await Store.loadFromServer();
+        didSync = true;
+      }
+    }
+    if (didSync) {
+      renderAll();
+      toast('数据已刷新');
+    } else {
+      toast('无法连接数据源，请检查网络');
+    }
   } catch(e) {
     toast('刷新失败，请重试');
   }
