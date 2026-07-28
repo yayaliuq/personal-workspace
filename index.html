@@ -10,6 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50'>台</text></svg>">
 <title>个人工作台</title>
+<script src="https://web.sdk.qcloud.com/tcb-js-sdk/1.11.0/tcb.js"></script>
 <style>
 /* ========== Reset & Base ========== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -304,8 +305,8 @@ ul{list-style:none}
     </div>
     <div class="sidebar-footer">
       <div class="obsidian-status">
-        <span class="obsidian-dot" id="obsidian-dot"></span>
-        <span id="obsidian-text">正在连接...</span>
+        <span class="obsidian-dot" id="cloud-dot"></span>
+        <span id="cloud-text">正在连接...</span>
       </div>
       <div style="margin-top:4px;font-size:.7rem" id="last-sync"></div>
     </div>
@@ -318,7 +319,7 @@ ul{list-style:none}
     <div id="page-tasks" class="page fade-in">
       <div class="page-header">
         <h2>待办任务</h2>
-        <div class="desc">按分类管理你的待办事项，数据自动保存至本地</div>
+        <div class="desc">按分类管理你的待办事项，手机/Mac 实时云同步</div>
       </div>
       <div class="task-add-bar">
         <input type="text" id="quick-add-input" placeholder="快速添加任务，回车确认..." onkeypress="if(event.key==='Enter')quickAddTask()">
@@ -376,7 +377,7 @@ ul{list-style:none}
     <div id="page-finance" class="page fade-in" style="display:none">
       <div class="page-header">
         <h2>理财看板</h2>
-        <div class="desc">收支记录与月度汇总 · 数据自动保存至本地</div>
+        <div class="desc">收支记录与月度汇总 · 手机/Mac 实时云同步</div>
       </div>
       <div class="finance-summary">
         <div class="finance-card income">
@@ -417,75 +418,26 @@ ul{list-style:none}
 
       <div class="card">
         <div class="settings-section">
-          <h3>数据存储 · GitHub 仓库</h3>
+          <h3>数据同步 · 腾讯云 CloudBase</h3>
           <div class="settings-row">
             <div>
               <div class="label">连接状态</div>
-              <div class="desc" id="settings-obsidian-status">正在连接...</div>
+              <div class="desc" id="settings-cloud-status">正在连接...</div>
             </div>
-            <span class="obsidian-dot" id="settings-dot" style="background:var(--warning)"></span>
+            <span class="obsidian-dot" id="cloud-status-dot" style="background:var(--warning)"></span>
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">GitHub 仓库</div>
-              <div class="desc" id="settings-repo-desc">yayaliuq/personal-workspace · 数据/ 目录</div>
+              <div class="label">环境 ID</div>
+              <div class="desc">yayaliu-d4g1i1dc2fdb04417</div>
             </div>
-            <span style="font-size:.75rem;color:var(--success)">✅ 主数据源</span>
+            <span style="font-size:.75rem;color:var(--success)">✅ 云数据库</span>
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">GitHub Token <span id="token-status-badge" style="font-size:.7rem;padding:1px 6px;border-radius:10px;background:var(--warning-bg, #fff3cd);color:var(--warning, #856404)">未设置</span></div>
-              <div class="desc">手机端/离线时通过 GitHub API 读写仓库数据</div>
+              <div class="label">数据库权限</div>
+              <div class="desc">需在 CloudBase 控制台将各集合设为「所有用户可读写」<br><a href="https://console.cloud.tencent.com/tcb/database" target="_blank">打开控制台设置 →</a></div>
             </div>
-            <button class="btn btn-ghost" onclick="openTokenModal()" style="font-size:.8rem">设置 Token</button>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">API 代理地址</div>
-              <div class="desc">手机无法直连 GitHub API 时，可通过 Mac 中继（需同WiFi）。<br>通常是 http://192.168.x.x:3100</div>
-            </div>
-            <input id="relay-url-input" type="text" placeholder="http://192.168.x.x:3100" onchange="setRelayUrl(this.value)" style="font-size:.75rem;padding:4px 8px;border-radius:4px;border:1px solid var(--border);max-width:200px">
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="obsidian-sync-card" style="display:none">
-        <div class="settings-section">
-          <h3>Obsidian 镜像同步</h3>
-          <div class="settings-row">
-            <div>
-              <div class="label">同步到 Obsidian</div>
-              <div class="desc">将 GitHub 仓库数据镜像到本地 Obsidian Vault（每日自动 + 手动触发）</div>
-            </div>
-            <button class="btn btn-primary" onclick="syncToObsidian()" style="font-size:.8rem">立即同步</button>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">Obsidian 路径</div>
-              <div class="desc" style="font-size:.7rem">~/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据/</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card" id="diag-card">
-        <div class="settings-section">
-          <h3>连接诊断 <button class="btn btn-ghost" onclick="runDiagnostic()" style="font-size:.7rem;padding:2px 8px">重新检测</button></h3>
-          <div class="settings-row">
-            <div class="label">api.github.com</div>
-            <span id="diag-github" style="font-size:.8rem;color:var(--muted)">检测中...</span>
-          </div>
-          <div class="settings-row">
-            <div class="label">Token 状态</div>
-            <span id="diag-token" style="font-size:.8rem;color:var(--muted)">检测中...</span>
-          </div>
-          <div class="settings-row">
-            <div class="label">中继（Mac 中转）</div>
-            <span id="diag-relay" style="font-size:.8rem;color:var(--muted)">检测中...</span>
-          </div>
-          <div class="settings-row">
-            <div class="label">快照（Pages 只读）</div>
-            <span id="diag-snapshot" style="font-size:.8rem;color:var(--muted)">检测中...</span>
           </div>
         </div>
       </div>
@@ -495,10 +447,10 @@ ul{list-style:none}
           <h3>数据管理</h3>
           <div class="settings-row">
             <div>
-              <div class="label">手动保存</div>
-              <div class="desc">立即将数据保存到 GitHub 仓库</div>
+              <div class="label">手动同步</div>
+              <div class="desc">从云端拉取最新数据</div>
             </div>
-            <button class="btn btn-ghost" onclick="syncNow()">保存</button>
+            <button class="btn btn-ghost" onclick="syncNow()">刷新</button>
           </div>
           <div class="settings-row">
             <div>
@@ -522,10 +474,10 @@ ul{list-style:none}
         <div class="settings-section">
           <h3>关于</h3>
           <div class="settings-row">
-            <div class="label">个人工作台 v3.2</div>
+            <div class="label">个人工作台 v4.0</div>
           </div>
           <div class="settings-row">
-            <div class="desc">GitHub 主数据源 · Obsidian 每日镜像 · 手机/Mac 自动同步</div>
+            <div class="desc">腾讯云 CloudBase 云数据库 · 手机/Mac 实时同步 · Markdown 导入导出</div>
           </div>
         </div>
       </div>
@@ -567,109 +519,103 @@ const Store = {
     study: { subject:'系统分析师', topics:[], logs:[] },
     finance: { records: [] }
   },
-  serverBase: 'http://localhost:3100',
-  serverConnected: false,
-  relayActive: false,    // true = 通过 Mac 服务器中继访问 GitHub API
-  githubToken: localStorage.getItem('gh_token') || '',
-  githubRepo: 'yayaliuq/personal-workspace',
-  githubMode: false,  // true when using GitHub API instead of local server
-  pagesBase: 'https://yayaliuq.github.io/personal-workspace',  // GitHub Pages 快照地址
+  envId: 'yayaliu-d4g1i1dc2fdb04417',
+  db: null,
+  ready: false,
+  cloudOk: false,
 
-  // ---- Server API ----
-  async apiRead(filename) {
+  // ---- CloudBase 初始化 ----
+  async initCloud() {
     try {
-      const res = await fetch(`${this.serverBase}/api/read?file=${encodeURIComponent(filename)}`);
-      if (!res.ok) return null;
-      return await res.text();
-    } catch(e) { return null; }
+      const app = tcb.init({ env: this.envId });
+      const auth = app.auth({ persistence: 'local' });
+      await auth.anonymousAuthProvider().signIn();
+      this.db = app.database();
+      this.ready = true;
+      this.updateStatus('connecting');
+      const ok = await this.loadFromCloud();
+      this.cloudOk = ok;
+      this.updateStatus(ok ? 'cloud' : 'offline');
+      return ok;
+    } catch(e) {
+      console.error('CloudBase init failed:', e);
+      this.ready = false;
+      this.cloudOk = false;
+      this.updateStatus('offline');
+      return false;
+    }
   },
-  async apiWrite(filename, content) {
+
+  // ---- 从云端加载 ----
+  async loadFromCloud() {
+    if (!this.ready || !this.db) return false;
     try {
-      await fetch(`${this.serverBase}/api/write`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file: filename, content })
-      });
+      const [tasksR, topicsR, logsR, configR, recordsR] = await Promise.all([
+        this.db.collection('tasks').limit(1000).get(),
+        this.db.collection('study_topics').limit(100).get(),
+        this.db.collection('study_logs').limit(500).get(),
+        this.db.collection('study_config').limit(1).get(),
+        this.db.collection('finance_records').limit(500).get(),
+      ]);
+      const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...rest}=d; return rest; };
+      const cloudTasks = (tasksR.data || []).map(strip);
+      const cloudTopics = (topicsR.data || []).map(strip);
+      const cloudLogs = (logsR.data || []).map(strip);
+      const cloudRecords = (recordsR.data || []).map(strip);
+      // 如果云端有数据就用云端数据，否则保留本地数据（首次使用时云端为空）
+      if (cloudTasks.length > 0) this.data.tasks = cloudTasks;
+      if (cloudTopics.length > 0) this.data.study.topics = cloudTopics;
+      if (cloudLogs.length > 0) this.data.study.logs = cloudLogs;
+      if (cloudRecords.length > 0) this.data.finance.records = cloudRecords;
+      if (configR.data && configR.data.length > 0 && configR.data[0].subject) {
+        this.data.study.subject = configR.data[0].subject;
+      }
+      // 云端有数据：更新本地缓存；云端为空且本地有数据：上传到云端
+      const hasCloud = cloudTasks.length > 0 || cloudTopics.length > 0 || cloudRecords.length > 0;
+      if (hasCloud) {
+        this.saveLocal();
+        this.updateSyncTime();
+      } else if (this.data.tasks.length > 0 || this.data.study.topics.length > 0) {
+        // 云端空，本地有数据 → 首次上传
+        await this.saveToCloud();
+      }
       return true;
-    } catch(e) { return false; }
-  },
-  async ping() {
-    try {
-      const res = await fetch(`${this.serverBase}/api/ping`);
-      return res.ok;
-    } catch(e) { return false; }
+    } catch(e) {
+      console.error('CloudBase load failed:', e);
+      return false;
+    }
   },
 
-  // ---- GitHub API (支持中继模式) ----
-  setGithubToken(token) {
-    this.githubToken = token;
-    if (token) localStorage.setItem('gh_token', token);
-    else localStorage.removeItem('gh_token');
-  },
-  // 通过中继调用 GitHub API（手机同 WiFi 时可用）
-  async ghCall(method, path, body) {
-    const url = this.serverBase + '/api/gh-relay';
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ method, path, body, token: this.githubToken })
-    });
-    return res;
-  },
-  // 检查中继是否可用
-  async checkRelay() {
+  // ---- 保存到云端 ----
+  async saveToCloud() {
+    if (!this.ready || !this.db) return;
     try {
-      if (!this.githubToken) return false;
-      const res = await this.ghCall('GET', '/repos/' + this.githubRepo);
-      return res.ok;
-    } catch(e) { return false; }
-  },
-  async githubRead(filename) {
-    if (!this.githubToken) return null;
-    const ghPath = '/repos/' + this.githubRepo + '/contents/' + encodeURIComponent('数据/' + filename);
-    try {
-      const res = await this.ghCall('GET', ghPath);
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (data.content) return atob(data.content.replace(/\n/g, ''));
-      return null;
-    } catch(e) { return null; }
-  },
-  async githubWrite(filename, content) {
-    if (!this.githubToken) return false;
-    const ghPath = '/repos/' + this.githubRepo + '/contents/' + encodeURIComponent('数据/' + filename);
-    try {
-      // Get current SHA
-      let sha = null;
-      try {
-        const getRes = await this.ghCall('GET', ghPath);
-        if (getRes.ok) { const d = await getRes.json(); sha = d.sha; }
-      } catch(e) {}
-      const body = {
-        message: '更新 ' + filename,
-        content: btoa(unescape(encodeURIComponent(content)))
+      const _ = this.db.command;
+      const addAll = async (col, items) => {
+        await col.where({ _openid: _.exists(true) }).remove();
+        for (const item of items) {
+          await col.add({ ...item });
+        }
       };
-      if (sha) body.sha = sha;
-      const res = await this.ghCall('PUT', ghPath, JSON.stringify(body));
-      return res.ok;
-    } catch(e) { return false; }
-  },
-  async githubPing() {
-    if (!this.githubToken) return false;
-    return await this.checkRelay();
-  },
-
-  // ---- GitHub Pages 快照读取（手机端回退，只读但任何网络都可用） ----
-  async readSnapshot(key) {
-    try {
-      const url = `${this.pagesBase}/snapshots/${key}.json`;
-      const res = await fetch(url, { cache: 'no-cache' });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch(e) { return null; }
+      await Promise.all([
+        addAll(this.db.collection('tasks'), this.data.tasks),
+        addAll(this.db.collection('study_topics'), this.data.study.topics),
+        addAll(this.db.collection('study_logs'), this.data.study.logs),
+        (async () => {
+          const cc = this.db.collection('study_config');
+          await cc.where({ _openid: _.exists(true) }).remove();
+          await cc.add({ subject: this.data.study.subject });
+        })(),
+        addAll(this.db.collection('finance_records'), this.data.finance.records),
+      ]);
+      this.updateSyncTime();
+      this.updateStatus('cloud');
+    } catch(e) {
+      console.error('CloudBase save failed:', e);
+    }
   },
 
-  // ---- LocalStorage (fallback) ----
+  // ---- LocalStorage fallback ----
   loadLocal() {
     try {
       const raw = localStorage.getItem('workspace_data');
@@ -697,161 +643,44 @@ const Store = {
     ];
   },
 
-  // ---- Auto-connect ----
-  async autoConnect() {
-    // Priority 1: Local server (Mac 浏览器)
-    const serverOk = await this.ping();
-    if (serverOk) {
-      this.serverConnected = true;
-      this.githubMode = false;
-      this.relayActive = false;
-      this.updateStatusUI('server');
-      await this.loadFromServer();
-      return true;
-    }
-    // Priority 2: Relay mode (手机同WiFi → Mac中转 GitHub API)
-    if (this.githubToken) {
-      this.serverConnected = true;  // 服务器可达（ping 失败但 relay 可能通？不，需要先ping...）
-      const relayOk = await this.checkRelay();
-      if (relayOk) {
-        this.relayActive = true;
-        this.githubMode = true;
-        this.updateStatusUI('relay');
-        await this.loadFromGitHub();
-        return true;
-      }
-    }
-    // Priority 3: GitHub Pages 快照（手机任何网络 → 只读）
-    if (this.githubToken) {
-      const snapshotOk = await this.loadFromSnapshots();
-      if (snapshotOk) {
-        this.updateStatusUI('snapshot');
-        return true;
-      }
-    }
-    // Fallback: localStorage
-    this.serverConnected = false;
-    this.relayActive = false;
-    this.githubMode = false;
-    this.updateStatusUI('offline');
-    return false;
-  },
-
-  // ---- 从 GitHub Pages 快照加载（只读回退） ----
-  async loadFromSnapshots() {
-    try {
-      const tasks = await this.readSnapshot('tasks');
-      const study = await this.readSnapshot('study');
-      const finance = await this.readSnapshot('finance');
-      if (tasks) this.data.tasks = tasks;
-      if (study) this.data.study = study;
-      if (finance) this.data.finance = finance;
-      if (tasks || study || finance) {
-        this.saveLocal();
-        this.updateSyncTime();
-        return true;
-      }
-    } catch(e) {}
-    return false;
-  },
-
-  async loadFromGitHub() {
-    const tasksMD = await this.githubRead('待办任务.md');
-    if (tasksMD) this.data.tasks = Markdown.parseTasks(tasksMD);
-    const studyMD = await this.githubRead('学习进度.md');
-    if (studyMD) this.data.study = Markdown.parseStudy(studyMD);
-    const financeMD = await this.githubRead('理财记录.md');
-    if (financeMD) this.data.finance = Markdown.parseFinance(financeMD);
-    this.saveLocal();
-    this.updateSyncTime();
-  },
-
-  async saveToGitHub() {
-    if (!this.githubToken) return;
-    await Promise.all([
-      this.githubWrite('待办任务.md', Markdown.serializeTasks(this.data.tasks)),
-      this.githubWrite('学习进度.md', Markdown.serializeStudy(this.data.study)),
-      this.githubWrite('理财记录.md', Markdown.serializeFinance(this.data.finance)),
-    ]);
-    this.updateSyncTime();
-  },
-
-  async loadFromServer() {
-    const tasksMD = await this.apiRead('待办任务.md');
-    if (tasksMD) this.data.tasks = Markdown.parseTasks(tasksMD);
-    const studyMD = await this.apiRead('学习进度.md');
-    if (studyMD) this.data.study = Markdown.parseStudy(studyMD);
-    const financeMD = await this.apiRead('理财记录.md');
-    if (financeMD) this.data.finance = Markdown.parseFinance(financeMD);
-    this.saveLocal();
-    this.updateSyncTime();
-  },
-
-  async saveToServer() {
-    if (!this.serverConnected) return;
-    await Promise.all([
-      this.apiWrite('待办任务.md', Markdown.serializeTasks(this.data.tasks)),
-      this.apiWrite('学习进度.md', Markdown.serializeStudy(this.data.study)),
-      this.apiWrite('理财记录.md', Markdown.serializeFinance(this.data.finance)),
-    ]);
-    this.updateSyncTime();
-  },
-
-  updateStatusUI(mode) {
-    const dot = document.getElementById('obsidian-dot');
-    const text = document.getElementById('obsidian-text');
-    const status = document.getElementById('settings-obsidian-status');
-    const sdot = document.getElementById('settings-dot');
-    const obsCard = document.getElementById('obsidian-sync-card');
+  // ---- UI 状态 ----
+  updateStatus(mode) {
+    const dot = document.getElementById('cloud-dot');
+    const text = document.getElementById('cloud-text');
+    const sdot = document.getElementById('cloud-status-dot');
+    const sText = document.getElementById('settings-cloud-status');
+    if (!dot) return;
     dot.classList.remove('connected');
-    if (mode === 'server') {
+    if (mode === 'connecting') {
+      text.textContent = '正在连接云数据库...';
+      if (sdot) sdot.style.background = 'var(--warning)';
+      if (sText) sText.textContent = '正在连接 CloudBase...';
+    } else if (mode === 'cloud') {
       dot.classList.add('connected');
-      text.textContent = 'GitHub 仓库已连接';
-      if (status) status.textContent = '已连接 — 数据实时保存到 GitHub 仓库，自动推送到远端';
+      text.textContent = '云端已连接';
       if (sdot) sdot.style.background = 'var(--success)';
-      if (obsCard) obsCard.style.display = 'block';
-    } else if (mode === 'github') {
-      dot.classList.add('connected');
-      text.textContent = 'GitHub API 已连接';
-      if (status) status.textContent = '通过 GitHub API 读写仓库文件';
-      if (sdot) sdot.style.background = 'var(--success)';
-      if (obsCard) obsCard.style.display = 'none';
-    } else if (mode === 'relay') {
-      dot.classList.add('connected');
-      text.textContent = '中继模式 — 通过 Mac 中转';
-      if (status) status.textContent = '数据通过 Mac 服务器中继访问 GitHub API（需要同 WiFi）';
-      if (sdot) sdot.style.background = 'var(--success)';
-      if (obsCard) obsCard.style.display = 'none';
-    } else if (mode === 'snapshot') {
-      dot.classList.add('connected');
-      text.textContent = '快照模式 — 只读';
-      if (status) status.textContent = '从 GitHub Pages 读取数据快照，可查看但暂不支持编辑';
-      if (sdot) sdot.style.background = '#f0ad4e';
-      if (obsCard) obsCard.style.display = 'none';
+      if (sText) sText.textContent = '已连接 — 数据实时同步到腾讯云，手机/Mac 随时随地可用';
     } else {
-      text.textContent = '未连接数据源';
-      if (status) status.textContent = '离线模式 — 数据仅保存在浏览器中';
+      text.textContent = '离线模式';
       if (sdot) sdot.style.background = 'var(--danger)';
-      if (obsCard) obsCard.style.display = 'none';
+      if (sText) sText.textContent = '离线模式 — 数据仅保存在浏览器中，连接云端后可同步';
     }
   },
   updateSyncTime() {
     const now = new Date();
     const t = now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    document.getElementById('last-sync').textContent = '已保存 ' + t;
+    const el = document.getElementById('last-sync');
+    if (el) el.textContent = '已同步 ' + t;
   },
 
-  // ---- Unified save ----
+  // ---- 统一保存 ----
   async save() {
     this.saveLocal();
     clearTimeout(this._syncTimer);
-    this._syncTimer = setTimeout(() => {
-      if (this.githubMode || this.relayActive) this.saveToGitHub();
-      else if (this.serverConnected) this.saveToServer();
-    }, 500);
+    this._syncTimer = setTimeout(() => this.saveToCloud(), 500);
   },
 
-  // ---- ID generator ----
+  // ---- ID 生成器 ----
   uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 };
 
@@ -1451,147 +1280,19 @@ function deleteFinance(id) {
 }
 
 // ---- Settings ----
-function syncNow() {
-  if (Store.githubMode) {
-    Store.saveToGitHub().then(() => toast('数据已保存至 GitHub'));
-  } else if (Store.serverConnected) {
-    Store.saveToServer().then(() => toast('数据已保存至 GitHub 仓库'));
-  } else {
-    toast('未连接数据源，数据仅保存在浏览器中');
-  }
-}
-
-async function syncToObsidian() {
-  if (!Store.serverConnected) {
-    toast('请先在 Mac 上启动本地服务（node server.js）');
+async function syncNow() {
+  if (!Store.ready) {
+    toast('云数据库未连接，请检查网络后刷新页面');
     return;
   }
-  try {
-    const res = await fetch(Store.serverBase + '/api/sync-to-obsidian');
-    const data = await res.json();
-    if (data.ok) {
-      toast(data.synced > 0 ? `已将 ${data.synced} 个文件同步到 Obsidian` : 'Obsidian 已是最新，无需同步');
-    } else {
-      toast('同步失败');
-    }
-  } catch(e) {
-    toast('同步请求失败');
-  }
-}
-
-async function runDiagnostic() {
-  const set = (id, text, ok) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = text;
-    el.style.color = ok ? 'var(--success)' : 'var(--danger)';
-  };
-  
-  // 1. Token check
-  set('diag-token', Store.githubToken ? '已设置' : '未设置', !!Store.githubToken);
-  
-  // 2. Relay (Mac中转) check
-  if (Store.githubToken) {
-    try {
-      const relayOk = await Store.checkRelay();
-      set('diag-relay', relayOk ? '已连接（可读写）' : '不可用', relayOk);
-    } catch(e) {
-      set('diag-relay', '不可用', false);
-    }
-  } else {
-    set('diag-relay', '需要先设置 Token', false);
-  }
-  
-  // 3. Snapshots (GitHub Pages) check
-  try {
-    const snap = await Store.readSnapshot('tasks');
-    set('diag-snapshot', snap ? '可读取（' + snap.length + '条任务）' : '无数据', !!snap);
-  } catch(e) {
-    set('diag-snapshot', '不可用', false);
-  }
-  
-  // 4. Local server check
-  try {
-    const ok = await Store.ping();
-    set('diag-server', ok ? '已连接' : '未运行', ok);
-  } catch(e) {
-    set('diag-server', '不可用', false);
-  }
-}
-
-// ========== 中继地址设置 ==========
-function setRelayUrl(value) {
-  if (value) {
-    Store.serverBase = value;
-    localStorage.setItem('relay_url', value);
-  } else {
-    Store.serverBase = 'http://localhost:3100';
-    localStorage.removeItem('relay_url');
-  }
-  toast('中继地址已更新，重新检测中...');
-  Store.autoConnect().then(() => renderAll());
-}
-
-// 初始化中继地址
-(function(){
-  const saved = localStorage.getItem('relay_url');
-  if (saved) Store.serverBase = saved;
-  const input = document.getElementById('relay-url-input');
-  if (input && saved) input.value = saved;
-})();
-
-function updateTokenBadge() {
-  const badge = document.getElementById('token-status-badge');
-  if (!badge) return;
-  if (Store.githubToken) {
-    badge.textContent = '已设置';
-    badge.style.background = 'var(--success-bg, #d4edda)';
-    badge.style.color = 'var(--success, #155724)';
-  } else {
-    badge.textContent = '未设置';
-    badge.style.background = 'var(--warning-bg, #fff3cd)';
-    badge.style.color = 'var(--warning, #856404)';
-  }
-}
-
-function openTokenModal() {
-  const hasToken = !!Store.githubToken;
-  openModal(`
-    <h3>GitHub Token 设置</h3>
-    <div class="modal-field">
-      <label>Personal Access Token</label>
-      <input type="password" id="token-input" placeholder="ghp_..." value="${hasToken ? '••••••••' : ''}">
-      <div style="font-size:.7rem;color:var(--muted);margin-top:4px">
-        在 <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a> 创建，需勾选 <b>repo</b> 权限
-      </div>
-    </div>
-    <div class="modal-actions">
-      ${hasToken ? '<button class="btn btn-ghost" onclick="clearToken()" style="color:var(--danger)">清除 Token</button>' : '<button class="btn btn-ghost" onclick="closeModal()">取消</button>'}
-      <button class="btn btn-primary" onclick="saveToken()">保存</button>
-    </div>
-  `);
-}
-
-function saveToken() {
-  const token = document.getElementById('token-input').value.trim();
-  if (!token || token === '••••••••') { closeModal(); return; }
-  Store.setGithubToken(token);
-  closeModal();
-  updateTokenBadge();
-  toast('Token 已保存，重新连接中...');
-  // Reconnect with new token
-  Store.autoConnect().then(() => {
+  toast('正在从云端同步...');
+  const ok = await Store.loadFromCloud();
+  if (ok) {
     renderAll();
-    toast(Store.githubMode ? 'GitHub 连接成功！' : 'GitHub 连接失败，请检查 Token');
-  });
-}
-
-function clearToken() {
-  Store.setGithubToken('');
-  closeModal();
-  updateTokenBadge();
-  toast('Token 已清除');
-  Store.autoConnect().then(() => renderAll());
+    toast('数据已刷新');
+  } else {
+    toast('同步失败，请检查网络');
+  }
 }
 
 function exportMarkdown() {
@@ -1663,13 +1364,13 @@ function renderAll() {
 }
 
 // ============================================================
-// Init — auto-connect to data source
+// Init — 先加载本地缓存，再连接云端
 // ============================================================
 (async function init() {
   Store.loadLocal();
-  await Store.autoConnect();
-  // Ensure data/ dir exists in repo on first GitHub save
   renderAll();
+  await Store.initCloud();
+  if (Store.cloudOk) renderAll();
 })();
 
 // Close sidebar on outside click (mobile)
@@ -1733,45 +1434,16 @@ document.addEventListener('touchend', async () => {
 
 async function refreshData() {
   try {
-    let didSync = false;
-    // 1. Try relay first (phone same WiFi → Mac proxies GitHub API)
-    if (Store.githubToken) {
-      try {
-        const relayOk = await Store.checkRelay();
-        if (relayOk) {
-          await Store.loadFromGitHub();
-          didSync = true;
-          Store.relayActive = true;
-          Store.githubMode = true;
-          Store.updateStatusUI('relay');
-        }
-      } catch(e) { console.log('[refresh] relay failed:', e.message); }
+    if (!Store.ready) {
+      toast('云数据库未连接');
+      return;
     }
-    // 2. Try local server (Mac browser)
-    if (!didSync) {
-      const serverOk = await Store.ping();
-      if (serverOk) {
-        await Store.loadFromServer();
-        didSync = true;
-        Store.serverConnected = true;
-        Store.updateStatusUI('server');
-      }
-    }
-    // 3. Try snapshots (phone any network, read-only)
-    if (!didSync) {
-      const snapOk = await Store.loadFromSnapshots();
-      if (snapOk) {
-        didSync = true;
-        Store.updateStatusUI('snapshot');
-      }
-    }
-    if (didSync) {
+    const ok = await Store.loadFromCloud();
+    if (ok) {
       renderAll();
       toast('数据已刷新');
-    } else if (!Store.githubToken) {
-      toast('请先在设置页配置 GitHub Token');
     } else {
-      toast('无法连接 api.github.com，请检查手机网络（尝试切 4G/5G）');
+      toast('刷新失败，请检查网络');
     }
   } catch(e) {
     toast('刷新失败，请重试');
