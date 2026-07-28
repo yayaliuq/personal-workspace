@@ -461,6 +461,24 @@ ul{list-style:none}
         </div>
       </div>
 
+      <div class="card" id="diag-card">
+        <div class="settings-section">
+          <h3>连接诊断 <button class="btn btn-ghost" onclick="runDiagnostic()" style="font-size:.7rem;padding:2px 8px">重新检测</button></h3>
+          <div class="settings-row">
+            <div class="label">api.github.com</div>
+            <span id="diag-github" style="font-size:.8rem;color:var(--muted)">检测中...</span>
+          </div>
+          <div class="settings-row">
+            <div class="label">Token 状态</div>
+            <span id="diag-token" style="font-size:.8rem;color:var(--muted)">检测中...</span>
+          </div>
+          <div class="settings-row">
+            <div class="label">本地服务器</div>
+            <span id="diag-server" style="font-size:.8rem;color:var(--muted)">检测中...</span>
+          </div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="settings-section">
           <h3>数据管理</h3>
@@ -955,7 +973,7 @@ function navigate(page) {
   if (page === 'tasks') renderTasks();
   else if (page === 'study') renderStudy();
   else if (page === 'finance') renderFinance();
-  else if (page === 'settings') updateTokenBadge();
+  else if (page === 'settings') { updateTokenBadge(); runDiagnostic(); }
 }
 
 function toggleSidebar() {
@@ -1394,6 +1412,39 @@ async function syncToObsidian() {
   }
 }
 
+async function runDiagnostic() {
+  const set = (id, text, ok) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.style.color = ok ? 'var(--success)' : 'var(--danger)';
+  };
+  
+  // 1. Token check
+  set('diag-token', Store.githubToken ? '已设置' : '未设置', !!Store.githubToken);
+  
+  // 2. GitHub API reachability
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 5000);
+    const resp = await fetch('https://api.github.com/zen', { 
+      signal: ctrl.signal,
+      headers: Store.githubToken ? { Authorization: 'token ' + Store.githubToken } : {}
+    });
+    set('diag-github', resp.ok ? '可访问' : 'HTTP ' + resp.status, resp.ok);
+  } catch(e) {
+    set('diag-github', '无法连接 (' + (e.name === 'AbortError' ? '超时' : '网络不通') + ')', false);
+  }
+  
+  // 3. Local server
+  try {
+    const ok = await Store.ping();
+    set('diag-server', ok ? '已连接' : '未运行', ok);
+  } catch(e) {
+    set('diag-server', '不可用', false);
+  }
+}
+
 function updateTokenBadge() {
   const badge = document.getElementById('token-status-badge');
   if (!badge) return;
@@ -1612,8 +1663,10 @@ async function refreshData() {
     if (didSync) {
       renderAll();
       toast('数据已刷新');
+    } else if (!Store.githubToken) {
+      toast('请先在设置页配置 GitHub Token');
     } else {
-      toast('无法连接数据源，请检查网络');
+      toast('无法连接 api.github.com，请检查手机网络（尝试切 4G/5G）');
     }
   } catch(e) {
     toast('刷新失败，请重试');
