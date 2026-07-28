@@ -1605,9 +1605,26 @@ async function refreshData() {
 
 // ========== PWA Service Worker ==========
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(() => {
+  navigator.serviceWorker.register('sw.js').then((reg) => {
     console.log('[PWA] Service Worker 已注册');
+    // 检测 SW 更新
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          toast('发现新版本，页面即将刷新...');
+          setTimeout(() => location.reload(), 1000);
+        }
+      });
+    });
   }).catch(() => {});
+  // 接收 SW 的更新通知
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'SW_UPDATED') {
+      console.log('[PWA] SW 已更新，刷新页面');
+      location.reload();
+    }
+  });
 }
 </script>
 </body>
