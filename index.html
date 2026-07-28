@@ -287,10 +287,9 @@ ul{list-style:none}
     <div class="sidebar-footer">
       <div class="obsidian-status">
         <span class="obsidian-dot" id="obsidian-dot"></span>
-        <span id="obsidian-text">未连接 Obsidian</span>
+        <span id="obsidian-text">正在连接...</span>
       </div>
-      <button id="btn-connect" onclick="connectObsidian()">连接 Obsidian Vault</button>
-      <div style="margin-top:8px;font-size:.7rem" id="last-sync">尚未同步</div>
+      <div style="margin-top:4px;font-size:.7rem" id="last-sync"></div>
     </div>
   </nav>
 
@@ -300,7 +299,7 @@ ul{list-style:none}
     <div id="page-tasks" class="page fade-in">
       <div class="page-header">
         <h2>待办任务</h2>
-        <div class="desc">按分类管理你的待办事项，数据同步至 Obsidian</div>
+        <div class="desc">按分类管理你的待办事项，数据自动保存至本地</div>
       </div>
       <div class="task-add-bar">
         <input type="text" id="quick-add-input" placeholder="快速添加任务，回车确认..." onkeypress="if(event.key==='Enter')quickAddTask()">
@@ -358,7 +357,7 @@ ul{list-style:none}
     <div id="page-finance" class="page fade-in" style="display:none">
       <div class="page-header">
         <h2>理财看板</h2>
-        <div class="desc">收支记录与月度汇总 · 数据同步至 Obsidian</div>
+        <div class="desc">收支记录与月度汇总 · 数据自动保存至本地</div>
       </div>
       <div class="finance-summary">
         <div class="finance-card income">
@@ -394,23 +393,23 @@ ul{list-style:none}
     <div id="page-settings" class="page fade-in" style="display:none">
       <div class="page-header">
         <h2>设置</h2>
-        <div class="desc">Obsidian 连接、数据导入导出与应用配置</div>
+        <div class="desc">本地数据存储、导入导出与应用配置</div>
       </div>
 
       <div class="card">
         <div class="settings-section">
-          <h3>Obsidian 连接</h3>
+          <h3>数据存储</h3>
           <div class="settings-row">
             <div>
               <div class="label">连接状态</div>
-              <div class="desc" id="settings-obsidian-status">未连接 — 数据仅存储在浏览器本地</div>
+              <div class="desc" id="settings-obsidian-status">正在连接...</div>
             </div>
-            <button class="btn btn-primary" id="btn-connect-2" onclick="connectObsidian()">连接</button>
+            <span class="obsidian-dot" id="settings-dot" style="background:var(--warning)"></span>
           </div>
           <div class="settings-row">
             <div>
               <div class="label">数据文件夹</div>
-              <div class="desc">Markdown 数据文件存放路径</div>
+              <div class="desc">Markdown 数据文件存放在「数据/」目录中</div>
             </div>
             <div style="font-size:.85rem;color:var(--muted)">数据/</div>
           </div>
@@ -437,10 +436,10 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">立即同步</div>
-              <div class="desc">手动触发与 Obsidian Vault 的同步</div>
+              <div class="label">手动保存</div>
+              <div class="desc">立即将数据写入本地文件</div>
             </div>
-            <button class="btn btn-ghost" onclick="syncNow()">同步</button>
+            <button class="btn btn-ghost" onclick="syncNow()">保存</button>
           </div>
         </div>
       </div>
@@ -449,10 +448,10 @@ ul{list-style:none}
         <div class="settings-section">
           <h3>关于</h3>
           <div class="settings-row">
-            <div class="label">个人工作台 v1.0</div>
+            <div class="label">个人工作台 v2.0</div>
           </div>
           <div class="settings-row">
-            <div class="desc">跨平台个人工作台 · Obsidian 兼容 · 本地优先</div>
+            <div class="desc">本地服务模式 · 打开即用 · 数据存为 Markdown 文件</div>
           </div>
         </div>
       </div>
@@ -494,10 +493,35 @@ const Store = {
     study: { subject:'系统分析师', topics:[], logs:[] },
     finance: { records: [] }
   },
-  dirHandle: null,
-  obsidianConnected: false,
+  serverBase: 'http://localhost:3100',
+  serverConnected: false,
 
-  // ---- LocalStorage ----
+  // ---- Server API (primary) ----
+  async apiRead(filename) {
+    try {
+      const res = await fetch(`${this.serverBase}/api/read?file=${encodeURIComponent(filename)}`);
+      if (!res.ok) return null;
+      return await res.text();
+    } catch(e) { return null; }
+  },
+  async apiWrite(filename, content) {
+    try {
+      await fetch(`${this.serverBase}/api/write`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: filename, content })
+      });
+      return true;
+    } catch(e) { return false; }
+  },
+  async ping() {
+    try {
+      const res = await fetch(`${this.serverBase}/api/ping`);
+      return res.ok;
+    } catch(e) { return false; }
+  },
+
+  // ---- LocalStorage (fallback) ----
   loadLocal() {
     try {
       const raw = localStorage.getItem('workspace_data');
@@ -507,13 +531,12 @@ const Store = {
       } else {
         this.initSeedData();
       }
-    } catch(e) { console.error('Load error:', e); this.initSeedData(); }
+    } catch(e) { this.initSeedData(); }
   },
   saveLocal() {
     localStorage.setItem('workspace_data', JSON.stringify(this.data));
   },
   initSeedData() {
-    // Seed study topics for 系统分析师
     this.data.study.topics = [
       { id:'t1', name:'计算机系统基础知识', completed:false, progress:0 },
       { id:'t2', name:'信息系统基础知识', completed:false, progress:0 },
@@ -524,97 +547,69 @@ const Store = {
       { id:'t7', name:'信息安全', completed:false, progress:0 },
       { id:'t8', name:'法律法规与标准', completed:false, progress:0 },
     ];
-    this.saveLocal();
   },
 
-  // ---- Obsidian (File System Access API) ----
-  async connect() {
-    if (!window.showDirectoryPicker) {
-      toast('当前浏览器不支持文件系统访问，请使用 Chrome/Edge 桌面版');
-      return false;
+  // ---- Auto-connect to local server ----
+  async autoConnect() {
+    const connected = await this.ping();
+    this.serverConnected = connected;
+    this.updateStatusUI(connected);
+    if (connected) {
+      await this.loadFromServer();
     }
-    try {
-      this.dirHandle = await window.showDirectoryPicker({ mode:'readwrite' });
-      this.obsidianConnected = true;
-      await this.ensureDataDir();
-      await this.syncFromObsidian();
-      this.updateObsidianUI(true);
-      toast('已连接 Obsidian Vault');
-      return true;
-    } catch(e) {
-      if (e.name !== 'AbortError') {
-        console.error('Connect error:', e);
-        toast('连接失败: ' + e.message);
-      }
-      return false;
-    }
+    return connected;
   },
-  async ensureDataDir() {
-    if (!this.dirHandle) return;
-    try {
-      await this.dirHandle.getDirectoryHandle('数据', { create:true });
-    } catch(e) { console.error('Create dir error:', e); }
-  },
-  async getDataDir() {
-    if (!this.dirHandle) return null;
-    return await this.dirHandle.getDirectoryHandle('数据', { create:true });
-  },
-  async readMD(filename) {
-    try {
-      const dir = await this.getDataDir();
-      const fh = await dir.getFileHandle(filename);
-      const file = await fh.getFile();
-      return await file.text();
-    } catch(e) { return null; }
-  },
-  async writeMD(filename, content) {
-    if (!this.dirHandle) return;
-    try {
-      const dir = await this.getDataDir();
-      const fh = await dir.getFileHandle(filename, { create:true });
-      const writable = await fh.createWritable();
-      await writable.write(content);
-      await writable.close();
-    } catch(e) { console.error('Write error:', e); }
-  },
-  async syncFromObsidian() {
-    const tasksMD = await this.readMD('待办任务.md');
+
+  async loadFromServer() {
+    const tasksMD = await this.apiRead('待办任务.md');
     if (tasksMD) this.data.tasks = Markdown.parseTasks(tasksMD);
-    const studyMD = await this.readMD('学习进度.md');
+    const studyMD = await this.apiRead('学习进度.md');
     if (studyMD) this.data.study = Markdown.parseStudy(studyMD);
-    const financeMD = await this.readMD('理财记录.md');
+    const financeMD = await this.apiRead('理财记录.md');
     if (financeMD) this.data.finance = Markdown.parseFinance(financeMD);
     this.saveLocal();
     this.updateSyncTime();
   },
-  async syncToObsidian() {
-    if (!this.obsidianConnected) return;
-    await this.writeMD('待办任务.md', Markdown.serializeTasks(this.data.tasks));
-    await this.writeMD('学习进度.md', Markdown.serializeStudy(this.data.study));
-    await this.writeMD('理财记录.md', Markdown.serializeFinance(this.data.finance));
+
+  async saveToServer() {
+    if (!this.serverConnected) return;
+    await Promise.all([
+      this.apiWrite('待办任务.md', Markdown.serializeTasks(this.data.tasks)),
+      this.apiWrite('学习进度.md', Markdown.serializeStudy(this.data.study)),
+      this.apiWrite('理财记录.md', Markdown.serializeFinance(this.data.finance)),
+    ]);
     this.updateSyncTime();
-    toast('已同步至 Obsidian');
   },
-  updateObsidianUI(connected) {
-    document.getElementById('obsidian-dot').classList.toggle('connected', connected);
-    document.getElementById('obsidian-text').textContent = connected ? '已连接 Obsidian' : '未连接 Obsidian';
-    document.getElementById('settings-obsidian-status').textContent = connected
-      ? '已连接 — 数据实时同步至 Vault' : '未连接 — 数据仅存储在浏览器本地';
-    document.getElementById('btn-connect').textContent = connected ? '重新连接' : '连接 Obsidian Vault';
-    document.getElementById('btn-connect-2').textContent = connected ? '重新连接' : '连接';
+
+  updateStatusUI(connected) {
+    const dot = document.getElementById('obsidian-dot');
+    const text = document.getElementById('obsidian-text');
+    const status = document.getElementById('settings-obsidian-status');
+    const sdot = document.getElementById('settings-dot');
+    if (connected) {
+      dot.classList.add('connected');
+      text.textContent = '本地数据已连接';
+      if (status) status.textContent = '已连接 — 数据自动保存到本地文件';
+      if (sdot) sdot.style.background = 'var(--success)';
+    } else {
+      dot.classList.remove('connected');
+      text.textContent = '未检测到本地服务';
+      if (status) status.textContent = '未连接 — 请运行 node server.js 启动服务';
+      if (sdot) sdot.style.background = 'var(--danger)';
+    }
   },
   updateSyncTime() {
     const now = new Date();
     const t = now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    document.getElementById('last-sync').textContent = '上次同步: ' + t;
+    document.getElementById('last-sync').textContent = '已保存 ' + t;
   },
 
   // ---- Unified save ----
   async save() {
     this.saveLocal();
-    if (this.obsidianConnected) {
+    if (this.serverConnected) {
       clearTimeout(this._syncTimer);
-      this._syncTimer = setTimeout(() => this.syncToObsidian(), 800);
+      this._syncTimer = setTimeout(() => this.saveToServer(), 500);
     }
   },
 
@@ -1217,19 +1212,12 @@ function deleteFinance(id) {
 }
 
 // ---- Settings ----
-async function connectObsidian() {
-  await Store.connect();
-  if (Store.obsidianConnected) {
-    renderAll();
-  }
-}
-
 function syncNow() {
-  if (!Store.obsidianConnected) {
-    toast('请先连接 Obsidian Vault');
+  if (!Store.serverConnected) {
+    toast('本地服务未启动，请运行 node server.js');
     return;
   }
-  Store.syncToObsidian();
+  Store.saveToServer().then(() => toast('数据已保存至本地'));
 }
 
 function exportMarkdown() {
@@ -1301,21 +1289,14 @@ function renderAll() {
 }
 
 // ============================================================
-// Init
+// Init — auto-connect to local server
 // ============================================================
 (async function init() {
   Store.loadLocal();
-  Store.updateObsidianUI(false);
-  // Restore Obsidian connection if permission persists
-  if (window.showDirectoryPicker) {
-    try {
-      // Check if we have a stored directory handle
-      const stored = localStorage.getItem('workspace_dir_handle');
-      if (stored) {
-        // Note: File System Access API handles can be stored in IndexedDB
-        // For simplicity, user reconnects each session
-      }
-    } catch(e) {}
+  const connected = await Store.autoConnect();
+  if (!connected) {
+    // Fallback: use localStorage only
+    Store.updateStatusUI(false);
   }
   renderAll();
 })();

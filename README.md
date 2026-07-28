@@ -1,24 +1,30 @@
 # 个人工作台
 
-一个跨平台（手机 + 电脑）的个人工作台应用，数据兼容 Obsidian，单 HTML 文件即开即用。
+本地服务模式 — 打开即用，无需任何设置。数据以 Obsidian 兼容的 Markdown 格式存储。
 
 ## 功能模块
 
 - **待办任务** — 工作 / 生活 / 广告 / 理财四分类，优先级管理，增删改查
 - **学习进度** — 系统分析师备考追踪，知识点清单 + 进度统计
 - **理财看板** — 收支记账，月度汇总
-- **Obsidian 同步** — 桌面端实时双向同步，移动端导入导出
+- **本地数据** — 自动连接本地服务，数据实时写入 Markdown 文件
 
 ## 快速开始
 
-1. 复制整个文件夹到你的 Obsidian Vault 根目录
-2. 用 Chrome/Edge 打开 `index.html`
-3. 桌面端：设置 -> 连接 Obsidian Vault，选择你的 Vault 文件夹即可实时同步
-4. 手机端：浏览器打开即用，通过导入/导出 Markdown 与 Obsidian 同步
+```bash
+# 1. 进入目录
+cd 个人工作台
+
+# 2. 启动本地服务
+node server.js
+
+# 3. 打开浏览器访问
+open http://localhost:3100
+```
+
+打开即用，无需手动连接任何东西。数据自动保存到 `数据/` 目录下的 Markdown 文件中。
 
 ## 数据文件
-
-数据以 Obsidian 兼容的 Markdown 格式存储在 `数据/` 目录下：
 
 | 文件 | 用途 |
 |------|------|
@@ -26,11 +32,11 @@
 | `数据/学习进度.md` | 学习追踪 |
 | `数据/理财记录.md` | 收支记录 |
 
-这些文件可以直接在 Obsidian 中编辑，工作台会自动读取。
+这些文件兼容 Obsidian，可以直接放入 Obsidian Vault 中使用。
 
 ## 技术栈
 
-- 纯 HTML + CSS + JavaScript，零依赖
-- File System Access API（桌面端）
-- localStorage（移动端回退）
-- 响应式设计，PWA 可安装
+- 纯 HTML + CSS + JavaScript，零浏览器端依赖
+- Node.js 本地服务器（标准库，零 npm 依赖）
+- Markdown 文件存储，Obsidian 兼容
+- 响应式设计，手机 + 电脑均可使用
