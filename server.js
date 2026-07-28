@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3100;
-const DATA_DIR = path.join(__dirname, '数据');
+// Obsidian Vault 数据目录
+const DATA_DIR = '/Users/liuquan/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据';
 
 // Ensure data directory exists
 if (!fs.existsSync(DATA_DIR)) {
