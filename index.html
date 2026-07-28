@@ -434,7 +434,7 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">GitHub Token</div>
+              <div class="label">GitHub Token <span id="token-status-badge" style="font-size:.7rem;padding:1px 6px;border-radius:10px;background:var(--warning-bg, #fff3cd);color:var(--warning, #856404)">未设置</span></div>
               <div class="desc">手机端/离线时通过 GitHub API 读写仓库数据</div>
             </div>
             <button class="btn btn-ghost" onclick="openTokenModal()" style="font-size:.8rem">设置 Token</button>
@@ -955,6 +955,7 @@ function navigate(page) {
   if (page === 'tasks') renderTasks();
   else if (page === 'study') renderStudy();
   else if (page === 'finance') renderFinance();
+  else if (page === 'settings') updateTokenBadge();
 }
 
 function toggleSidebar() {
@@ -1393,6 +1394,20 @@ async function syncToObsidian() {
   }
 }
 
+function updateTokenBadge() {
+  const badge = document.getElementById('token-status-badge');
+  if (!badge) return;
+  if (Store.githubToken) {
+    badge.textContent = '已设置';
+    badge.style.background = 'var(--success-bg, #d4edda)';
+    badge.style.color = 'var(--success, #155724)';
+  } else {
+    badge.textContent = '未设置';
+    badge.style.background = 'var(--warning-bg, #fff3cd)';
+    badge.style.color = 'var(--warning, #856404)';
+  }
+}
+
 function openTokenModal() {
   const hasToken = !!Store.githubToken;
   openModal(`
@@ -1416,6 +1431,7 @@ function saveToken() {
   if (!token || token === '••••••••') { closeModal(); return; }
   Store.setGithubToken(token);
   closeModal();
+  updateTokenBadge();
   toast('Token 已保存，重新连接中...');
   // Reconnect with new token
   Store.autoConnect().then(() => {
@@ -1427,6 +1443,7 @@ function saveToken() {
 function clearToken() {
   Store.setGithubToken('');
   closeModal();
+  updateTokenBadge();
   toast('Token 已清除');
   Store.autoConnect().then(() => renderAll());
 }
