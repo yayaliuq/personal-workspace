@@ -271,6 +271,25 @@ ul{list-style:none}
 .empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
 .empty-state .icon{font-size:2.5rem;margin-bottom:8px;opacity:.5}
 .empty-state .text{font-size:.9rem}
+/* Login overlay */
+.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-card{background:var(--card);border-radius:var(--radius);padding:32px 24px;box-shadow:var(--shadow-lg);width:340px;max-width:90vw}
+.login-card h2{font-size:1.2rem;margin-bottom:4px}
+.login-card .sub{font-size:.8rem;color:var(--muted);margin-bottom:20px}
+.login-card .field{margin-bottom:14px}
+.login-card .field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
+.login-card .field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;outline:none}
+.login-card .field input:focus{border-color:var(--primary)}
+.login-card .field .input-row{display:flex;gap:8px}
+.login-card .field .input-row input{flex:1}
+.login-card .field .input-row button{flex-shrink:0;font-size:.8rem;padding:10px 16px;white-space:nowrap}
+.login-card .err{font-size:.75rem;color:var(--danger);margin-top:4px;min-height:18px}
+.login-card .btn-login{width:100%;padding:12px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:1rem;font-weight:600}
+.login-card .btn-login:disabled{opacity:.5;cursor:not-allowed}
+.login-card .btn-send{background:var(--primary-bg);color:var(--primary);border-radius:var(--radius-sm);font-weight:500}
+.login-card .btn-send:disabled{opacity:.5;cursor:not-allowed}
+.login-card .logout-hint{font-size:.75rem;color:var(--muted);margin-top:16px;text-align:center}
+.login-card .logout-hint a{color:var(--danger);cursor:pointer}
 </style>
 </head>
 <body>
@@ -311,6 +330,28 @@ ul{list-style:none}
       <div style="margin-top:4px;font-size:.7rem" id="last-sync"></div>
     </div>
   </nav>
+
+  <!-- Login overlay -->
+  <div id="login-overlay" class="login-overlay" style="display:none">
+    <div class="login-card">
+      <h2>登录工作台</h2>
+      <div class="sub">使用手机号登录，保护你的数据安全</div>
+      <div class="field">
+        <label>手机号</label>
+        <input type="tel" id="login-phone" maxlength="11" placeholder="请输入手机号" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label>验证码</label>
+        <div class="input-row">
+          <input type="text" id="login-code" maxlength="6" placeholder="6位验证码" autocomplete="one-time-code">
+          <button class="btn-send" id="btn-send-code" onclick="sendCode()">获取验证码</button>
+        </div>
+      </div>
+      <div class="err" id="login-err"></div>
+      <button class="btn-login" id="btn-login" onclick="doLogin()">登录</button>
+      <div class="logout-hint">登录后数据自动云端同步 · <a onclick="doLogout()">切换账号</a></div>
+    </div>
+  </div>
 
   <!-- Main content -->
   <main id="main">
@@ -428,6 +469,13 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
+              <div class="label">登录账号</div>
+              <div class="desc" id="settings-phone">--</div>
+            </div>
+            <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);font-size:.8rem">退出登录</button>
+          </div>
+          <div class="settings-row">
+            <div>
               <div class="label">环境 ID</div>
               <div class="desc">yayaliu-d4g1i1dc2fdb04417</div>
             </div>
@@ -435,8 +483,8 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">数据库权限</div>
-              <div class="desc">需在 CloudBase 控制台将各集合设为「所有用户可读写」<br><a href="https://console.cloud.tencent.com/tcb/database" target="_blank">打开控制台设置 →</a></div>
+              <div class="label">手机号登录</div>
+              <div class="desc">需先在控制台开启「匿名登录」和「手机号登录」<br><a href="https://console.cloud.tencent.com/tcb/env/login" target="_blank">打开登录设置 →</a></div>
             </div>
           </div>
         </div>
@@ -520,17 +568,39 @@ const Store = {
     finance: { records: [] }
   },
   envId: 'yayaliu-d4g1i1dc2fdb04417',
+  app: null,
+  auth: null,
   db: null,
   ready: false,
   cloudOk: false,
 
   // ---- CloudBase 初始化 ----
+  getApp() {
+    if (!this.app) this.app = tcb.init({ env: this.envId });
+    return this.app;
+  },
+  getAuth() {
+    if (!this.auth) this.auth = this.getApp().auth({ persistence: 'local' });
+    return this.auth;
+  },
+  async isLoggedIn() {
+    try {
+      const state = await this.getAuth().getLoginState();
+      return !!state;
+    } catch(e) { return false; }
+  },
   async initCloud() {
     try {
-      const app = tcb.init({ env: this.envId });
-      const auth = app.auth({ persistence: 'local' });
-      await auth.anonymousAuthProvider().signIn();
-      this.db = app.database();
+      // 检查登录状态
+      const loggedIn = await this.isLoggedIn();
+      if (!loggedIn) {
+        this.ready = false;
+        this.cloudOk = false;
+        this.updateStatus('offline');
+        showLoginOverlay();
+        return false;
+      }
+      this.db = this.getApp().database();
       this.ready = true;
       this.updateStatus('connecting');
       const ok = await this.loadFromCloud();
@@ -657,9 +727,13 @@ const Store = {
       if (sText) sText.textContent = '正在连接 CloudBase...';
     } else if (mode === 'cloud') {
       dot.classList.add('connected');
-      text.textContent = '云端已连接';
+      const phone = localStorage.getItem('cb_phone') || '';
+      const masked = phone ? phone.slice(0,3) + '****' + phone.slice(-4) : '';
+      text.textContent = '云端已连接' + (masked ? ' · ' + masked : '');
       if (sdot) sdot.style.background = 'var(--success)';
-      if (sText) sText.textContent = '已连接 — 数据实时同步到腾讯云，手机/Mac 随时随地可用';
+      if (sText) sText.textContent = '数据实时同步到腾讯云，手机/Mac 随时随地可用';
+      const sp = document.getElementById('settings-phone');
+      if (sp) sp.textContent = masked || '--';
     } else {
       text.textContent = '离线模式';
       if (sdot) sdot.style.background = 'var(--danger)';
@@ -1372,6 +1446,105 @@ function renderAll() {
   await Store.initCloud();
   if (Store.cloudOk) renderAll();
 })();
+
+// ============================================================
+// Phone Login
+// ============================================================
+let sendCooldown = 0;
+
+function showLoginOverlay() {
+  const el = document.getElementById('login-overlay');
+  if (el) {
+    el.style.display = 'flex';
+    // 如果已经登录过，预填手机号
+    const saved = localStorage.getItem('cb_phone');
+    if (saved) document.getElementById('login-phone').value = saved;
+  }
+}
+
+function hideLoginOverlay() {
+  const el = document.getElementById('login-overlay');
+  if (el) el.style.display = 'none';
+}
+
+async function sendCode() {
+  if (sendCooldown > 0) return;
+  const phone = document.getElementById('login-phone').value.trim();
+  const errEl = document.getElementById('login-err');
+  if (!/^1[3-9]\d{9}$/.test(phone)) {
+    errEl.textContent = '请输入正确的手机号';
+    return;
+  }
+  errEl.textContent = '';
+  const btn = document.getElementById('btn-send-code');
+  try {
+    const auth = Store.getAuth();
+    await auth.sendPhoneCode(phone);
+    // 倒计时
+    sendCooldown = 60;
+    btn.disabled = true;
+    const tick = () => {
+      sendCooldown--;
+      btn.textContent = sendCooldown + '秒后重发';
+      if (sendCooldown <= 0) {
+        btn.textContent = '获取验证码';
+        btn.disabled = false;
+      } else {
+        setTimeout(tick, 1000);
+      }
+    };
+    tick();
+  } catch(e) {
+    errEl.textContent = '发送失败：' + (e.message || '请稍后重试');
+  }
+}
+
+async function doLogin() {
+  const phone = document.getElementById('login-phone').value.trim();
+  const code = document.getElementById('login-code').value.trim();
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login');
+  if (!phone || code.length !== 6) {
+    errEl.textContent = '请输入手机号和6位验证码';
+    return;
+  }
+  errEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = '登录中...';
+  try {
+    const auth = Store.getAuth();
+    await auth.signInWithPhoneCode(phone, code);
+    localStorage.setItem('cb_phone', phone);
+    hideLoginOverlay();
+    Store.db = Store.getApp().database();
+    Store.ready = true;
+    Store.updateStatus('connecting');
+    const ok = await Store.loadFromCloud();
+    Store.cloudOk = ok;
+    Store.updateStatus(ok ? 'cloud' : 'offline');
+    if (ok) renderAll();
+    toast('登录成功');
+  } catch(e) {
+    errEl.textContent = '登录失败：' + (e.message || '验证码错误');
+    btn.disabled = false;
+    btn.textContent = '登录';
+  }
+}
+
+async function doLogout() {
+  try {
+    const auth = Store.getAuth();
+    await auth.signOut();
+  } catch(e) {}
+  Store.ready = false;
+  Store.cloudOk = false;
+  Store.db = null;
+  Store.auth = null;
+  Store.app = null;
+  Store.updateStatus('offline');
+  showLoginOverlay();
+  toast('已退出登录');
+}
 
 // Close sidebar on outside click (mobile)
 document.addEventListener('click', (e) => {
