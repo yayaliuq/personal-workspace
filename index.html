@@ -610,9 +610,9 @@ const Store = {
     localStorage.setItem('gh_api_base', this.githubApiBase);
   },
   ghUrl(path) {
-    // If using proxy mode, route through proxy; otherwise direct
+    // If using proxy mode, route full URL through proxy
     if (this.githubApiBase !== 'https://api.github.com') {
-      return this.githubApiBase.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+      return this.githubApiBase.replace(/\/$/, '') + '/https://api.github.com' + path;
     }
     return this.githubApiBase + path;
   },
@@ -1446,8 +1446,8 @@ async function runDiagnostic() {
   // 1. Token check
   set('diag-token', Store.githubToken ? '已设置' : '未设置', !!Store.githubToken);
   
-  // 2. GitHub API reachability
-  const testUrl = Store.ghUrl('/zen');
+  // 2. GitHub API reachability (via proxy if configured)
+  const testUrl = Store.githubApiBase === 'https://api.github.com' ? 'https://api.github.com/zen' : Store.ghUrl('/zen');
   try {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 5000);
