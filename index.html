@@ -797,7 +797,7 @@ const Markdown = {
       const line = lines[i];
       const catMatch = line.match(/^## (.+)/);
       if (catMatch) { currentCat = catMatch[1].trim(); continue; }
-      const taskMatch = line.match(/^- \[([ x])\] \*\[(.+?)\]\*\s+(.+?)(?:\s+`due:(.+?)`)?$/);
+      const taskMatch = line.match(/^- \[([ x])\] \*\*\[(.+?)\]\*\*\s+(.+?)(?:\s+`due:(.+?)`)?$/);
       if (taskMatch) {
         let notes = '';
         if (i+1 < lines.length && lines[i+1].startsWith('  - ')) {
