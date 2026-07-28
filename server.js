@@ -12,11 +12,11 @@ const HOST = '0.0.0.0';
 // ============================================================
 const PROJECT_DIR = __dirname;
 
-// Obsidian Vault 数据目录（Mac 本地读写）
-const OBSIDIAN_DATA_DIR = '/Users/liuquan/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据';
+// ★ 主数据目录：Git 仓库内的 数据/（与手机 GitHub API 读写同一位置）
+const DATA_DIR = path.join(PROJECT_DIR, '数据');
 
-// Git 仓库数据目录（用于 GitHub 同步）
-const REPO_DATA_DIR = path.join(PROJECT_DIR, '数据');
+// Obsidian Vault 镜像目录（仅用于每日/手动同步）
+const OBSIDIAN_DIR = '/Users/liuquan/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据';
 
 // SSH key 路径
 const SSH_KEY = path.join(PROJECT_DIR, 'github_key');
@@ -24,7 +24,7 @@ const SSH_KEY = path.join(PROJECT_DIR, 'github_key');
 // ============================================================
 // 目录初始化
 // ============================================================
-for (const dir of [OBSIDIAN_DATA_DIR, REPO_DATA_DIR]) {
+for (const dir of [DATA_DIR, OBSIDIAN_DIR]) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -42,25 +42,18 @@ function git(cmd) {
   try {
     return execSync(cmd, { cwd: PROJECT_DIR, env: GIT_ENV, encoding: 'utf-8', timeout: 30000 }).trim();
   } catch (e) {
-    console.error('  [git] 失败:', cmd, e.message.slice(0, 100));
+    console.error('  [git] 失败:', e.message.slice(0, 100));
     return null;
   }
 }
 
-// 从 GitHub 拉取最新数据
 function gitPull() {
   const result = git('git pull origin main 2>&1');
   if (result === null) return false;
-  // "Already up to date." 也算成功
   return true;
 }
 
-// 推送本地数据到 GitHub
 function gitPush() {
-  // 先把数据文件复制到 repo 数据目录
-  syncObsidianToRepo();
-
-  // 检查是否有变更
   const status = git('git status --porcelain 数据/ 2>&1');
   if (status === null) return false;
   if (!status) {
@@ -69,9 +62,11 @@ function gitPush() {
   }
 
   git('git add 数据/');
-  const ts = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  const ts = new Date().toLocaleString('zh-CN', { hour12: false });
   const result = git(`git commit -m "sync: ${ts}" 2>&1`);
-  if (result === null) return false;  // 可能没有变更
+  if (result === null && !result) {
+    // 可能没有变更（空提交）
+  }
 
   const pushResult = git('git push origin main 2>&1');
   if (pushResult !== null) {
@@ -82,67 +77,37 @@ function gitPush() {
 }
 
 // ============================================================
-// 文件同步
+// Obsidian 镜像同步（单向：GitHub → Obsidian）
 // ============================================================
-
-// 复制 Obsidian Vault 数据到 Git 仓库数据目录
-function syncObsidianToRepo() {
-  const files = ['待办任务.md', '学习进度.md', '理财记录.md'];
-  for (const f of files) {
-    const src = path.join(OBSIDIAN_DATA_DIR, f);
-    const dst = path.join(REPO_DATA_DIR, f);
-    try {
-      if (fs.existsSync(src)) {
-        fs.copyFileSync(src, dst);
-      }
-    } catch (e) {
-      console.error('  [sync] 复制失败:', f, e.message);
-    }
-  }
-}
-
-// 从 Git 仓库同步到 Obsidian Vault（手机改动回传）
-function syncRepoToObsidian() {
+function syncToObsidian() {
   const files = ['待办任务.md', '学习进度.md', '理财记录.md'];
   let synced = 0;
   for (const f of files) {
-    const repoFile = path.join(REPO_DATA_DIR, f);
-    const obsidianFile = path.join(OBSIDIAN_DATA_DIR, f);
+    const repoFile = path.join(DATA_DIR, f);
+    const obsFile = path.join(OBSIDIAN_DIR, f);
     try {
       if (!fs.existsSync(repoFile)) continue;
-      const repoStat = fs.statSync(repoFile);
-      const repoMtime = repoStat.mtimeMs;
+      const repoContent = fs.readFileSync(repoFile, 'utf-8');
 
-      let obsidianNewer = false;
-      if (fs.existsSync(obsidianFile)) {
-        const obsStat = fs.statSync(obsidianFile);
-        obsidianNewer = obsStat.mtimeMs >= repoMtime;
+      // 只在内容不同时才覆盖
+      let needSync = true;
+      if (fs.existsSync(obsFile)) {
+        const obsContent = fs.readFileSync(obsFile, 'utf-8');
+        needSync = repoContent !== obsContent;
       }
 
-      // 只在 repo 版本更新时才覆盖 Obsidian
-      if (!obsidianNewer) {
-        fs.copyFileSync(repoFile, obsidianFile);
+      if (needSync) {
+        fs.writeFileSync(obsFile, repoContent, 'utf-8');
         synced++;
       }
     } catch (e) {
-      console.error('  [sync] 同步失败:', f, e.message);
+      console.error('  [obsidian] 同步失败:', f, e.message);
     }
   }
   if (synced > 0) {
-    console.log(`  [sync] 已将 ${synced} 个文件从 GitHub 同步到 Obsidian Vault`);
+    console.log(`  [obsidian] 已将 ${synced} 个文件同步到 Obsidian Vault`);
   }
-}
-
-// 启动时全量同步
-function fullSync() {
-  console.log('  [sync] 正在从 GitHub 拉取最新数据...');
-  const pulled = gitPull();
-  if (pulled) {
-    syncRepoToObsidian();
-    // 同时也把 Obsidian 的最新数据推上去（如果有本地离线编辑的）
-    gitPush();
-  }
-  console.log('  [sync] 同步完成');
+  return synced;
 }
 
 // ============================================================
@@ -161,10 +126,10 @@ function getLanIP() {
 }
 
 // ============================================================
-// 文件读写（读写 Obsidian Vault）
+// 文件读写（主数据源：Git 仓库 数据/）
 // ============================================================
 function readFile(filename) {
-  const filepath = path.join(OBSIDIAN_DATA_DIR, filename);
+  const filepath = path.join(DATA_DIR, filename);
   try {
     return fs.readFileSync(filepath, 'utf-8');
   } catch (e) {
@@ -173,11 +138,8 @@ function readFile(filename) {
 }
 
 function writeFile(filename, content) {
-  // 同时写入两个位置
-  const obsidianPath = path.join(OBSIDIAN_DATA_DIR, filename);
-  const repoPath = path.join(REPO_DATA_DIR, filename);
-  fs.writeFileSync(obsidianPath, content, 'utf-8');
-  fs.writeFileSync(repoPath, content, 'utf-8');
+  const filepath = path.join(DATA_DIR, filename);
+  fs.writeFileSync(filepath, content, 'utf-8');
 }
 
 const MIME = {
@@ -192,17 +154,30 @@ const MIME = {
   '.ico': 'image/x-icon',
 };
 
-// 写操作防抖定时器（避免频繁 git push）
+// 写操作防抖定时器
 let pushTimer = null;
 function schedulePush() {
   clearTimeout(pushTimer);
   pushTimer = setTimeout(() => {
     gitPush();
-  }, 3000);  // 3秒内无操作再推送
+    // 推送后自动同步到 Obsidian
+    syncToObsidian();
+  }, 3000);
+}
+
+// Obsidian 每日同步记录（避免重复触发）
+let lastObsidianSyncDay = '';
+
+function dailyObsidianSync() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (lastObsidianSyncDay !== today) {
+    lastObsidianSyncDay = today;
+    console.log('  [obsidian] 每日定时同步...');
+    syncToObsidian();
+  }
 }
 
 const server = http.createServer((req, res) => {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -229,7 +204,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ---- API: Write markdown file ----
+  // ---- API: Write markdown file (→ Git 仓库 → 自动 push) ----
   if (url.pathname === '/api/write' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
@@ -237,8 +212,7 @@ const server = http.createServer((req, res) => {
       try {
         const { file, content } = JSON.parse(body);
         writeFile(file, content);
-        // 延迟推送（3 秒防抖）
-        schedulePush();
+        schedulePush();  // 3 秒防抖，自动 git push + 同步 Obsidian
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true }));
       } catch (e) {
@@ -249,12 +223,18 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ---- API: Manual sync ----
+  // ---- API: 手动同步到 Obsidian ----
+  if (url.pathname === '/api/sync-to-obsidian') {
+    const count = syncToObsidian();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, synced: count, time: new Date().toISOString() }));
+    return;
+  }
+
+  // ---- API: Git 拉取 + 同步 ----
   if (url.pathname === '/api/sync') {
     gitPull();
-    syncRepoToObsidian();
-    syncObsidianToRepo();
-    gitPush();
+    syncToObsidian();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, time: new Date().toISOString() }));
     return;
@@ -269,8 +249,6 @@ const server = http.createServer((req, res) => {
 
   // ---- Static files ----
   let filePath = path.join(__dirname, url.pathname === '/' ? 'index.html' : url.pathname);
-
-  // Security: prevent directory traversal
   if (!filePath.startsWith(__dirname)) {
     res.writeHead(403);
     res.end('Forbidden');
@@ -295,24 +273,31 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, HOST, () => {
   const lanIP = getLanIP();
   console.log('');
-  console.log('  📋 个人工作台 v3.1 — GitHub 双向同步');
+  console.log('  📋 个人工作台 v3.2 — GitHub 主数据源 + Obsidian 镜像');
   console.log(`  电脑访问: http://localhost:${PORT}`);
   console.log(`  手机访问: http://${lanIP}:${PORT}`);
   console.log('');
-  console.log('  数据目录: ' + OBSIDIAN_DATA_DIR);
-  console.log('  GitHub:  https://github.com/yayaliuq/personal-workspace');
+  console.log('  主数据源: ' + DATA_DIR + '  →  GitHub 仓库');
+  console.log('  Obsidian:  ' + OBSIDIAN_DIR + '  (每日镜像)');
   console.log('');
-  
-  // 启动时同步
-  fullSync();
 
-  // 每 120 秒自动从 GitHub 拉取（手机端改动）
+  // 启动流程：拉取 GitHub → 同步到 Obsidian
+  console.log('  [sync] 正在从 GitHub 拉取最新数据...');
+  gitPull();
+  syncToObsidian();
+  console.log('  [sync] 启动同步完成');
+
+  // 每 120 秒 git pull（获取手机端改动）+ 自动同步 Obsidian
   setInterval(() => {
-    console.log('  [sync] 定期拉取...');
-    gitPull();
-    syncRepoToObsidian();
+    const pulled = gitPull();
+    if (pulled) {
+      syncToObsidian();
+    }
+    // 每日固定时间也同步一次（兜底）
+    dailyObsidianSync();
   }, 120000);
 
+  console.log('');
   console.log('  按 Ctrl+C 停止服务');
   console.log('');
 });
