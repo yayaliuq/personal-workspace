@@ -3,6 +3,22 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 3100;
+const HOST = '0.0.0.0'; // 监听所有网络接口，手机可通过局域网访问
+const os = require('os');
+
+// 获取局域网 IP
+function getLanIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
 // Obsidian Vault 数据目录
 const DATA_DIR = '/Users/liuquan/Desktop/工作/2026年/000学习/obsidian/obsidian/个人工作台/数据';
 
@@ -115,10 +131,12 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
+  const lanIP = getLanIP();
   console.log('');
   console.log('  📋 个人工作台已启动');
-  console.log(`  → http://localhost:${PORT}`);
+  console.log(`  电脑访问: http://localhost:${PORT}`);
+  console.log(`  手机访问: http://${lanIP}:${PORT}`);
   console.log('');
   console.log('  数据目录: ' + DATA_DIR);
   console.log('  按 Ctrl+C 停止服务');
