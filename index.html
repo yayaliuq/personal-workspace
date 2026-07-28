@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工作台">
+<title>个人工作台</title>
+<style>
+/* ========== Reset & Base ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#4f46e5;--primary-light:#6366f1;--primary-bg:#eef2ff;
+  --bg:#f8fafc;--card:#ffffff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
+  --success:#10b981;--success-bg:#ecfdf5;--warning:#f59e0b;--warning-bg:#fffbeb;
+  --danger:#ef4444;--danger-bg:#fef2f2;--info:#0ea5e9;--info-bg:#f0f9ff;
+  --radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.1);--sidebar-w:240px;
+  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--primary);text-decoration:none}
+ul{list-style:none}
+
+/* ========== Layout ========== */
+#app{display:flex;min-height:100vh}
+
+/* Sidebar */
+#sidebar{
+  width:var(--sidebar-w);background:var(--card);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;
+  transition:transform .3s ease;
+}
+.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
+.sidebar-header h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.sidebar-header .subtitle{font-size:.75rem;color:var(--muted);margin-top:2px}
+.sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);
+  font-size:.9rem;color:var(--muted);transition:all .15s;margin-bottom:2px;width:100%;text-align:left;
+}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--primary-bg);color:var(--primary);font-weight:600}
+.nav-item .icon{font-size:1.2rem;width:24px;text-align:center;flex-shrink:0}
+.nav-item .badge{margin-left:auto;background:var(--primary);color:#fff;font-size:.7rem;
+  padding:1px 7px;border-radius:10px;font-weight:600}
+.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)}
+.obsidian-status{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.obsidian-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0}
+.obsidian-dot.connected{background:var(--success)}
+#btn-connect{font-size:.75rem;color:var(--primary);text-decoration:underline;padding:2px 0}
+
+/* Main content */
+#main{flex:1;margin-left:var(--sidebar-w);padding:24px;max-width:1200px}
+.page-header{margin-bottom:20px}
+.page-header h2{font-size:1.5rem;font-weight:700}
+.page-header .desc{font-size:.85rem;color:var(--muted);margin-top:4px}
+
+/* Mobile top bar */
+#mobile-bar{
+  display:none;position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:12px 16px;align-items:center;justify-content:space-between;
+}
+#mobile-bar h1{font-size:1.1rem;font-weight:700}
+#mobile-bar .menu-btn{font-size:1.5rem;padding:4px}
+
+/* Bottom nav (mobile) */
+#bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:6px 0 env(safe-area-inset-bottom,6px);
+}
+#bottom-nav .bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:6px 0;font-size:.7rem;color:var(--muted);
+}
+#bottom-nav .bn-item.active{color:var(--primary)}
+#bottom-nav .bn-item .icon{font-size:1.3rem}
+
+/* ========== Cards ========== */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card-title{font-size:.9rem;font-weight:600;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+
+/* ========== Tasks Module ========== */
+.task-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.task-tab{
+  padding:6px 16px;border-radius:20px;font-size:.85rem;font-weight:500;
+  background:var(--bg);color:var(--muted);transition:all .15s;
+}
+.task-tab.active{background:var(--primary);color:#fff}
+.task-tab .count{font-size:.75rem;opacity:.8;margin-left:4px}
+
+.task-list .task-item{
+  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);
+  background:var(--card);border:1px solid var(--border);margin-bottom:8px;transition:all .15s;
+}
+.task-item:hover{box-shadow:var(--shadow)}
+.task-item.done{opacity:.55}
+.task-item.done .task-title{text-decoration:line-through}
+.task-checkbox{
+  width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;
+  margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;font-size:.8rem;color:#fff;
+}
+.task-checkbox.checked{background:var(--success);border-color:var(--success)}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:.9rem;font-weight:500;word-break:break-word}
+.task-meta{display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.task-priority{font-size:.7rem;padding:1px 8px;border-radius:4px;font-weight:600}
+.task-priority.高{background:var(--danger-bg);color:var(--danger)}
+.task-priority.中{background:var(--warning-bg);color:var(--warning)}
+.task-priority.低{background:var(--info-bg);color:var(--info)}
+.task-date{font-size:.7rem;color:var(--muted)}
+.task-cat{font-size:.7rem;padding:1px 8px;border-radius:4px;background:var(--bg);color:var(--muted)}
+.task-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.task-item:hover .task-actions{opacity:1}
+.task-actions button{padding:4px 6px;font-size:.85rem;color:var(--muted);border-radius:4px}
+.task-actions button:hover{background:var(--bg);color:var(--text)}
+
+.task-add-bar{
+  display:flex;gap:8px;margin-bottom:16px;
+}
+.task-add-bar input{
+  flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--card);outline:none;transition:border-color .15s;
+}
+.task-add-bar input:focus{border-color:var(--primary)}
+.task-add-bar select{
+  padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--card);outline:none;font-size:.85rem;
+}
+.btn{
+  padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;
+  transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-light)}
+.btn-ghost{background:var(--bg);color:var(--muted)}
+.btn-ghost:hover{background:var(--border)}
+
+/* ========== Study Module ========== */
+.study-overall{margin-bottom:20px}
+.progress-bar{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:5px;transition:width .4s ease}
+.progress-text{font-size:1.5rem;font-weight:700;color:var(--primary)}
+
+.topic-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius-sm);
+  background:var(--card);border:1px solid var(--border);margin-bottom:6px;
+}
+.topic-checkbox{
+  width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;
+  transition:all .15s;
+}
+.topic-checkbox.checked{background:var(--success);border-color:var(--success)}
+.topic-name{flex:1;font-size:.9rem}
+.topic-progress{font-size:.8rem;color:var(--muted);min-width:40px;text-align:right}
+.topic-progress-bar{width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.topic-progress-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+
+.study-log-entry{
+  display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;
+}
+.study-log-entry:last-child{border-bottom:none}
+.study-log-date{color:var(--muted);min-width:90px;font-size:.8rem}
+.study-log-content{flex:1}
+.study-log-time{color:var(--primary);font-size:.75rem;font-weight:600}
+
+/* ========== Finance Module ========== */
+.finance-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.finance-card{padding:16px;border-radius:var(--radius);text-align:center}
+.finance-card.income{background:var(--success-bg)}
+.finance-card.expense{background:var(--danger-bg)}
+.finance-card.balance{background:var(--primary-bg)}
+.finance-card .label{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+.finance-card .amount{font-size:1.3rem;font-weight:700}
+.finance-card.income .amount{color:var(--success)}
+.finance-card.expense .amount{color:var(--danger)}
+.finance-card.balance .amount{color:var(--primary)}
+
+.finance-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.finance-table th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:500;border-bottom:2px solid var(--border);font-size:.75rem}
+.finance-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.finance-table tr:hover{background:var(--bg)}
+.finance-table .type-income{color:var(--success);font-weight:600}
+.finance-table .type-expense{color:var(--danger);font-weight:600}
+
+/* ========== Settings Module ========== */
+.settings-section{margin-bottom:20px}
+.settings-section h3{font-size:.9rem;font-weight:600;margin-bottom:10px;color:var(--muted)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row .label{font-size:.9rem}
+.settings-row .desc{font-size:.75rem;color:var(--muted);margin-top:2px}
+
+/* ========== Modal ========== */
+#modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:16px;
+}
+#modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal h3{font-size:1.1rem;font-weight:600;margin-bottom:16px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px;font-weight:500}
+.modal-field input,.modal-field select,.modal-field textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--card);outline:none;transition:border-color .15s;
+}
+.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--primary)}
+.modal-field textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+/* ========== Toast ========== */
+#toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:rgba(30,41,59,.95);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);
+  font-size:.85rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;
+}
+#toast.show{opacity:1}
+
+/* ========== Responsive ========== */
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #main{margin-left:0;padding:56px 12px 70px}
+  #mobile-bar{display:flex}
+  #bottom-nav{display:flex}
+  .finance-summary{grid-template-columns:1fr}
+  .task-actions{opacity:1}
+  .modal{max-width:100%}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .25s ease}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:8px;opacity:.5}
+.empty-state .text{font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Mobile top bar -->
+  <div id="mobile-bar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1>📋 工作台</h1>
+    <div style="width:32px"></div>
+  </div>
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <h1>📋 个人工作台</h1>
+      <div class="subtitle">高效工作 · 持续学习</div>
+    </div>
+    <div class="sidebar-nav">
+      <button class="nav-item active" data-page="tasks" onclick="navigate('tasks')">
+        <span class="icon">✅</span><span>待办任务</span><span class="badge" id="badge-tasks">0</span>
+      </button>
+      <button class="nav-item" data-page="study" onclick="navigate('study')">
+        <span class="icon">📚</span><span>学习进度</span>
+      </button>
+      <button class="nav-item" data-page="finance" onclick="navigate('finance')">
+        <span class="icon">💰</span><span>理财看板</span>
+      </button>
+      <button class="nav-item" data-page="settings" onclick="navigate('settings')">
+        <span class="icon">⚙️</span><span>设置</span>
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <div class="obsidian-status">
+        <span class="obsidian-dot" id="obsidian-dot"></span>
+        <span id="obsidian-text">未连接 Obsidian</span>
+      </div>
+      <button id="btn-connect" onclick="connectObsidian()">连接 Obsidian Vault</button>
+      <div style="margin-top:8px;font-size:.7rem" id="last-sync">尚未同步</div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main id="main">
+    <!-- Tasks Page -->
+    <div id="page-tasks" class="page fade-in">
+      <div class="page-header">
+        <h2>待办任务</h2>
+        <div class="desc">按分类管理你的待办事项，数据同步至 Obsidian</div>
+      </div>
+      <div class="task-add-bar">
+        <input type="text" id="quick-add-input" placeholder="快速添加任务，回车确认..." onkeypress="if(event.key==='Enter')quickAddTask()">
+        <select id="quick-add-cat">
+          <option value="工作">工作</option>
+          <option value="生活">生活</option>
+          <option value="广告">广告</option>
+          <option value="理财">理财</option>
+        </select>
+        <button class="btn btn-primary" onclick="quickAddTask()">添加</button>
+      </div>
+      <div class="task-tabs" id="task-tabs">
+        <button class="task-tab active" data-cat="全部" onclick="switchTaskTab('全部')">全部 <span class="count" id="count-全部">0</span></button>
+        <button class="task-tab" data-cat="工作" onclick="switchTaskTab('工作')">工作 <span class="count" id="count-工作">0</span></button>
+        <button class="task-tab" data-cat="生活" onclick="switchTaskTab('生活')">生活 <span class="count" id="count-生活">0</span></button>
+        <button class="task-tab" data-cat="广告" onclick="switchTaskTab('广告')">广告 <span class="count" id="count-广告">0</span></button>
+        <button class="task-tab" data-cat="理财" onclick="switchTaskTab('理财')">理财 <span class="count" id="count-理财">0</span></button>
+      </div>
+      <div class="task-list" id="task-list"></div>
+    </div>
+
+    <!-- Study Page -->
+    <div id="page-study" class="page fade-in" style="display:none">
+      <div class="page-header">
+        <h2>学习进度</h2>
+        <div class="desc">系统分析师备考追踪 · 知识点管理与学习记录</div>
+      </div>
+      <div class="card study-overall">
+        <div class="card-title">总体进度</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div class="progress-text" id="study-overall-pct">0%</div>
+          <div style="flex:1">
+            <div class="progress-bar"><div class="progress-fill" id="study-overall-bar" style="width:0%"></div></div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:4px" id="study-overall-detail">0 / 0 知识点已完成</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>知识点清单</span>
+          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openTopicModal()">+ 添加</button>
+        </div>
+        <div id="topic-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>学习记录</span>
+          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openLogModal()">+ 记录</button>
+        </div>
+        <div id="study-log-list"></div>
+      </div>
+    </div>
+
+    <!-- Finance Page -->
+    <div id="page-finance" class="page fade-in" style="display:none">
+      <div class="page-header">
+        <h2>理财看板</h2>
+        <div class="desc">收支记录与月度汇总 · 数据同步至 Obsidian</div>
+      </div>
+      <div class="finance-summary">
+        <div class="finance-card income">
+          <div class="label">本月收入</div>
+          <div class="amount" id="fin-income">¥0</div>
+        </div>
+        <div class="finance-card expense">
+          <div class="label">本月支出</div>
+          <div class="amount" id="fin-expense">¥0</div>
+        </div>
+        <div class="finance-card balance">
+          <div class="label">本月结余</div>
+          <div class="amount" id="fin-balance">¥0</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <span>收支明细</span>
+          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openFinanceModal()">+ 记账</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="finance-table" id="finance-table">
+            <thead>
+              <tr><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>备注</th><th></th></tr>
+            </thead>
+            <tbody id="finance-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div id="page-settings" class="page fade-in" style="display:none">
+      <div class="page-header">
+        <h2>设置</h2>
+        <div class="desc">Obsidian 连接、数据导入导出与应用配置</div>
+      </div>
+
+      <div class="card">
+        <div class="settings-section">
+          <h3>Obsidian 连接</h3>
+          <div class="settings-row">
+            <div>
+              <div class="label">连接状态</div>
+              <div class="desc" id="settings-obsidian-status">未连接 — 数据仅存储在浏览器本地</div>
+            </div>
+            <button class="btn btn-primary" id="btn-connect-2" onclick="connectObsidian()">连接</button>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="label">数据文件夹</div>
+              <div class="desc">Markdown 数据文件存放路径</div>
+            </div>
+            <div style="font-size:.85rem;color:var(--muted)">数据/</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-section">
+          <h3>数据管理</h3>
+          <div class="settings-row">
+            <div>
+              <div class="label">导出 Markdown</div>
+              <div class="desc">将所有数据导出为 Obsidian 兼容的 Markdown 文件</div>
+            </div>
+            <button class="btn btn-ghost" onclick="exportMarkdown()">导出</button>
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="label">导入 Markdown</div>
+              <div class="desc">从 Markdown 文件导入数据</div>
+            </div>
+            <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">导入</button>
+            <input type="file" id="import-file" accept=".md" style="display:none" onchange="importMarkdown(event)">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="label">立即同步</div>
+              <div class="desc">手动触发与 Obsidian Vault 的同步</div>
+            </div>
+            <button class="btn btn-ghost" onclick="syncNow()">同步</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="settings-section">
+          <h3>关于</h3>
+          <div class="settings-row">
+            <div class="label">个人工作台 v1.0</div>
+          </div>
+          <div class="settings-row">
+            <div class="desc">跨平台个人工作台 · Obsidian 兼容 · 本地优先</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom nav (mobile) -->
+<nav id="bottom-nav">
+  <button class="bn-item active" data-page="tasks" onclick="navigate('tasks')">
+    <span class="icon">✅</span><span>任务</span>
+  </button>
+  <button class="bn-item" data-page="study" onclick="navigate('study')">
+    <span class="icon">📚</span><span>学习</span>
+  </button>
+  <button class="bn-item" data-page="finance" onclick="navigate('finance')">
+    <span class="icon">💰</span><span>理财</span>
+  </button>
+  <button class="bn-item" data-page="settings" onclick="navigate('settings')">
+    <span class="icon">⚙️</span><span>设置</span>
+  </button>
+</nav>
+
+<!-- Modal -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// Data Store
+// ============================================================
+const Store = {
+  data: {
+    tasks: [],
+    study: { subject:'系统分析师', topics:[], logs:[] },
+    finance: { records: [] }
+  },
+  dirHandle: null,
+  obsidianConnected: false,
+
+  // ---- LocalStorage ----
+  loadLocal() {
+    try {
+      const raw = localStorage.getItem('workspace_data');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        this.data = Object.assign(this.data, parsed);
+      } else {
+        this.initSeedData();
+      }
+    } catch(e) { console.error('Load error:', e); this.initSeedData(); }
+  },
+  saveLocal() {
+    localStorage.setItem('workspace_data', JSON.stringify(this.data));
+  },
+  initSeedData() {
+    // Seed study topics for 系统分析师
+    this.data.study.topics = [
+      { id:'t1', name:'计算机系统基础知识', completed:false, progress:0 },
+      { id:'t2', name:'信息系统基础知识', completed:false, progress:0 },
+      { id:'t3', name:'系统架构设计', completed:false, progress:0 },
+      { id:'t4', name:'软件工程', completed:false, progress:0 },
+      { id:'t5', name:'项目管理', completed:false, progress:0 },
+      { id:'t6', name:'系统分析与设计方法', completed:false, progress:0 },
+      { id:'t7', name:'信息安全', completed:false, progress:0 },
+      { id:'t8', name:'法律法规与标准', completed:false, progress:0 },
+    ];
+    this.saveLocal();
+  },
+
+  // ---- Obsidian (File System Access API) ----
+  async connect() {
+    if (!window.showDirectoryPicker) {
+      toast('当前浏览器不支持文件系统访问，请使用 Chrome/Edge 桌面版');
+      return false;
+    }
+    try {
+      this.dirHandle = await window.showDirectoryPicker({ mode:'readwrite' });
+      this.obsidianConnected = true;
+      await this.ensureDataDir();
+      await this.syncFromObsidian();
+      this.updateObsidianUI(true);
+      toast('已连接 Obsidian Vault');
+      return true;
+    } catch(e) {
+      if (e.name !== 'AbortError') {
+        console.error('Connect error:', e);
+        toast('连接失败: ' + e.message);
+      }
+      return false;
+    }
+  },
+  async ensureDataDir() {
+    if (!this.dirHandle) return;
+    try {
+      await this.dirHandle.getDirectoryHandle('数据', { create:true });
+    } catch(e) { console.error('Create dir error:', e); }
+  },
+  async getDataDir() {
+    if (!this.dirHandle) return null;
+    return await this.dirHandle.getDirectoryHandle('数据', { create:true });
+  },
+  async readMD(filename) {
+    try {
+      const dir = await this.getDataDir();
+      const fh = await dir.getFileHandle(filename);
+      const file = await fh.getFile();
+      return await file.text();
+    } catch(e) { return null; }
+  },
+  async writeMD(filename, content) {
+    if (!this.dirHandle) return;
+    try {
+      const dir = await this.getDataDir();
+      const fh = await dir.getFileHandle(filename, { create:true });
+      const writable = await fh.createWritable();
+      await writable.write(content);
+      await writable.close();
+    } catch(e) { console.error('Write error:', e); }
+  },
+  async syncFromObsidian() {
+    const tasksMD = await this.readMD('待办任务.md');
+    if (tasksMD) this.data.tasks = Markdown.parseTasks(tasksMD);
+    const studyMD = await this.readMD('学习进度.md');
+    if (studyMD) this.data.study = Markdown.parseStudy(studyMD);
+    const financeMD = await this.readMD('理财记录.md');
+    if (financeMD) this.data.finance = Markdown.parseFinance(financeMD);
+    this.saveLocal();
+    this.updateSyncTime();
+  },
+  async syncToObsidian() {
+    if (!this.obsidianConnected) return;
+    await this.writeMD('待办任务.md', Markdown.serializeTasks(this.data.tasks));
+    await this.writeMD('学习进度.md', Markdown.serializeStudy(this.data.study));
+    await this.writeMD('理财记录.md', Markdown.serializeFinance(this.data.finance));
+    this.updateSyncTime();
+    toast('已同步至 Obsidian');
+  },
+  updateObsidianUI(connected) {
+    document.getElementById('obsidian-dot').classList.toggle('connected', connected);
+    document.getElementById('obsidian-text').textContent = connected ? '已连接 Obsidian' : '未连接 Obsidian';
+    document.getElementById('settings-obsidian-status').textContent = connected
+      ? '已连接 — 数据实时同步至 Vault' : '未连接 — 数据仅存储在浏览器本地';
+    document.getElementById('btn-connect').textContent = connected ? '重新连接' : '连接 Obsidian Vault';
+    document.getElementById('btn-connect-2').textContent = connected ? '重新连接' : '连接';
+  },
+  updateSyncTime() {
+    const now = new Date();
+    const t = now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    document.getElementById('last-sync').textContent = '上次同步: ' + t;
+  },
+
+  // ---- Unified save ----
+  async save() {
+    this.saveLocal();
+    if (this.obsidianConnected) {
+      clearTimeout(this._syncTimer);
+      this._syncTimer = setTimeout(() => this.syncToObsidian(), 800);
+    }
+  },
+
+  // ---- ID generator ----
+  uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+};
+
+// ============================================================
+// Markdown Serializer/Parser (Obsidian compatible)
+// ============================================================
+const Markdown = {
+  // ---- Tasks ----
+  serializeTasks(tasks) {
+    const cats = ['工作','生活','广告','理财'];
+    const now = new Date().toISOString();
+    let md = `---\ntype: workspace-tasks\nupdated: ${now}\n---\n\n`;
+    for (const cat of cats) {
+      const items = tasks.filter(t => t.category === cat);
+      if (items.length === 0) continue;
+      md += `## ${cat}\n\n`;
+      for (const t of items) {
+        const check = t.completed ? '[x]' : '[ ]';
+        const pri = `**[${t.priority}]**`;
+        let line = `- ${check} ${pri} ${t.title}`;
+        if (t.dueDate) line += ` \`due:${t.dueDate}\``;
+        if (t.notes) line += `\n  - ${t.notes}`;
+        md += line + '\n';
+      }
+      md += '\n';
+    }
+    // Uncategorized
+    const others = tasks.filter(t => !cats.includes(t.category));
+    if (others.length > 0) {
+      md += '## 其他\n\n';
+      for (const t of others) {
+        const check = t.completed ? '[x]' : '[ ]';
+        const pri = `**[${t.priority||'中'}]**`;
+        md += `- ${check} ${pri} ${t.title}\n`;
+      }
+    }
+    return md;
+  },
+  parseTasks(md) {
+    const tasks = [];
+    if (!md) return tasks;
+    let currentCat = '';
+    const lines = md.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const catMatch = line.match(/^## (.+)/);
+      if (catMatch) { currentCat = catMatch[1].trim(); continue; }
+      const taskMatch = line.match(/^- \[([ x])\] \*\[(.+?)\]\*\s+(.+?)(?:\s+`due:(.+?)`)?$/);
+      if (taskMatch) {
+        let notes = '';
+        if (i+1 < lines.length && lines[i+1].startsWith('  - ')) {
+          notes = lines[i+1].slice(4).trim();
+          i++;
+        }
+        tasks.push({
+          id: Store.uid(),
+          title: taskMatch[3].trim(),
+          category: currentCat || '其他',
+          priority: taskMatch[2].trim(),
+          completed: taskMatch[1] === 'x',
+          dueDate: taskMatch[4] || '',
+          notes: notes,
+          createdAt: new Date().toISOString().slice(0,10)
+        });
+      }
+    }
+    return tasks;
+  },
+
+  // ---- Study ----
+  serializeStudy(study) {
+    const now = new Date().toISOString();
+    const completed = study.topics.filter(t => t.completed).length;
+    const total = study.topics.length;
+    const pct = total > 0 ? Math.round(completed/total*100) : 0;
+    let md = `---\ntype: workspace-study\nupdated: ${now}\n---\n\n`;
+    md += `## ${study.subject || '学习计划'}\n\n`;
+    md += `### 知识点进度\n\n`;
+    md += `> 总体进度: ${pct}% (${completed}/${total})\n\n`;
+    for (const t of study.topics) {
+      const check = t.completed ? '[x]' : '[ ]';
+      md += `- ${check} ${t.name} (${t.progress||0}%)\n`;
+    }
+    md += '\n### 学习记录\n\n';
+    const sortedLogs = [...study.logs].sort((a,b) => b.date.localeCompare(a.date));
+    for (const log of sortedLogs) {
+      const time = log.duration ? ` (${log.duration}h)` : '';
+      md += `- **${log.date}**: ${log.content}${time}\n`;
+    }
+    return md;
+  },
+  parseStudy(md) {
+    if (!md) return Store.data.study;
+    const lines = md.split('\n');
+    let subject = '系统分析师';
+    let topics = [];
+    let logs = [];
+    let section = '';
+    for (let line of lines) {
+      const subMatch = line.match(/^## (.+)/);
+      if (subMatch) { subject = subMatch[1].trim(); section = ''; continue; }
+      if (line.startsWith('### 知识点进度')) { section = 'topics'; continue; }
+      if (line.startsWith('### 学习记录')) { section = 'logs'; continue; }
+      if (section === 'topics') {
+        const m = line.match(/^- \[([ x])\] (.+?) \((\d+)%\)$/);
+        if (m) {
+          topics.push({ id: Store.uid(), name: m[2].trim(), completed: m[1]==='x', progress: parseInt(m[3]) });
+        }
+      } else if (section === 'logs') {
+        const m = line.match(/^- \*\*(.+?)\*\*:(.+?)(?:\s+\((\d+(?:\.\d+)?)h\))?$/);
+        if (m) {
+          logs.push({ id: Store.uid(), date: m[1].trim(), content: m[2].trim(), duration: m[3] ? parseFloat(m[3]) : 0 });
+        }
+      }
+    }
+    return { subject, topics, logs };
+  },
+
+  // ---- Finance ----
+  serializeFinance(finance) {
+    const now = new Date().toISOString();
+    const ym = new Date().toISOString().slice(0,7);
+    let md = `---\ntype: workspace-finance\nupdated: ${now}\n---\n\n`;
+    // Group by month
+    const byMonth = {};
+    for (const r of finance.records) {
+      const month = (r.date||'').slice(0,7);
+      if (!byMonth[month]) byMonth[month] = [];
+      byMonth[month].push(r);
+    }
+    const months = Object.keys(byMonth).sort().reverse();
+    for (const month of months) {
+      const records = byMonth[month];
+      let income = 0, expense = 0;
+      for (const r of records) {
+        if (r.type === '收入') income += r.amount;
+        else expense += r.amount;
+      }
+      md += `## ${month}\n\n`;
+      md += `### 收支明细\n\n`;
+      md += `| 日期 | 类型 | 分类 | 金额 | 备注 |\n|------|------|------|------|------|\n`;
+      for (const r of records) {
+        md += `| ${r.date} | ${r.type} | ${r.category} | ${r.amount} | ${r.note||''} |\n`;
+      }
+      md += `\n### 月度汇总\n\n`;
+      md += `- 收入: ${income}\n- 支出: ${expense}\n- 结余: ${income - expense}\n\n`;
+    }
+    return md;
+  },
+  parseFinance(md) {
+    if (!md) return { records: [] };
+    const records = [];
+    const lines = md.split('\n');
+    for (let line of lines) {
+      const m = line.match(/^\| (\d{4}-\d{2}-\d{2}) \| (.+?) \| (.+?) \| (\d+(?:\.\d+)?) \| (.*) \|$/);
+      if (m) {
+        records.push({
+          id: Store.uid(),
+          date: m[1].trim(),
+          type: m[2].trim(),
+          category: m[3].trim(),
+          amount: parseFloat(m[4]),
+          note: m[5].trim()
+        });
+      }
+    }
+    return { records };
+  }
+};
+
+// ============================================================
+// UI Rendering
+// ============================================================
+let currentTaskTab = '全部';
+let currentPage = 'tasks';
+
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  document.querySelectorAll('.bn-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  // Close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('open');
+  // Render page
+  if (page === 'tasks') renderTasks();
+  else if (page === 'study') renderStudy();
+  else if (page === 'finance') renderFinance();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ---- Tasks ----
+function renderTasks() {
+  const tasks = Store.data.tasks;
+  const cats = ['全部','工作','生活','广告','理财'];
+  // Update counts
+  for (const cat of cats) {
+    const count = cat === '全部'
+      ? tasks.filter(t => !t.completed).length
+      : tasks.filter(t => t.category === cat && !t.completed).length;
+    const el = document.getElementById('count-' + cat);
+    if (el) el.textContent = count;
+  }
+  const badge = document.getElementById('badge-tasks');
+  if (badge) badge.textContent = tasks.filter(t => !t.completed).length;
+
+  // Filter
+  let filtered = tasks;
+  if (currentTaskTab !== '全部') filtered = tasks.filter(t => t.category === currentTaskTab);
+  // Sort: incomplete first, then by priority
+  const priOrder = { '高':0, '中':1, '低':2 };
+  filtered.sort((a,b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    return (priOrder[a.priority]||1) - (priOrder[b.priority]||1);
+  });
+
+  const list = document.getElementById('task-list');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><div class="text">暂无任务，添加一个开始吧</div></div>';
+    return;
+  }
+  list.innerHTML = filtered.map(t => `
+    <div class="task-item ${t.completed?'done':''}">
+      <div class="task-checkbox ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div>
+      <div class="task-body">
+        <div class="task-title">${esc(t.title)}</div>
+        <div class="task-meta">
+          <span class="task-priority ${esc(t.priority)}">${esc(t.priority)}</span>
+          <span class="task-cat">${esc(t.category)}</span>
+          ${t.dueDate ? `<span class="task-date">📅 ${esc(t.dueDate)}</span>` : ''}
+          ${t.notes ? `<span class="task-date">💬 ${esc(t.notes)}</span>` : ''}
+        </div>
+      </div>
+      <div class="task-actions">
+        <button onclick="editTask('${t.id}')" title="编辑">✏️</button>
+        <button onclick="deleteTask('${t.id}')" title="删除">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function switchTaskTab(cat) {
+  currentTaskTab = cat;
+  document.querySelectorAll('.task-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+  renderTasks();
+}
+
+function quickAddTask() {
+  const input = document.getElementById('quick-add-input');
+  const cat = document.getElementById('quick-add-cat').value;
+  const title = input.value.trim();
+  if (!title) return;
+  Store.data.tasks.push({
+    id: Store.uid(),
+    title,
+    category: cat,
+    priority: '中',
+    completed: false,
+    dueDate: '',
+    notes: '',
+    createdAt: new Date().toISOString().slice(0,10)
+  });
+  input.value = '';
+  Store.save();
+  renderTasks();
+  toast('任务已添加');
+}
+
+function toggleTask(id) {
+  const t = Store.data.tasks.find(x => x.id === id);
+  if (t) {
+    t.completed = !t.completed;
+    Store.save();
+    renderTasks();
+  }
+}
+
+function deleteTask(id) {
+  Store.data.tasks = Store.data.tasks.filter(t => t.id !== id);
+  Store.save();
+  renderTasks();
+  toast('任务已删除');
+}
+
+function editTask(id) {
+  const t = Store.data.tasks.find(x => x.id === id);
+  if (!t) return;
+  openModal(`
+    <h3>编辑任务</h3>
+    <div class="modal-field">
+      <label>任务标题</label>
+      <input type="text" id="edit-title" value="${esc(t.title)}">
+    </div>
+    <div class="modal-field">
+      <label>分类</label>
+      <select id="edit-cat">
+        <option value="工作" ${t.category==='工作'?'selected':''}>工作</option>
+        <option value="生活" ${t.category==='生活'?'selected':''}>生活</option>
+        <option value="广告" ${t.category==='广告'?'selected':''}>广告</option>
+        <option value="理财" ${t.category==='理财'?'selected':''}>理财</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>优先级</label>
+      <select id="edit-pri">
+        <option value="高" ${t.priority==='高'?'selected':''}>高</option>
+        <option value="中" ${t.priority==='中'?'selected':''}>中</option>
+        <option value="低" ${t.priority==='低'?'selected':''}>低</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>截止日期</label>
+      <input type="date" id="edit-due" value="${t.dueDate||''}">
+    </div>
+    <div class="modal-field">
+      <label>备注</label>
+      <textarea id="edit-notes">${esc(t.notes||'')}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveEditTask('${id}')">保存</button>
+    </div>
+  `);
+}
+
+function saveEditTask(id) {
+  const t = Store.data.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.title = document.getElementById('edit-title').value.trim();
+  t.category = document.getElementById('edit-cat').value;
+  t.priority = document.getElementById('edit-pri').value;
+  t.dueDate = document.getElementById('edit-due').value;
+  t.notes = document.getElementById('edit-notes').value.trim();
+  Store.save();
+  closeModal();
+  renderTasks();
+  toast('任务已更新');
+}
+
+// ---- Study ----
+function renderStudy() {
+  const study = Store.data.study;
+  const total = study.topics.length;
+  const completed = study.topics.filter(t => t.completed).length;
+  const pct = total > 0 ? Math.round(completed/total*100) : 0;
+  document.getElementById('study-overall-pct').textContent = pct + '%';
+  document.getElementById('study-overall-bar').style.width = pct + '%';
+  document.getElementById('study-overall-detail').textContent = `${completed} / ${total} 知识点已完成`;
+
+  const topicList = document.getElementById('topic-list');
+  if (study.topics.length === 0) {
+    topicList.innerHTML = '<div class="empty-state"><div class="icon">📚</div><div class="text">暂无知识点，添加一个开始吧</div></div>';
+  } else {
+    topicList.innerHTML = study.topics.map(t => `
+      <div class="topic-item">
+        <div class="topic-checkbox ${t.completed?'checked':''}" onclick="toggleTopic('${t.id}')">${t.completed?'✓':''}</div>
+        <span class="topic-name">${esc(t.name)}</span>
+        <div class="topic-progress-bar"><div class="topic-progress-fill" style="width:${t.progress||0}%"></div></div>
+        <span class="topic-progress">${t.progress||0}%</span>
+        <button onclick="editTopic('${t.id}')" style="padding:4px;font-size:.85rem;color:var(--muted)">✏️</button>
+        <button onclick="deleteTopic('${t.id}')" style="padding:4px;font-size:.85rem;color:var(--muted)">🗑️</button>
+      </div>
+    `).join('');
+  }
+
+  const logList = document.getElementById('study-log-list');
+  const logs = [...study.logs].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 20);
+  if (logs.length === 0) {
+    logList.innerHTML = '<div class="empty-state"><div class="icon">📖</div><div class="text">暂无学习记录</div></div>';
+  } else {
+    logList.innerHTML = logs.map(l => `
+      <div class="study-log-entry">
+        <span class="study-log-date">${esc(l.date)}</span>
+        <span class="study-log-content">${esc(l.content)}</span>
+        ${l.duration ? `<span class="study-log-time">${l.duration}h</span>` : ''}
+      </div>
+    `).join('');
+  }
+}
+
+function toggleTopic(id) {
+  const t = Store.data.study.topics.find(x => x.id === id);
+  if (t) {
+    t.completed = !t.completed;
+    if (t.completed) t.progress = 100;
+    else if (t.progress === 100) t.progress = 0;
+    Store.save();
+    renderStudy();
+  }
+}
+
+function openTopicModal() {
+  openModal(`
+    <h3>添加知识点</h3>
+    <div class="modal-field">
+      <label>知识点名称</label>
+      <input type="text" id="topic-name" placeholder="例如：数据库设计">
+    </div>
+    <div class="modal-field">
+      <label>初始进度 (%)</label>
+      <input type="number" id="topic-progress" value="0" min="0" max="100">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addTopic()">添加</button>
+    </div>
+  `);
+}
+
+function addTopic() {
+  const name = document.getElementById('topic-name').value.trim();
+  const progress = parseInt(document.getElementById('topic-progress').value) || 0;
+  if (!name) return;
+  Store.data.study.topics.push({
+    id: Store.uid(),
+    name,
+    completed: progress >= 100,
+    progress
+  });
+  Store.save();
+  closeModal();
+  renderStudy();
+  toast('知识点已添加');
+}
+
+function editTopic(id) {
+  const t = Store.data.study.topics.find(x => x.id === id);
+  if (!t) return;
+  openModal(`
+    <h3>编辑知识点</h3>
+    <div class="modal-field">
+      <label>名称</label>
+      <input type="text" id="edit-topic-name" value="${esc(t.name)}">
+    </div>
+    <div class="modal-field">
+      <label>进度 (%)</label>
+      <input type="number" id="edit-topic-progress" value="${t.progress||0}" min="0" max="100">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveEditTopic('${id}')">保存</button>
+    </div>
+  `);
+}
+
+function saveEditTopic(id) {
+  const t = Store.data.study.topics.find(x => x.id === id);
+  if (!t) return;
+  t.name = document.getElementById('edit-topic-name').value.trim();
+  t.progress = parseInt(document.getElementById('edit-topic-progress').value) || 0;
+  t.completed = t.progress >= 100;
+  Store.save();
+  closeModal();
+  renderStudy();
+}
+
+function deleteTopic(id) {
+  Store.data.study.topics = Store.data.study.topics.filter(t => t.id !== id);
+  Store.save();
+  renderStudy();
+}
+
+function openLogModal() {
+  const today = new Date().toISOString().slice(0,10);
+  openModal(`
+    <h3>添加学习记录</h3>
+    <div class="modal-field">
+      <label>日期</label>
+      <input type="date" id="log-date" value="${today}">
+    </div>
+    <div class="modal-field">
+      <label>学习内容</label>
+      <textarea id="log-content" placeholder="今天学了什么？"></textarea>
+    </div>
+    <div class="modal-field">
+      <label>学习时长 (小时)</label>
+      <input type="number" id="log-duration" value="1" step="0.5" min="0">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addLog()">添加</button>
+    </div>
+  `);
+}
+
+function addLog() {
+  const date = document.getElementById('log-date').value;
+  const content = document.getElementById('log-content').value.trim();
+  const duration = parseFloat(document.getElementById('log-duration').value) || 0;
+  if (!date || !content) return;
+  Store.data.study.logs.push({ id: Store.uid(), date, content, duration });
+  Store.save();
+  closeModal();
+  renderStudy();
+  toast('学习记录已添加');
+}
+
+// ---- Finance ----
+function renderFinance() {
+  const records = Store.data.finance.records;
+  const ym = new Date().toISOString().slice(0,7);
+  const monthRecords = records.filter(r => (r.date||'').startsWith(ym));
+  let income = 0, expense = 0;
+  for (const r of monthRecords) {
+    if (r.type === '收入') income += r.amount;
+    else expense += r.amount;
+  }
+  document.getElementById('fin-income').textContent = '¥' + income.toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
+  document.getElementById('fin-expense').textContent = '¥' + expense.toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
+  document.getElementById('fin-balance').textContent = '¥' + (income-expense).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
+
+  const sorted = [...records].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
+  const tbody = document.getElementById('finance-tbody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">暂无记录，点击右上角添加</td></tr>';
+    return;
+  }
+  tbody.innerHTML = sorted.map(r => `
+    <tr>
+      <td>${esc(r.date)}</td>
+      <td><span class="type-${r.type==='收入'?'income':'expense'}">${esc(r.type)}</span></td>
+      <td>${esc(r.category)}</td>
+      <td style="font-weight:600" class="${r.type==='收入'?'type-income':'type-expense'}">${r.type==='收入'?'+':'-'}¥${r.amount}</td>
+      <td>${esc(r.note||'')}</td>
+      <td><button onclick="deleteFinance('${r.id}')" style="padding:2px 6px;font-size:.8rem;color:var(--muted)">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+function openFinanceModal() {
+  const today = new Date().toISOString().slice(0,10);
+  openModal(`
+    <h3>记一笔</h3>
+    <div class="modal-field">
+      <label>类型</label>
+      <select id="fin-type">
+        <option value="支出">支出</option>
+        <option value="收入">收入</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>日期</label>
+      <input type="date" id="fin-date" value="${today}">
+    </div>
+    <div class="modal-field">
+      <label>分类</label>
+      <select id="fin-cat">
+        <option value="餐饮">餐饮</option>
+        <option value="交通">交通</option>
+        <option value="购物">购物</option>
+        <option value="娱乐">娱乐</option>
+        <option value="居住">居住</option>
+        <option value="医疗">医疗</option>
+        <option value="教育">教育</option>
+        <option value="工资">工资</option>
+        <option value="理财">理财收益</option>
+        <option value="其他">其他</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <label>金额 (¥)</label>
+      <input type="number" id="fin-amount" placeholder="0.00" step="0.01" min="0">
+    </div>
+    <div class="modal-field">
+      <label>备注</label>
+      <input type="text" id="fin-note" placeholder="可选">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="addFinance()">添加</button>
+    </div>
+  `);
+}
+
+function addFinance() {
+  const type = document.getElementById('fin-type').value;
+  const date = document.getElementById('fin-date').value;
+  const category = document.getElementById('fin-cat').value;
+  const amount = parseFloat(document.getElementById('fin-amount').value);
+  const note = document.getElementById('fin-note').value.trim();
+  if (!date || !amount || amount <= 0) { toast('请填写日期和金额'); return; }
+  Store.data.finance.records.push({ id: Store.uid(), date, type, category, amount, note });
+  Store.save();
+  closeModal();
+  renderFinance();
+  toast('记账成功');
+}
+
+function deleteFinance(id) {
+  Store.data.finance.records = Store.data.finance.records.filter(r => r.id !== id);
+  Store.save();
+  renderFinance();
+}
+
+// ---- Settings ----
+async function connectObsidian() {
+  await Store.connect();
+  if (Store.obsidianConnected) {
+    renderAll();
+  }
+}
+
+function syncNow() {
+  if (!Store.obsidianConnected) {
+    toast('请先连接 Obsidian Vault');
+    return;
+  }
+  Store.syncToObsidian();
+}
+
+function exportMarkdown() {
+  const files = [
+    { name: '待办任务.md', content: Markdown.serializeTasks(Store.data.tasks) },
+    { name: '学习进度.md', content: Markdown.serializeStudy(Store.data.study) },
+    { name: '理财记录.md', content: Markdown.serializeFinance(Store.data.finance) }
+  ];
+  for (const f of files) {
+    const blob = new Blob([f.content], { type:'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = f.name; a.click();
+    URL.revokeObjectURL(url);
+  }
+  toast('已导出 3 个 Markdown 文件');
+}
+
+function importMarkdown(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result;
+    const name = file.name;
+    if (name.includes('待办任务')) {
+      Store.data.tasks = Markdown.parseTasks(content);
+    } else if (name.includes('学习进度')) {
+      Store.data.study = Markdown.parseStudy(content);
+    } else if (name.includes('理财记录')) {
+      Store.data.finance = Markdown.parseFinance(content);
+    } else {
+      toast('无法识别文件类型，请导入待办任务.md/学习进度.md/理财记录.md');
+      return;
+    }
+    Store.save();
+    renderAll();
+    toast('导入成功: ' + name);
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+// Utilities
+// ============================================================
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function renderAll() {
+  renderTasks();
+  renderStudy();
+  renderFinance();
+}
+
+// ============================================================
+// Init
+// ============================================================
+(async function init() {
+  Store.loadLocal();
+  Store.updateObsidianUI(false);
+  // Restore Obsidian connection if permission persists
+  if (window.showDirectoryPicker) {
+    try {
+      // Check if we have a stored directory handle
+      const stored = localStorage.getItem('workspace_dir_handle');
+      if (stored) {
+        // Note: File System Access API handles can be stored in IndexedDB
+        // For simplicity, user reconnects each session
+      }
+    } catch(e) {}
+  }
+  renderAll();
+})();
+
+// Close sidebar on outside click (mobile)
+document.addEventListener('click', (e) => {
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !e.target.closest('.menu-btn')) {
+    sidebar.classList.remove('open');
+  }
+});
+
+// Keyboard shortcut: Escape closes modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
