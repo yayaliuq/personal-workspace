@@ -567,22 +567,53 @@ const Store = {
   // ---- CloudBase 初始化（匿名登录，仅用于数据库访问） ----
   async initCloud() {
     try {
+      // Step 1: 检查 SDK 是否加载
+      if (typeof cloudbase === 'undefined') {
+        throw new Error('SDK未加载，请检查网络');
+      }
+      console.log('[CloudBase] Step 1: SDK loaded');
+
+      // Step 2: 初始化应用
       const app = cloudbase.init({ env: this.envId });
+      console.log('[CloudBase] Step 2: app initialized, env=' + this.envId);
+
+      // Step 3: 匿名登录
       const auth = app.auth({ persistence: 'local' });
-      // 匿名登录（控制台已开启，集合权限为「所有用户可读写」）
       await auth.anonymousAuthProvider().signIn();
+      this.auth = auth;
+      this.app = app;
+      console.log('[CloudBase] Step 3: anonymous auth success');
+
+      // Step 4: 获取数据库引用
       this.db = app.database();
       this.ready = true;
       this.updateStatus('connecting');
+      console.log('[CloudBase] Step 4: db ref obtained');
+
+      // Step 5: 加载数据
       const ok = await this.loadFromCloud();
       this.cloudOk = ok;
       this.updateStatus(ok ? 'cloud' : 'offline');
+      console.log('[CloudBase] Step 5: data loaded, ok=' + ok);
       return ok;
     } catch(e) {
-      console.error('CloudBase init failed:', e);
+      const msg = e.message || String(e);
+      console.error('[CloudBase] init failed:', msg);
       this.ready = false;
       this.cloudOk = false;
       this.updateStatus('offline');
+      // 显示具体错误给用户
+      if (msg.includes('SDK未加载')) {
+        toast('云数据库连接失败：SDK加载超时，请检查手机网络后刷新重试');
+      } else if (msg.includes('signIn') || msg.includes('auth') || msg.includes('anonymous')) {
+        toast('云数据库连接失败：匿名登录未开启，请检查CloudBase控制台设置');
+      } else if (msg.includes('permission') || msg.includes('403') || msg.includes('unauthorized')) {
+        toast('云数据库连接失败：数据库权限不足，请检查集合权限设置');
+      } else if (msg.includes('Network') || msg.includes('fetch') || msg.includes('timeout')) {
+        toast('云数据库连接失败：网络超时，请检查手机网络');
+      } else {
+        toast('云数据库连接失败：' + msg);
+      }
       return false;
     }
   },
