@@ -334,8 +334,8 @@ ul{list-style:none}
   <!-- Login overlay -->
   <div id="login-overlay" class="login-overlay" style="display:none">
     <div class="login-card">
-      <h2 id="login-title">登录工作台</h2>
-      <div class="sub" id="login-sub">使用账号密码登录，数据云端安全同步</div>
+      <h2>登录工作台</h2>
+      <div class="sub">请输入账号密码，数据云端安全同步</div>
       <div class="field">
         <label>用户名</label>
         <input type="text" id="login-username" placeholder="请输入用户名" autocomplete="username">
@@ -344,17 +344,8 @@ ul{list-style:none}
         <label>密码</label>
         <input type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password">
       </div>
-      <div id="reg-confirm-field" class="field" style="display:none">
-        <label>确认密码</label>
-        <input type="password" id="login-password2" placeholder="再次输入密码">
-      </div>
       <div class="err" id="login-err"></div>
       <button class="btn-login" id="btn-login" onclick="doLogin()">登录</button>
-      <button class="btn-login" id="btn-register" onclick="doRegister()" style="display:none;margin-top:8px;background:var(--success)">注册账号</button>
-      <div class="logout-hint">
-        <span id="login-mode-hint"><a onclick="switchToRegister()">首次使用？注册账号</a></span>
-        <span id="reg-mode-hint" style="display:none"><a onclick="switchToLogin()">已有账号？返回登录</a></span>
-      </div>
     </div>
   </div>
 
@@ -474,23 +465,10 @@ ul{list-style:none}
           </div>
           <div class="settings-row">
             <div>
-              <div class="label">登录账号</div>
-              <div class="desc" id="settings-phone">--</div>
-            </div>
-            <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);font-size:.8rem">退出登录</button>
-          </div>
-          <div class="settings-row">
-            <div>
               <div class="label">环境 ID</div>
               <div class="desc">yayaliu-d4g1i1dc2fdb04417</div>
             </div>
             <span style="font-size:.75rem;color:var(--success)">✅ 云数据库</span>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">用户名密码登录</div>
-              <div class="desc">需先在控制台开启「用户名密码登录」<br><a href="https://console.cloud.tencent.com/tcb/env/login" target="_blank">打开登录设置 →</a></div>
-            </div>
           </div>
         </div>
       </div>
@@ -519,6 +497,13 @@ ul{list-style:none}
             </div>
             <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">导入</button>
             <input type="file" id="import-file" accept=".md" style="display:none" onchange="importMarkdown(event)">
+          </div>
+          <div class="settings-row">
+            <div>
+              <div class="label">退出登录</div>
+              <div class="desc">清除登录状态，下次需要重新输入密码</div>
+            </div>
+            <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);font-size:.8rem">退出登录</button>
           </div>
         </div>
       </div>
@@ -579,33 +564,14 @@ const Store = {
   ready: false,
   cloudOk: false,
 
-  // ---- CloudBase 初始化 ----
-  getApp() {
-    if (!this.app) this.app = cloudbase.init({ env: this.envId });
-    return this.app;
-  },
-  getAuth() {
-    if (!this.auth) this.auth = this.getApp().auth({ persistence: 'local' });
-    return this.auth;
-  },
-  async isLoggedIn() {
-    try {
-      const state = await this.getAuth().getLoginState();
-      return !!state;
-    } catch(e) { return false; }
-  },
+  // ---- CloudBase 初始化（匿名登录，仅用于数据库访问） ----
   async initCloud() {
     try {
-      // 检查登录状态
-      const loggedIn = await this.isLoggedIn();
-      if (!loggedIn) {
-        this.ready = false;
-        this.cloudOk = false;
-        this.updateStatus('offline');
-        showLoginOverlay();
-        return false;
-      }
-      this.db = this.getApp().database();
+      const app = cloudbase.init({ env: this.envId });
+      const auth = app.auth({ persistence: 'local' });
+      // 匿名登录（控制台已开启，集合权限为「所有用户可读写」）
+      await auth.anonymousAuthProvider().signIn();
+      this.db = app.database();
       this.ready = true;
       this.updateStatus('connecting');
       const ok = await this.loadFromCloud();
@@ -732,12 +698,9 @@ const Store = {
       if (sText) sText.textContent = '正在连接 CloudBase...';
     } else if (mode === 'cloud') {
       dot.classList.add('connected');
-      const user = localStorage.getItem('cb_user') || '';
-      text.textContent = '云端已连接' + (user ? ' · ' + user : '');
+      text.textContent = '云端已连接';
       if (sdot) sdot.style.background = 'var(--success)';
       if (sText) sText.textContent = '数据实时同步到腾讯云，手机/Mac 随时随地可用';
-      const sp = document.getElementById('settings-phone');
-      if (sp) sp.textContent = user || '--';
     } else {
       text.textContent = '离线模式';
       if (sdot) sdot.style.background = 'var(--danger)';
@@ -1442,56 +1405,33 @@ function renderAll() {
 }
 
 // ============================================================
-// Init — 先加载本地缓存，再连接云端
+// Init — 先加载本地缓存，检查登录状态，连接云端
 // ============================================================
 (async function init() {
   Store.loadLocal();
   renderAll();
+
+  // 检查是否已登录（硬编码 admin/admin123）
+  const loggedIn = localStorage.getItem('workspace_logged_in') === '1';
+  if (!loggedIn) {
+    showLoginOverlay();
+    return;
+  }
+
+  // 已登录，连接云数据库
   await Store.initCloud();
   if (Store.cloudOk) renderAll();
 })();
 
 // ============================================================
-// Username/Password Login
+// Hardcoded Login — admin / admin123
 // ============================================================
-let loginMode = 'login'; // 'login' | 'register'
-
 function showLoginOverlay() {
-  const el = document.getElementById('login-overlay');
-  if (el) {
-    el.style.display = 'flex';
-    const saved = localStorage.getItem('cb_user');
-    if (saved) document.getElementById('login-username').value = saved;
-  }
+  document.getElementById('login-overlay').style.display = 'flex';
 }
 
 function hideLoginOverlay() {
-  const el = document.getElementById('login-overlay');
-  if (el) el.style.display = 'none';
-}
-
-function switchToRegister() {
-  loginMode = 'register';
-  document.getElementById('login-title').textContent = '注册账号';
-  document.getElementById('login-sub').textContent = '首次使用，创建一个账号保护你的数据';
-  document.getElementById('btn-login').style.display = 'none';
-  document.getElementById('btn-register').style.display = 'block';
-  document.getElementById('login-mode-hint').style.display = 'none';
-  document.getElementById('reg-mode-hint').style.display = 'inline';
-  document.getElementById('reg-confirm-field').style.display = 'block';
-  document.getElementById('login-password').autocomplete = 'new-password';
-}
-
-function switchToLogin() {
-  loginMode = 'login';
-  document.getElementById('login-title').textContent = '登录工作台';
-  document.getElementById('login-sub').textContent = '使用账号密码登录，数据云端安全同步';
-  document.getElementById('btn-login').style.display = 'block';
-  document.getElementById('btn-register').style.display = 'none';
-  document.getElementById('login-mode-hint').style.display = 'inline';
-  document.getElementById('reg-mode-hint').style.display = 'none';
-  document.getElementById('reg-confirm-field').style.display = 'none';
-  document.getElementById('login-password').autocomplete = 'current-password';
+  document.getElementById('login-overlay').style.display = 'none';
 }
 
 async function doLogin() {
@@ -1499,102 +1439,31 @@ async function doLogin() {
   const password = document.getElementById('login-password').value;
   const errEl = document.getElementById('login-err');
   const btn = document.getElementById('btn-login');
-  if (!username || !password) {
-    errEl.textContent = '请输入用户名和密码';
+
+  if (username !== 'admin' || password !== 'admin123') {
+    errEl.textContent = '用户名或密码错误';
     return;
   }
+
   errEl.textContent = '';
   btn.disabled = true;
   btn.textContent = '登录中...';
-  try {
-    const auth = Store.getAuth();
-    await auth.signInWithUsernameAndPassword(username, password);
-    localStorage.setItem('cb_user', username);
-    hideLoginOverlay();
-    Store.db = Store.getApp().database();
-    Store.ready = true;
-    Store.updateStatus('connecting');
-    const ok = await Store.loadFromCloud();
-    Store.cloudOk = ok;
-    Store.updateStatus(ok ? 'cloud' : 'offline');
-    if (ok) renderAll();
-    toast('登录成功');
-  } catch(e) {
-    const msg = e.message || '';
-    if (msg.includes('not found') || msg.includes('not exist')) {
-      errEl.textContent = '账号不存在，请先注册';
-    } else if (msg.includes('password')) {
-      errEl.textContent = '密码错误';
-    } else {
-      errEl.textContent = '登录失败：' + (msg || '请稍后重试');
-    }
-    btn.disabled = false;
-    btn.textContent = '登录';
-  }
-}
+  localStorage.setItem('workspace_logged_in', '1');
 
-async function doRegister() {
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
-  const password2 = document.getElementById('login-password2').value;
-  const errEl = document.getElementById('login-err');
-  const btn = document.getElementById('btn-register');
-  if (!username || !password) {
-    errEl.textContent = '请输入用户名和密码';
-    return;
-  }
-  if (username.length < 2) {
-    errEl.textContent = '用户名至少2个字符';
-    return;
-  }
-  if (password.length < 6) {
-    errEl.textContent = '密码至少6个字符';
-    return;
-  }
-  if (password !== password2) {
-    errEl.textContent = '两次密码不一致';
-    return;
-  }
-  errEl.textContent = '';
-  btn.disabled = true;
-  btn.textContent = '注册中...';
-  try {
-    const auth = Store.getAuth();
-    await auth.signUpWithUsernameAndPassword(username, password);
-    localStorage.setItem('cb_user', username);
-    hideLoginOverlay();
-    Store.db = Store.getApp().database();
-    Store.ready = true;
-    Store.updateStatus('connecting');
-    const ok = await Store.loadFromCloud();
-    Store.cloudOk = ok;
-    Store.updateStatus(ok ? 'cloud' : 'offline');
-    if (ok) renderAll();
-    toast('注册成功，欢迎使用！');
-  } catch(e) {
-    const msg = e.message || '';
-    if (msg.includes('already exists') || msg.includes('already registered')) {
-      errEl.textContent = '用户名已存在，请返回登录';
-    } else {
-      errEl.textContent = '注册失败：' + (msg || '请稍后重试');
-    }
-    btn.disabled = false;
-    btn.textContent = '注册账号';
-  }
+  hideLoginOverlay();
+  const ok = await Store.initCloud();
+  if (ok) renderAll();
+  toast('登录成功');
+  btn.disabled = false;
+  btn.textContent = '登录';
 }
 
 async function doLogout() {
-  try {
-    const auth = Store.getAuth();
-    await auth.signOut();
-  } catch(e) {}
   Store.ready = false;
   Store.cloudOk = false;
   Store.db = null;
-  Store.auth = null;
-  Store.app = null;
+  localStorage.removeItem('workspace_logged_in');
   Store.updateStatus('offline');
-  switchToLogin();
   showLoginOverlay();
   toast('已退出登录');
 }
