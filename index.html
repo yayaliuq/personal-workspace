@@ -439,6 +439,17 @@ ul{list-style:none}
             </div>
             <button class="btn btn-ghost" onclick="openTokenModal()" style="font-size:.8rem">设置 Token</button>
           </div>
+          <div class="settings-row">
+            <div>
+              <div class="label">API 代理地址</div>
+              <div class="desc">如果无法直连 api.github.com，可配置代理中转；留空则直连</div>
+            </div>
+            <select id="proxy-select" onchange="onProxyChange(this.value)" style="font-size:.75rem;padding:4px 8px;border-radius:4px;border:1px solid var(--border);max-width:140px">
+              <option value="">直连（默认）</option>
+              <option value="https://gh-proxy.com/">gh-proxy</option>
+              <option value="custom">自定义...</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -559,6 +570,7 @@ const Store = {
   serverBase: 'http://localhost:3100',
   serverConnected: false,
   githubToken: localStorage.getItem('gh_token') || '',
+  githubApiBase: localStorage.getItem('gh_api_base') || 'https://api.github.com',
   githubRepo: 'yayaliuq/personal-workspace',
   githubMode: false,  // true when using GitHub API instead of local server
 
@@ -593,11 +605,22 @@ const Store = {
     if (token) localStorage.setItem('gh_token', token);
     else localStorage.removeItem('gh_token');
   },
+  setApiBase(base) {
+    this.githubApiBase = base || 'https://api.github.com';
+    localStorage.setItem('gh_api_base', this.githubApiBase);
+  },
+  ghUrl(path) {
+    // If using proxy mode, route through proxy; otherwise direct
+    if (this.githubApiBase !== 'https://api.github.com') {
+      return this.githubApiBase.replace(/\/$/, '') + '/' + path.replace(/^\//, '');
+    }
+    return this.githubApiBase + path;
+  },
   async githubRead(filename) {
     if (!this.githubToken) return null;
     try {
       const path = '数据/' + filename;
-      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
         headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
       });
       if (!res.ok) return null;
@@ -613,7 +636,7 @@ const Store = {
       // First get current file to obtain SHA
       let sha = null;
       try {
-        const getRes = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+        const getRes = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
           headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
         });
         if (getRes.ok) {
@@ -626,7 +649,7 @@ const Store = {
         content: btoa(unescape(encodeURIComponent(content)))
       };
       if (sha) body.sha = sha;
-      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}/contents/${encodeURIComponent(path)}`, {
+      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo + '/contents/' + encodeURIComponent(path)), {
         method: 'PUT',
         headers: { 'Authorization': 'token ' + this.githubToken, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
         body: JSON.stringify(body)
@@ -637,7 +660,7 @@ const Store = {
   async githubPing() {
     if (!this.githubToken) return false;
     try {
-      const res = await fetch(`https://api.github.com/repos/${this.githubRepo}`, {
+      const res = await fetch(this.ghUrl('/repos/' + this.githubRepo), {
         headers: { 'Authorization': 'token ' + this.githubToken, 'Accept': 'application/vnd.github.v3+json' }
       });
       return res.ok;
@@ -973,7 +996,7 @@ function navigate(page) {
   if (page === 'tasks') renderTasks();
   else if (page === 'study') renderStudy();
   else if (page === 'finance') renderFinance();
-  else if (page === 'settings') { updateTokenBadge(); runDiagnostic(); }
+  else if (page === 'settings') { updateTokenBadge(); updateProxySelect(); runDiagnostic(); }
 }
 
 function toggleSidebar() {
@@ -1424,10 +1447,11 @@ async function runDiagnostic() {
   set('diag-token', Store.githubToken ? '已设置' : '未设置', !!Store.githubToken);
   
   // 2. GitHub API reachability
+  const testUrl = Store.ghUrl('/zen');
   try {
     const ctrl = new AbortController();
     setTimeout(() => ctrl.abort(), 5000);
-    const resp = await fetch('https://api.github.com/zen', { 
+    const resp = await fetch(testUrl, { 
       signal: ctrl.signal,
       headers: Store.githubToken ? { Authorization: 'token ' + Store.githubToken } : {}
     });
@@ -1442,6 +1466,38 @@ async function runDiagnostic() {
     set('diag-server', ok ? '已连接' : '未运行', ok);
   } catch(e) {
     set('diag-server', '不可用', false);
+  }
+}
+
+function onProxyChange(value) {
+  if (value === 'custom') {
+    const url = prompt('请输入代理地址（例如 https://example.com/）');
+    if (!url) {
+      updateProxySelect();
+      return;
+    }
+    Store.setApiBase(url);
+    updateProxySelect();
+  } else {
+    Store.setApiBase(value);
+  }
+  toast('API 代理已更新，重新检测中...');
+  runDiagnostic();
+  // Reconnect with new proxy
+  Store.autoConnect().then(() => renderAll());
+}
+
+function updateProxySelect() {
+  const sel = document.getElementById('proxy-select');
+  if (!sel) return;
+  const cur = Store.githubApiBase;
+  if (!cur || cur === 'https://api.github.com') {
+    sel.value = '';
+  } else {
+    // Check if it matches a preset
+    const opt = sel.querySelector('option[value="' + cur.replace(/"/g, '\\"') + '"]');
+    if (opt) sel.value = cur;
+    else sel.value = 'custom';
   }
 }
 
