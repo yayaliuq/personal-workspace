@@ -2,5 +2,9 @@
 .DS_Store
 Thumbs.db
 
+# SSH keys
+github_key
+github_key.pub
+
 # Data files (generated at runtime, keep as templates)
 # 数据/
