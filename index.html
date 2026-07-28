@@ -58,7 +58,23 @@ ul{list-style:none}
 #btn-connect{font-size:.75rem;color:var(--primary);text-decoration:underline;padding:2px 0}
 
 /* Main content */
-#main{flex:1;margin-left:var(--sidebar-w);padding:24px;max-width:1200px}
+#main{flex:1;margin-left:var(--sidebar-w);padding:24px;max-width:1200px;position:relative}
+
+/* Pull-to-refresh */
+#pull-indicator{
+  display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);
+  width:36px;height:36px;border-radius:50%;background:var(--card);
+  box-shadow:var(--shadow);align-items:center;justify-content:center;
+  z-index:200;transition:opacity .2s;opacity:0;
+}
+#pull-indicator.show{display:flex;opacity:1}
+#pull-indicator .spinner{
+  width:20px;height:20px;border:2.5px solid var(--border);
+  border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;
+}
+#pull-indicator.success{opacity:1;background:var(--success-bg)}
+#pull-indicator.success .spinner{border-color:var(--success);border-top-color:var(--success);animation:none}
+@keyframes spin{to{transform:rotate(360deg)}}
 .page-header{margin-bottom:20px}
 .page-header h2{font-size:1.5rem;font-weight:700}
 .page-header .desc{font-size:.85rem;color:var(--muted);margin-top:4px}
@@ -297,6 +313,7 @@ ul{list-style:none}
 
   <!-- Main content -->
   <main id="main">
+    <div id="pull-indicator"><div class="spinner"></div></div>
     <!-- Tasks Page -->
     <div id="page-tasks" class="page fade-in">
       <div class="page-header">
@@ -1504,6 +1521,66 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
+
+// ========== Pull-to-Refresh / 数据同步 ==========
+let pullState = 0; // 0=idle, 1=pulling, 2=loading
+let pullStartY = 0;
+let pullDist = 0;
+const PULL_THRESHOLD = 60;
+const pullEl = document.getElementById('pull-indicator');
+
+function isAtTop() {
+  return window.scrollY <= 0;
+}
+
+document.addEventListener('touchstart', (e) => {
+  if (!isAtTop() || pullState === 2) return;
+  pullStartY = e.touches[0].clientY;
+  pullState = 1;
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if (pullState !== 1) return;
+  pullDist = e.touches[0].clientY - pullStartY;
+  if (pullDist < 10) return;
+  e.preventDefault();
+  if (pullDist > 10) {
+    pullEl.classList.add('show');
+    pullEl.style.opacity = Math.min(pullDist / PULL_THRESHOLD, 1);
+  }
+}, { passive: false });
+
+document.addEventListener('touchend', async () => {
+  if (pullState !== 1) return;
+  pullState = 2;
+  if (pullDist >= PULL_THRESHOLD) {
+    pullEl.querySelector('.spinner').style.animation = 'spin .6s linear infinite';
+    await refreshData();
+    pullEl.classList.add('success');
+  } else {
+    pullEl.classList.remove('show');
+  }
+  setTimeout(() => {
+    pullEl.classList.remove('show', 'success');
+    pullEl.querySelector('.spinner').style.animation = '';
+    pullState = 0;
+    pullDist = 0;
+  }, 800);
+});
+
+async function refreshData() {
+  try {
+    if (Store.githubMode) {
+      await Store.loadFromGitHub();
+    } else if (Store.serverConnected) {
+      await Store.loadFromServer();
+    }
+    renderAll();
+    toast('数据已刷新');
+  } catch(e) {
+    toast('刷新失败，请重试');
+  }
+}
 
 // ========== PWA Service Worker ==========
 if ('serviceWorker' in navigator) {
