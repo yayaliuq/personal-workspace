@@ -631,28 +631,34 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      const _ = this.db.command;
-      const addAll = async (col, items) => {
-        await col.where({ _openid: _.exists(true) }).remove();
+      // 按 _id 逐条删除再添加，避免 _openid 权限冲突（匿名登录每次分配不同 ID）
+      const replaceAll = async (col, items) => {
+        const existing = await col.limit(1000).get();
+        for (const doc of existing.data || []) {
+          await col.doc(doc._id).remove();
+        }
         for (const item of items) {
           await col.add({ ...item });
         }
       };
       await Promise.all([
-        addAll(this.db.collection('tasks'), this.data.tasks),
-        addAll(this.db.collection('study_topics'), this.data.study.topics),
-        addAll(this.db.collection('study_logs'), this.data.study.logs),
+        replaceAll(this.db.collection('tasks'), this.data.tasks),
+        replaceAll(this.db.collection('study_topics'), this.data.study.topics),
+        replaceAll(this.db.collection('study_logs'), this.data.study.logs),
         (async () => {
           const cc = this.db.collection('study_config');
-          await cc.where({ _openid: _.exists(true) }).remove();
+          const existing = await cc.limit(1).get();
+          for (const doc of existing.data || []) await cc.doc(doc._id).remove();
           await cc.add({ subject: this.data.study.subject });
         })(),
-        addAll(this.db.collection('finance_records'), this.data.finance.records),
+        replaceAll(this.db.collection('finance_records'), this.data.finance.records),
       ]);
       this.updateSyncTime();
       this.updateStatus('cloud');
+      console.log('[CloudBase] 数据已同步到云端，tasks:', this.data.tasks.length);
     } catch(e) {
-      console.error('CloudBase save failed:', e);
+      console.error('[CloudBase] 保存失败:', e.message || e);
+      toast('云端同步失败，请检查网络后重试');
     }
   },
 
@@ -1451,6 +1457,7 @@ async function doLogin() {
   localStorage.setItem('workspace_logged_in', '1');
 
   hideLoginOverlay();
+  Store.loadLocal(); // 先加载本地缓存，防止云端为空时数据丢失
   const ok = await Store.initCloud();
   if (ok) renderAll();
   toast('登录成功');
