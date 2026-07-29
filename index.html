@@ -587,7 +587,7 @@ const Store = {
       } else {
         const { data, error } = await app.auth.signInWithPassword({
           username: 'admin',
-          password: 'admin123'
+          password: 'Admin123'
         });
         if (error) throw new Error(error.message || '登录失败');
         console.log('[CloudBase] Step 3: signed in as admin');
