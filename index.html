@@ -591,11 +591,12 @@ const Store = {
       console.log('[CloudBase] Step 4: db ref obtained');
 
       // Step 5: 加载数据
-      const ok = await this.loadFromCloud();
-      this.cloudOk = ok;
-      this.updateStatus(ok ? 'cloud' : 'offline');
-      console.log('[CloudBase] Step 5: data loaded, ok=' + ok);
-      return ok;
+      await this.loadFromCloud();
+      // DB连接成功即视为在线（即使部分集合加载失败，侧边栏也应显示已连接）
+      this.cloudOk = true;
+      this.updateStatus('cloud');
+      console.log('[CloudBase] Step 5: data loaded');
+      return true;
     } catch(e) {
       const msg = e.message || String(e);
       console.error('[CloudBase] init failed:', msg);
