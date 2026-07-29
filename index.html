@@ -623,11 +623,12 @@ const Store = {
   async loadFromCloud() {
     if (!this.ready || !this.db) return false;
     const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...rest}=d; return rest; };
+    const dedup = (arr, key='id') => { const seen=new Set(); return arr.filter(x=>{ const v=x[key]||''; if(seen.has(v)) return false; seen.add(v); return true; }); };
     let hasCloud = false, ok = true;
     // 逐集合独立查询，一个失败不影响其他
     const safeGet = async (col) => { try { const r=await this.db.collection(col).limit(1000).get(); return r.data||[]; } catch(e){ console.warn('[CloudBase] '+col+' query failed:',e.message); ok=false; return []; } };
-    const cloudTasks = (await safeGet('tasks')).map(strip);
-    const cloudTopics = (await safeGet('study_topics')).map(strip);
+    const cloudTasks = dedup((await safeGet('tasks')).map(strip));
+    const cloudTopics = dedup((await safeGet('study_topics')).map(strip));
     const cloudLogs = (await safeGet('study_logs')).map(strip);
     const configData = await safeGet('study_config');
     const cloudRecords = (await safeGet('finance_records')).map(strip);
@@ -649,14 +650,18 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      // 按 _id 逐条删除再添加，避免 _openid 权限冲突（匿名登录每次分配不同 ID）
-      const replaceAll = async (col, items) => {
-        const existing = await col.limit(1000).get();
-        for (const doc of existing.data || []) {
-          await col.doc(doc._id).remove();
-        }
+      // 按 id 逐条去重保存，避免多用户匿名 ID 产生重复数据
+      const upsertByKey = async (col, items, key='id') => {
         for (const item of items) {
-          await col.add({ ...item });
+          if (!item[key]) { await col.add({...item}); continue; }
+          // 查询同 id 文档，删除自己能删的（其他人的删不掉但没关系）
+          try {
+            const existing = await col.where({ [key]: item[key] }).get();
+            for (const doc of existing.data || []) {
+              try { await col.doc(doc._id).remove(); } catch(e){}
+            }
+          } catch(e){}
+          await col.add({...item});
         }
       };
       // 逐集合独立保存，一个失败不影响其他
@@ -666,16 +671,11 @@ const Store = {
         }
       };
       let ok = true;
-      await safeSave('tasks', () => replaceAll(this.db.collection('tasks'), this.data.tasks));
-      await safeSave('study_topics', () => replaceAll(this.db.collection('study_topics'), this.data.study.topics));
-      await safeSave('study_logs', () => replaceAll(this.db.collection('study_logs'), this.data.study.logs));
-      await safeSave('study_config', async () => {
-        const cc = this.db.collection('study_config');
-        const existing = await cc.limit(1).get();
-        for (const doc of existing.data || []) await cc.doc(doc._id).remove();
-        await cc.add({ subject: this.data.study.subject });
-      });
-      await safeSave('finance_records', () => replaceAll(this.db.collection('finance_records'), this.data.finance.records));
+      await safeSave('tasks', () => upsertByKey(this.db.collection('tasks'), this.data.tasks));
+      await safeSave('study_topics', () => upsertByKey(this.db.collection('study_topics'), this.data.study.topics));
+      await safeSave('study_logs', () => upsertByKey(this.db.collection('study_logs'), this.data.study.logs, 'date'));
+      await safeSave('study_config', () => upsertByKey(this.db.collection('study_config'), [{subject: this.data.study.subject}], 'subject'));
+      await safeSave('finance_records', () => upsertByKey(this.db.collection('finance_records'), this.data.finance.records));
       if (ok) {
         this.updateSyncTime();
         this.updateStatus('cloud');
