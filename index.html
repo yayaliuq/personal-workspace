@@ -315,7 +315,7 @@ ul{list-style:none}
 <main id="main">
 <!-- Page: Home (今日概览) -->
 <div id="pg-home" class="page" style="display:none">
-  <div class="hero"><div class="hero-left"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc" id="hero-quote"></div></div><div class="hero-right" id="hero-time">--:--</div></div>
+  <div class="hero"><div class="hero-left" style="flex:1"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc" id="hero-quote"></div></div><div class="hero-right" style="text-align:right"><div id="hero-time" style="font-size:.8rem;color:var(--text-soft);margin-bottom:2px">--:--</div><div id="hero-weather" style="font-size:.75rem;color:var(--peach);display:flex;align-items:center;gap:4px;justify-content:flex-end">加载中...</div></div></div>
   <div class="card card-soft" id="assistant-card" style="border:1px solid var(--lavender);background:linear-gradient(135deg,#f8f0ff,#fff8f0)"><div style="display:flex;align-items:flex-start;gap:10px"><div style="font-size:1.5rem;line-height:1;flex-shrink:0;width:40px;height:40px;background:var(--lavender-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--lavender);font-weight:700">AI</div><div style="flex:1"><div id="assistant-msg" style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4"></div><div id="assistant-actions" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div></div></div></div>
   <div class="card"><div class="card-title"><div class="card-title-left">今日概览</div></div>
     <div class="stats-row" id="home-stats"></div></div>
@@ -553,7 +553,20 @@ function buildNav() {
 // Home Dashboard
 // ============================================================
 let homeChart = null;
-function renderHome() {
+
+async function fetchWeather() {
+  try {
+    const resp = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.26&longitude=108.94&current=temperature_2m,weather_code&timezone=Asia/Shanghai');
+    const data = await resp.json();
+    const t = data.current.temperature_2m;
+    const code = data.current.weather_code;
+    const icons = {0:'晴',1:'晴',2:'多云',3:'阴',45:'雾',51:'小雨',53:'中雨',61:'阵雨',71:'小雪',80:'雷雨'};
+    const w = icons[code] || '多云';
+    return Math.round(t)+' '+w;
+  } catch(e) { return '西安'; }
+}
+
+async function renderHome() {
   const h = new Date().getHours();
   let greet = '早上好呀';
   if (h >= 12 && h < 18) greet = '下午好';
@@ -562,40 +575,52 @@ function renderHome() {
   document.getElementById('hero-time').textContent = new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',weekday:'short'});
   const quotes=["今天也是闪闪发光的一天","你比想象中更强大","每一步都算数","慢慢来，比较快","阳光正好，继续前行","别怕，你正在变好的路上","今天也是值得的一天","保持热爱，奔赴山海","做自己的小太阳","认真生活的你最可爱","慢慢变好，是给自己最好的礼物","今天的努力是明天的底气"];
   document.getElementById('hero-quote').textContent=quotes[Math.floor(Math.random()*quotes.length)];
-  const tasks=Store.data.tasks,recs=Store.data.health_records,studies=Store.data.study_notes;
-  const total=tasks.length,done=tasks.filter(t=>t.completed).length,habitPct=total?Math.round(done/total*100):0;
-  const now=new Date(),d=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(d===0?6:d-1));
-  const ws=mon.toISOString().slice(0,10),week=recs.filter(r=>r.date>=ws),wk=week.filter(r=>r.weight);
-  const avgW=wk.length?((wk.reduce((s,r)=>s+(r.weight||0),0)/wk.length)||0).toFixed(1):0;
-  const training=week.filter(r=>r.training&&r.training!=='休息').length;
-  const studyDone=studies.filter(s=>s.category==='课程'||s.category==='读书').length;
-  const studyPct=studies.length?Math.round(studyDone/studies.length*100):0;
-  const mk=(pct)=>`<svg viewBox="0 0 36 36" width="${pct?64:48}" height="${pct?64:48}"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="3"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="${pct} ${100-pct}" stroke-linecap="round"/></svg>`;
-  document.getElementById('home-stats').innerHTML=`<div class="stat-circle" style="color:var(--mint)">${mk(habitPct)}<div class="pct">${habitPct}%</div><div class="stat-name">习惯</div><div class="stat-val">${done}/${total}</div></div><div class="stat-circle" style="color:var(--lavender)">${mk(studyPct)}<div class="pct">${studyPct}%</div><div class="stat-name">学习</div><div class="stat-val">${studyDone}/${studies.length}</div></div><div class="stat-circle" style="color:var(--peach)">${mk(training*20)}<div class="pct">${training}</div><div class="stat-name">训练</div><div class="stat-val">本周次</div></div><div class="stat-circle" style="color:var(--sky)">${mk(avgW?Math.min(100,Math.round((80-avgW)*4)):0)}<div class="pct">${avgW||'--'}</div><div class="stat-name">体重</div><div class="stat-val">本周平均</div></div>`;
+  // Weather
+  fetchWeather().then(w=>{ document.getElementById('hero-weather').textContent = w; });
+
+  const tasks=Store.data.tasks,recs=Store.data.health_records,studies=Store.data.study_notes,inspirations=Store.data.inspirations;
+  const todayStr=(new Date()).toISOString().slice(0,10);
+  
+  // === 今日数据 ===
+  const todayHealth = recs.filter(r=>r.date===todayStr);
+  const todayWeight = todayHealth.find(r=>r.weight)?.weight || 0;
+  const todayCals = todayHealth.reduce((s,r)=>s+(r.calories||0),0);
+  const todayTrain = todayHealth.filter(r=>r.training&&r.training!=='休息').length;
+  const todayInsp = inspirations.filter(i=>i.createdAt===todayStr).length;
+
+  const mk=(val,unit,color)=>`<div class="stat-circle" style="color:${color}"><div class="pct" style="font-size:1.2rem">${val||'--'}</div><div class="stat-name">${unit}</div><div class="stat-val">今日</div></div>`;
+  document.getElementById('home-stats').innerHTML = 
+    mk(todayWeight,'体重kg', 'var(--peach)') +
+    mk(todayCals,'热量kcal', 'var(--coral)') +
+    mk(todayTrain,'训练次', 'var(--mint)') +
+    mk(todayInsp,'新灵感', 'var(--lavender)');
 
   // === 小助理问候 ===
-  const todayStr=(new Date()).toISOString().slice(0,10);
-  const todayHealth=recs.filter(r=>r.date===todayStr);
-  const hasHealth=todayHealth.length>0&&(todayHealth.some(r=>r.weight)||todayHealth.some(r=>r.training));
-  const pendingTasks=tasks.filter(t=>!t.completed);
-  const highTask=tasks.find(t=>!t.completed&&t.priority==='高');
-  let assistMsg='';let assistHtml='';
-  if(!hasHealth&&pendingTasks.length===0) assistMsg='早上好，今天还没有安排和记录，想添加什么？';
+  const hasHealth = todayHealth.length>0 && (todayHealth.some(r=>r.weight) || todayHealth.some(r=>r.training));
+  const pendingTasks = tasks.filter(t=>!t.completed);
+  const highTask = tasks.find(t=>!t.completed&&t.priority==='高');
+  let assistMsg='',assistHtml='';
+  if(!hasHealth&&pendingTasks.length===0) assistMsg='早上好，今天还没有安排，也没有记录身体数据呢';
   else if(!hasHealth) assistMsg='你还没记录今天的身体数据，记得称个体重哦';
   else if(pendingTasks.length===0) assistMsg='今天待办清空了，享受充实的一天吧';
   else if(highTask) assistMsg='今日最重要的任务是「'+highTask.title+'」，加油';
   else assistMsg='你今天有'+pendingTasks.length+'件待办，开始行动吧';
-  if(!hasHealth) assistHtml+=`<button class="btn btn-primary btn-xs" onclick="navigate('health');openModal('health')">快速记录身体数据</button>`;
+  if(!hasHealth) assistHtml+=`<button class="btn btn-primary btn-xs" onclick="navigate('health');openModal('health')">记录身体数据</button>`;
   document.getElementById('assistant-msg').textContent=assistMsg;
   document.getElementById('assistant-actions').innerHTML=assistHtml;
+
+  // === 今日主任务 ===
   const mainT=tasks.find(t=>!t.completed&&t.priority==='高')||tasks.find(t=>!t.completed&&t.priority==='中')||tasks.find(t=>!t.completed);
   document.getElementById('home-main-task').innerHTML=mainT?`<div style="padding:8px 0"><div style="display:flex;align-items:center;gap:12px"><div class="task-cb" onclick="toggleTask('${mainT.id}')" style="min-width:26px;min-height:26px;border-radius:50%"></div><div style="flex:1"><div style="font-size:.9rem;font-weight:600;color:var(--text)">${mainT.title}</div><div style="display:flex;gap:6px;margin-top:4px;font-size:.72rem"><span class="badge-tag badge-${mainT.priority==='高'?'coral':'butter'}">${mainT.priority}优先级</span><span class="badge-tag badge-soft">${mainT.category}</span>${mainT.dueDate?`<span style="color:var(--text-soft)">${mainT.dueDate}</span>`:''}</div></div><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();toggleTask('${mainT.id}')">完成</button></div></div>`:'<div style="text-align:center;color:var(--text-soft);padding:20px">今天没有待办任务，给自己放个假吧</div>';
+
+  // === 支线任务（按分类分组） ===
   const pending=tasks.filter(t=>!t.completed&&t.id!==(mainT||{}).id);
   const cats=['工作','生活','广告','理财'],grouped={};cats.forEach(c=>{grouped[c]=pending.filter(t=>t.category===c);});
   const supportHTML=cats.filter(c=>grouped[c].length>0).map(c=>`<div style="margin-bottom:10px"><div style="font-size:.75rem;font-weight:700;color:var(--text-soft);margin-bottom:6px">${c} ${grouped[c].length}</div>${grouped[c].map(t=>`<div class="task-card" style="margin-bottom:6px"><div class="task-cb" onclick="toggleTask('${t.id}')"></div><div class="task-body"><div class="task-title">${t.title}</div><div class="task-meta"><span class="badge-tag badge-${t.priority==='高'?'coral':t.priority==='中'?'butter':'mint'}">${t.priority}</span>${t.dueDate?`<span style="color:var(--text-soft)">${t.dueDate}</span>`:''}</div></div><div class="task-actions"><button onclick="editTask('${t.id}')">编</button><button onclick="deleteTask('${t.id}')">删</button></div></div>`).join('')}</div>`).join('');
   document.getElementById('home-support').innerHTML=supportHTML||'<div style="text-align:center;color:var(--text-soft);padding:10px">支线清空了</div>';
   document.getElementById('home-support-count').textContent=pending.length+' 项';
 }
+
 // ============================================================
 // Tasks
 // ============================================================
