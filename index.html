@@ -2,550 +2,325 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#4f46e5">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2563EB">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="工作台">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50'>台</text></svg>">
-<title>个人工作台</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>个人工作台 v5.0</title>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ========== Reset & Base ========== */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#4f46e5;--primary-light:#6366f1;--primary-bg:#eef2ff;
-  --bg:#f8fafc;--card:#ffffff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
-  --success:#10b981;--success-bg:#ecfdf5;--warning:#f59e0b;--warning-bg:#fffbeb;
-  --danger:#ef4444;--danger-bg:#fef2f2;--info:#0ea5e9;--info-bg:#f0f9ff;
-  --radius:12px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --shadow-lg:0 10px 30px rgba(0,0,0,.1);--sidebar-w:240px;
-  --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+/* ====== Design System: 蓝天×阳光 ====== */
+:root {
+  --blue: #2563EB; --blue-light: #3B82F6; --blue-deep: #1D4ED8; --blue-bg: #EFF6FF;
+  --yellow: #F59E0B; --yellow-light: #FBBF24; --yellow-bg: #FFFBEB; --yellow-deep: #D97706;
+  --coral: #F97316; --coral-bg: #FFF7ED;
+  --slate: #1E293B; --muted: #64748B; --border: #E2E8F0; --bg: #F8FAFC;
+  --card: #FFFFFF; --white: #FFFFFF;
+  --radius: 14px; --radius-sm: 10px; --radius-xs: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
+  --sidebar-w: 220px;
+  --font: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
 }
-html{font-size:16px;-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,textarea,select{font-family:inherit;font-size:inherit;color:inherit}
-a{color:var(--primary);text-decoration:none}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--font);background:var(--bg);color:var(--slate);line-height:1.5;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:.9rem}
+input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--slate);outline:none}
+a{color:var(--blue);text-decoration:none}
 ul{list-style:none}
 
-/* ========== Layout ========== */
+/* ====== Layout ====== */
 #app{display:flex;min-height:100vh}
+#sidebar{width:var(--sidebar-w);background:linear-gradient(180deg,#1E3A5F 0%,#1D4ED8 100%);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;color:#fff;transition:transform .3s}
+.sidebar-top{padding:20px 16px 12px}
+.sidebar-top h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:6px;color:#fff}
+.sidebar-top .sub{font-size:.7rem;opacity:.6;margin-top:2px}
+.sidebar-nav{flex:1;padding:8px 10px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:2px;font-size:.85rem;color:rgba(255,255,255,.7);transition:all .15s;width:100%;text-align:left;font-weight:400}
+.nav-item:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.18);color:#fff;font-weight:600}
+.nav-item .icon{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.nav-item .badge{min-width:22px;height:20px;padding:0 6px;background:var(--yellow);color:#fff;font-size:.65rem;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto;line-height:1}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:.7rem}
+.sidebar-footer .status-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.sidebar-footer .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sidebar-footer .dot.on{background:#34D399}
+.sidebar-footer .dot.off{background:#F87171}
+.sidebar-footer .sync{font-size:.65rem;opacity:.5}
 
-/* Sidebar */
-#sidebar{
-  width:var(--sidebar-w);background:var(--card);border-right:1px solid var(--border);
-  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;
-  transition:transform .3s ease;
-}
-.sidebar-header{padding:24px 20px 16px;border-bottom:1px solid var(--border)}
-.sidebar-header h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px}
-.sidebar-header .subtitle{font-size:.75rem;color:var(--muted);margin-top:2px}
-.sidebar-nav{flex:1;padding:12px;overflow-y:auto}
-.nav-item{
-  display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);
-  font-size:.9rem;color:var(--muted);transition:all .15s;margin-bottom:2px;width:100%;text-align:left;
-}
-.nav-item:hover{background:var(--bg);color:var(--text)}
-.nav-item.active{background:var(--primary-bg);color:var(--primary);font-weight:600}
-.nav-item .icon{font-size:1.2rem;width:24px;text-align:center;flex-shrink:0}
-.nav-item .badge{margin-left:auto;background:var(--primary);color:#fff;font-size:.7rem;
-  padding:1px 7px;border-radius:10px;font-weight:600}
-.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:.75rem;color:var(--muted)}
-.obsidian-status{display:flex;align-items:center;gap:6px;margin-bottom:4px}
-.obsidian-dot{width:8px;height:8px;border-radius:50%;background:var(--danger);flex-shrink:0}
-.obsidian-dot.connected{background:var(--success)}
-#btn-connect{font-size:.75rem;color:var(--primary);text-decoration:underline;padding:2px 0}
+#main{flex:1;margin-left:var(--sidebar-w);padding:16px 20px;max-width:1100px;position:relative}
 
-/* Main content */
-#main{flex:1;margin-left:var(--sidebar-w);padding:24px;max-width:1200px;position:relative}
+/* ====== Top bar (mobile) ====== */
+#topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:99;background:var(--blue);color:#fff;padding:10px 14px;align-items:center;justify-content:space-between}
+#topbar h1{font-size:1rem;font-weight:700}
+#topbar .menu-btn{font-size:1.4rem;padding:4px}
 
-/* Pull-to-refresh */
-#pull-indicator{
-  display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);
-  width:36px;height:36px;border-radius:50%;background:var(--card);
-  box-shadow:var(--shadow);align-items:center;justify-content:center;
-  z-index:200;transition:opacity .2s;opacity:0;
-}
-#pull-indicator.show{display:flex;opacity:1}
-#pull-indicator .spinner{
-  width:20px;height:20px;border:2.5px solid var(--border);
-  border-top-color:var(--primary);border-radius:50%;animation:spin .6s linear infinite;
-}
-#pull-indicator.success{opacity:1;background:var(--success-bg)}
-#pull-indicator.success .spinner{border-color:var(--success);border-top-color:var(--success);animation:none}
-@keyframes spin{to{transform:rotate(360deg)}}
-.page-header{margin-bottom:20px}
-.page-header h2{font-size:1.5rem;font-weight:700}
-.page-header .desc{font-size:.85rem;color:var(--muted);margin-top:4px}
+/* ====== Bottom nav (mobile) ====== */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;background:#fff;border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,4px)}
+#bottom-nav .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.65rem;color:var(--muted);transition:all .15s}
+#bottom-nav .bn-item.active{color:var(--blue);font-weight:600}
+#bottom-nav .bn-item .icon{font-size:1.2rem}
 
-/* Mobile top bar */
-#mobile-bar{
-  display:none;position:fixed;top:0;left:0;right:0;z-index:100;
-  background:var(--card);border-bottom:1px solid var(--border);
-  padding:12px 16px;align-items:center;justify-content:space-between;
-}
-#mobile-bar h1{font-size:1.1rem;font-weight:700}
-#mobile-bar .menu-btn{font-size:1.5rem;padding:4px}
-
-/* Bottom nav (mobile) */
-#bottom-nav{
-  display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;
-  background:var(--card);border-top:1px solid var(--border);
-  padding:6px 0 env(safe-area-inset-bottom,6px);
-}
-#bottom-nav .bn-item{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
-  padding:6px 0;font-size:.7rem;color:var(--muted);
-}
-#bottom-nav .bn-item.active{color:var(--primary)}
-#bottom-nav .bn-item .icon{font-size:1.3rem}
-
-/* ========== Cards ========== */
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
-.card-title{font-size:.9rem;font-weight:600;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-
-/* ========== Tasks Module ========== */
-.task-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
-.task-tab{
-  padding:6px 16px;border-radius:20px;font-size:.85rem;font-weight:500;
-  background:var(--bg);color:var(--muted);transition:all .15s;
-}
-.task-tab.active{background:var(--primary);color:#fff}
-.task-tab .count{font-size:.75rem;opacity:.8;margin-left:4px}
-
-.task-list .task-item{
-  display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);
-  background:var(--card);border:1px solid var(--border);margin-bottom:8px;transition:all .15s;
-}
-.task-item:hover{box-shadow:var(--shadow)}
-.task-item.done{opacity:.55}
-.task-item.done .task-title{text-decoration:line-through}
-.task-checkbox{
-  width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;
-  margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:all .15s;font-size:.8rem;color:#fff;
-}
-.task-checkbox.checked{background:var(--success);border-color:var(--success)}
-.task-body{flex:1;min-width:0}
-.task-title{font-size:.9rem;font-weight:500;word-break:break-word}
-.task-meta{display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap}
-.task-priority{font-size:.7rem;padding:1px 8px;border-radius:4px;font-weight:600}
-.task-priority.高{background:var(--danger-bg);color:var(--danger)}
-.task-priority.中{background:var(--warning-bg);color:var(--warning)}
-.task-priority.低{background:var(--info-bg);color:var(--info)}
-.task-date{font-size:.7rem;color:var(--muted)}
-.task-cat{font-size:.7rem;padding:1px 8px;border-radius:4px;background:var(--bg);color:var(--muted)}
-.task-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
-.task-item:hover .task-actions{opacity:1}
-.task-actions button{padding:4px 6px;font-size:.85rem;color:var(--muted);border-radius:4px}
-.task-actions button:hover{background:var(--bg);color:var(--text)}
-
-.task-add-bar{
-  display:flex;gap:8px;margin-bottom:16px;
-}
-.task-add-bar input{
-  flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--card);outline:none;transition:border-color .15s;
-}
-.task-add-bar input:focus{border-color:var(--primary)}
-.task-add-bar select{
-  padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--card);outline:none;font-size:.85rem;
-}
-.btn{
-  padding:10px 16px;border-radius:var(--radius-sm);font-size:.85rem;font-weight:500;
-  transition:all .15s;display:inline-flex;align-items:center;gap:6px;
-}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-primary:hover{background:var(--primary-light)}
+/* ====== Cards & Common ====== */
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.card-sm{padding:12px;border-radius:var(--radius-sm)}
+.page-header{margin-bottom:16px}
+.page-header h2{font-size:1.3rem;font-weight:700;color:var(--slate)}
+.page-header .desc{font-size:.8rem;color:var(--muted);margin-top:2px}
+.btn{padding:8px 16px;border-radius:var(--radius-xs);font-size:.85rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.btn-primary:hover{background:var(--blue-light);transform:translateY(-1px)}
+.btn-yellow{background:var(--yellow);color:#fff;box-shadow:0 2px 8px rgba(245,158,11,.3)}
+.btn-yellow:hover{background:var(--yellow-light)}
 .btn-ghost{background:var(--bg);color:var(--muted)}
 .btn-ghost:hover{background:var(--border)}
+.btn-danger{color:#EF4444;background:#FEF2F2}
+.btn-danger:hover{background:#FEE2E2}
+.btn-xs{padding:4px 10px;font-size:.75rem}
+.btn-sm{padding:6px 12px;font-size:.8rem}
+.badge-tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:600}
+.badge-blue{background:var(--blue-bg);color:var(--blue)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow-deep)}
+.badge-coral{background:var(--coral-bg);color:var(--coral)}
+.badge-gray{background:#F1F5F9;color:var(--muted)}
 
-/* ========== Study Module ========== */
-.study-overall{margin-bottom:20px}
-.progress-bar{height:10px;background:var(--bg);border-radius:5px;overflow:hidden;margin-top:8px}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:5px;transition:width .4s ease}
-.progress-text{font-size:1.5rem;font-weight:700;color:var(--primary)}
+/* ====== Filter Tabs ====== */
+.filter-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filter-tab{padding:6px 14px;border-radius:20px;font-size:.8rem;font-weight:500;background:#fff;color:var(--muted);border:1px solid var(--border);white-space:nowrap;transition:all .15s}
+.filter-tab:hover{border-color:var(--blue);color:var(--blue)}
+.filter-tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.filter-tab .count{font-size:.7rem;opacity:.8;margin-left:3px}
 
-.topic-item{
-  display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius-sm);
-  background:var(--card);border:1px solid var(--border);margin-bottom:6px;
-}
-.topic-checkbox{
-  width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:#fff;
-  transition:all .15s;
-}
-.topic-checkbox.checked{background:var(--success);border-color:var(--success)}
-.topic-name{flex:1;font-size:.9rem}
-.topic-progress{font-size:.8rem;color:var(--muted);min-width:40px;text-align:right}
-.topic-progress-bar{width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
-.topic-progress-fill{height:100%;background:var(--success);border-radius:3px;transition:width .3s}
+/* ====== Task Module ====== */
+.add-bar{display:flex;gap:8px;margin-bottom:14px}
+.add-bar input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff}
+.add-bar input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.add-bar select{padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;margin-bottom:6px;transition:all .15s}
+.task-item:hover{border-color:var(--blue-light);box-shadow:var(--shadow)}
+.task-item.done{opacity:.5}
+.task-item.done .task-title{text-decoration:line-through}
+.task-cb{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .15s;color:transparent}
+.task-cb.checked{background:var(--blue);border-color:var(--blue);color:#fff}
+.task-body{flex:1;min-width:0}
+.task-title{font-size:.9rem;font-weight:500}
+.task-meta{display:flex;gap:6px;align-items:center;margin-top:3px;flex-wrap:wrap;font-size:.7rem}
+.task-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}
+.task-item:hover .task-actions{opacity:1}
 
-.study-log-entry{
-  display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem;
-}
-.study-log-entry:last-child{border-bottom:none}
-.study-log-date{color:var(--muted);min-width:90px;font-size:.8rem}
-.study-log-content{flex:1}
-.study-log-time{color:var(--primary);font-size:.75rem;font-weight:600}
+/* ====== Finance News ====== */
+.news-card{padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;margin-bottom:8px}
+.news-card .news-title{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.news-card .news-summary{font-size:.8rem;color:var(--muted);margin-bottom:8px;line-height:1.5}
+.news-card .news-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.news-card .news-footer{display:flex;align-items:center;justify-content:space-between;font-size:.75rem;margin-top:8px}
 
-/* ========== Finance Module ========== */
-.finance-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
-.finance-card{padding:16px;border-radius:var(--radius);text-align:center}
-.finance-card.income{background:var(--success-bg)}
-.finance-card.expense{background:var(--danger-bg)}
-.finance-card.balance{background:var(--primary-bg)}
-.finance-card .label{font-size:.75rem;color:var(--muted);margin-bottom:4px}
-.finance-card .amount{font-size:1.3rem;font-weight:700}
-.finance-card.income .amount{color:var(--success)}
-.finance-card.expense .amount{color:var(--danger)}
-.finance-card.balance .amount{color:var(--primary)}
+/* ====== Health ====== */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{padding:14px;border-radius:var(--radius-sm);text-align:center;background:#fff;border:1px solid var(--border)}
+.stat-card .stat-val{font-size:1.5rem;font-weight:700;color:var(--blue)}
+.stat-card .stat-label{font-size:.7rem;color:var(--muted);margin-top:2px}
+.chart-wrap{background:#fff;border-radius:var(--radius);padding:16px;border:1px solid var(--border);margin-bottom:16px;height:260px}
+.health-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem}
+.health-row:last-child{border-bottom:none}
+.health-row .hr-date{min-width:70px;color:var(--muted);font-size:.8rem}
+.health-row .hr-weight{font-weight:600;color:var(--blue);min-width:60px}
 
-.finance-table{width:100%;border-collapse:collapse;font-size:.85rem}
-.finance-table th{text-align:left;padding:8px 10px;color:var(--muted);font-weight:500;border-bottom:2px solid var(--border);font-size:.75rem}
-.finance-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
-.finance-table tr:hover{background:var(--bg)}
-.finance-table .type-income{color:var(--success);font-weight:600}
-.finance-table .type-expense{color:var(--danger);font-weight:600}
+/* ====== XHS Module ====== */
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kanban-col{background:#fff;border-radius:var(--radius-sm);border:1px solid var(--border);padding:10px;min-height:120px}
+.kanban-col .col-hd{font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.kanban-col .col-count{background:var(--blue);color:#fff;font-size:.65rem;padding:1px 6px;border-radius:10px}
+.kanban-card{padding:8px 10px;background:var(--bg);border-radius:var(--radius-xs);margin-bottom:6px;font-size:.8rem;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.kanban-card:hover{border-color:var(--blue);background:#fff}
+.kanban-card .kc-title{font-weight:500}
+.kanban-card .kc-meta{font-size:.7rem;color:var(--muted);margin-top:2px}
+.kanban-add{font-size:.75rem;color:var(--blue);cursor:pointer;padding:4px;text-align:center;border-radius:var(--radius-xs);border:1px dashed var(--border);transition:all .15s}
+.kanban-add:hover{background:var(--blue-bg)}
 
-/* ========== Settings Module ========== */
-.settings-section{margin-bottom:20px}
-.settings-section h3{font-size:.9rem;font-weight:600;margin-bottom:10px;color:var(--muted)}
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
-.settings-row:last-child{border-bottom:none}
-.settings-row .label{font-size:.9rem}
-.settings-row .desc{font-size:.75rem;color:var(--muted);margin-top:2px}
+/* ====== Study Notes ====== */
+.note-card{padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.note-card:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.note-card .note-title{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.note-card .note-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.note-card .note-preview{font-size:.8rem;color:var(--muted);margin-top:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
-/* ========== Modal ========== */
-#modal-overlay{
-  position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;
-  display:none;align-items:center;justify-content:center;padding:16px;
-}
+/* ====== Inspiration ====== */
+.insp-quick{display:flex;gap:8px;margin-bottom:14px}
+.insp-quick input{flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm)}
+.insp-quick input:focus{border-color:var(--yellow);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.insp-card{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
+.insp-card .insp-status{font-size:.65rem;padding:2px 8px;border-radius:10px;flex-shrink:0;margin-top:3px}
+.insp-card .insp-body{flex:1}
+.insp-card .insp-title{font-size:.9rem;font-weight:500}
+.insp-card .insp-meta{font-size:.7rem;color:var(--muted);margin-top:2px;display:flex;gap:6px}
+.insp-card .insp-actions{display:flex;gap:4px;flex-shrink:0}
+
+/* ====== AI Command Bar ====== */
+.ai-bar{position:fixed;bottom:20px;left:calc(var(--sidebar-w) + 20px);right:20px;z-index:50;display:flex;gap:8px;align-items:center}
+.ai-bar input{flex:1;padding:12px 16px;border:2px solid var(--border);border-radius:30px;background:#fff;font-size:.9rem;box-shadow:var(--shadow-md);transition:all .15s}
+.ai-bar input:focus{border-color:var(--blue);box-shadow:0 4px 16px rgba(37,99,235,.15)}
+.ai-bar .ai-send{padding:10px 18px;border-radius:30px;background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff;font-weight:600;font-size:.85rem;box-shadow:0 2px 8px rgba(37,99,235,.3);white-space:nowrap}
+.ai-msg{position:fixed;bottom:80px;left:calc(var(--sidebar-w) + 20px);right:20px;z-index:49;padding:8px 16px;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow);font-size:.8rem;display:none;max-width:600px}
+
+/* ====== Modal ====== */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 #modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
-.modal h3{font-size:1.1rem;font-weight:600;margin-bottom:16px}
-.modal-field{margin-bottom:14px}
-.modal-field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px;font-weight:500}
-.modal-field input,.modal-field select,.modal-field textarea{
-  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--card);outline:none;transition:border-color .15s;
-}
-.modal-field input:focus,.modal-field select:focus,.modal-field textarea:focus{border-color:var(--primary)}
-.modal-field textarea{resize:vertical;min-height:60px}
+.modal{background:#fff;border-radius:var(--radius);padding:20px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal h3{font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--slate)}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+.modal-field input,.modal-field textarea,.modal-field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff}
+.modal-field input:focus,.modal-field textarea:focus,.modal-field select:focus{border-color:var(--blue)}
+.modal-field textarea{resize:vertical;min-height:80px;font-size:.85rem}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
-/* ========== Toast ========== */
-#toast{
-  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-  background:rgba(30,41,59,.95);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);
-  font-size:.85rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;
-}
+/* ====== Toast ====== */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(30,41,59,.95);color:#fff;padding:10px 24px;border-radius:20px;font-size:.8rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 
-/* ========== Responsive ========== */
+/* ====== Login ====== */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1E3A5F,#2563EB);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-card{background:#fff;border-radius:var(--radius);padding:32px 24px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:340px;max-width:90vw}
+.login-card h2{font-size:1.2rem;margin-bottom:4px;text-align:center}
+.login-card .sub{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:20px}
+.login-card .field{margin-bottom:14px}
+.login-card .field label{display:block;font-size:.75rem;color:var(--muted);margin-bottom:4px}
+.login-card .field input{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:var(--radius-sm);font-size:1rem}
+.login-card .field input:focus{border-color:var(--blue)}
+.login-card .err{font-size:.7rem;color:#EF4444;margin-top:4px;min-height:18px}
+.login-card .btn-full{width:100%;padding:12px;background:var(--blue);color:#fff;border-radius:var(--radius-sm);font-size:1rem;font-weight:700}
+.login-card .btn-full:disabled{opacity:.5}
+
+/* ====== Tag Input ====== */
+.tag-input-wrap{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;min-height:38px;align-items:center}
+.tag-input-wrap:focus-within{border-color:var(--blue)}
+.tag-chip{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:var(--blue-bg);color:var(--blue);border-radius:12px;font-size:.75rem;font-weight:500}
+.tag-chip .tag-rm{cursor:pointer;font-size:.9rem;line-height:1;margin-left:2px}
+.tag-input-wrap input{border:none;outline:none;flex:1;min-width:60px;padding:2px;font-size:.85rem;background:transparent}
+
+/* ====== Responsive ====== */
 @media(max-width:768px){
   #sidebar{transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0)}
-  #main{margin-left:0;padding:56px 12px 70px}
-  #mobile-bar{display:flex}
+  #main{margin-left:0;padding:48px 10px 80px}
+  #topbar{display:flex}
   #bottom-nav{display:flex}
-  .finance-summary{grid-template-columns:1fr}
-  .task-actions{opacity:1}
-  .modal{max-width:100%}
+  .ai-bar{left:10px;right:10px;bottom:75px}
+  .ai-msg{left:10px;right:10px;bottom:125px}
+  .kanban{grid-template-columns:repeat(2,1fr)}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .add-bar{flex-direction:column}
 }
-
-/* Scrollbar */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--muted)}
-
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeIn .25s ease}
-
-/* Empty state */
-.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
-.empty-state .icon{font-size:2.5rem;margin-bottom:8px;opacity:.5}
-.empty-state .text{font-size:.9rem}
-/* Login overlay */
-.login-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
-.login-card{background:var(--card);border-radius:var(--radius);padding:32px 24px;box-shadow:var(--shadow-lg);width:340px;max-width:90vw}
-.login-card h2{font-size:1.2rem;margin-bottom:4px}
-.login-card .sub{font-size:.8rem;color:var(--muted);margin-bottom:20px}
-.login-card .field{margin-bottom:14px}
-.login-card .field label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:4px}
-.login-card .field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:1rem;outline:none}
-.login-card .field input:focus{border-color:var(--primary)}
-.login-card .field .input-row{display:flex;gap:8px}
-.login-card .field .input-row input{flex:1}
-.login-card .field .input-row button{flex-shrink:0;font-size:.8rem;padding:10px 16px;white-space:nowrap}
-.login-card .err{font-size:.75rem;color:var(--danger);margin-top:4px;min-height:18px}
-.login-card .btn-login{width:100%;padding:12px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:1rem;font-weight:600}
-.login-card .btn-login:disabled{opacity:.5;cursor:not-allowed}
-.login-card .btn-send{background:var(--primary-bg);color:var(--primary);border-radius:var(--radius-sm);font-weight:500}
-.login-card .btn-send:disabled{opacity:.5;cursor:not-allowed}
-.login-card .logout-hint{font-size:.75rem;color:var(--muted);margin-top:16px;text-align:center}
-.login-card .logout-hint a{color:var(--danger);cursor:pointer}
 </style>
 </head>
 <body>
-
 <div id="app">
-  <!-- Mobile top bar -->
-  <div id="mobile-bar">
-    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-    <h1>📋 工作台</h1>
-    <div style="width:32px"></div>
+
+<!-- Login -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <h2>🌊 个人工作台 v5.0</h2>
+    <div class="sub">蓝天×阳光 · 元气满满</div>
+    <div class="field"><label>用户名</label><input id="login-user" placeholder="admin"></div>
+    <div class="field"><label>密码</label><input id="login-pass" type="password" placeholder="Admin123"></div>
+    <div class="err" id="login-err"></div>
+    <button class="btn-full" onclick="doLogin()">登录</button>
   </div>
-
-  <!-- Sidebar -->
-  <nav id="sidebar">
-    <div class="sidebar-header">
-      <h1>📋 个人工作台</h1>
-      <div class="subtitle">高效工作 · 持续学习</div>
-    </div>
-    <div class="sidebar-nav">
-      <button class="nav-item active" data-page="tasks" onclick="navigate('tasks')">
-        <span class="icon">✅</span><span>待办任务</span><span class="badge" id="badge-tasks">0</span>
-      </button>
-      <button class="nav-item" data-page="study" onclick="navigate('study')">
-        <span class="icon">📚</span><span>学习进度</span>
-      </button>
-      <button class="nav-item" data-page="finance" onclick="navigate('finance')">
-        <span class="icon">💰</span><span>理财看板</span>
-      </button>
-      <button class="nav-item" data-page="settings" onclick="navigate('settings')">
-        <span class="icon">⚙️</span><span>设置</span>
-      </button>
-    </div>
-    <div class="sidebar-footer">
-      <div class="obsidian-status">
-        <span class="obsidian-dot" id="cloud-dot"></span>
-        <span id="cloud-text">正在连接...</span>
-      </div>
-      <div style="margin-top:4px;font-size:.7rem" id="last-sync"></div>
-    </div>
-  </nav>
-
-  <!-- Login overlay -->
-  <div id="login-overlay" class="login-overlay" style="display:none">
-    <div class="login-card">
-      <h2>登录工作台</h2>
-      <div class="sub">请输入账号密码，数据云端安全同步</div>
-      <div class="field">
-        <label>用户名</label>
-        <input type="text" id="login-username" placeholder="请输入用户名" autocomplete="username">
-      </div>
-      <div class="field">
-        <label>密码</label>
-        <input type="password" id="login-password" placeholder="请输入密码" autocomplete="current-password">
-      </div>
-      <div class="err" id="login-err"></div>
-      <button class="btn-login" id="btn-login" onclick="doLogin()">登录</button>
-    </div>
-  </div>
-
-  <!-- Main content -->
-  <main id="main">
-    <div id="pull-indicator"><div class="spinner"></div></div>
-    <!-- Tasks Page -->
-    <div id="page-tasks" class="page fade-in">
-      <div class="page-header">
-        <h2>待办任务</h2>
-        <div class="desc">按分类管理你的待办事项，手机/Mac 实时云同步</div>
-      </div>
-      <div class="task-add-bar">
-        <input type="text" id="quick-add-input" placeholder="快速添加任务，回车确认..." onkeypress="if(event.key==='Enter')quickAddTask()">
-        <select id="quick-add-cat">
-          <option value="工作">工作</option>
-          <option value="生活">生活</option>
-          <option value="广告">广告</option>
-          <option value="理财">理财</option>
-        </select>
-        <button class="btn btn-primary" onclick="quickAddTask()">添加</button>
-      </div>
-      <div class="task-tabs" id="task-tabs">
-        <button class="task-tab active" data-cat="全部" onclick="switchTaskTab('全部')">全部 <span class="count" id="count-全部">0</span></button>
-        <button class="task-tab" data-cat="工作" onclick="switchTaskTab('工作')">工作 <span class="count" id="count-工作">0</span></button>
-        <button class="task-tab" data-cat="生活" onclick="switchTaskTab('生活')">生活 <span class="count" id="count-生活">0</span></button>
-        <button class="task-tab" data-cat="广告" onclick="switchTaskTab('广告')">广告 <span class="count" id="count-广告">0</span></button>
-        <button class="task-tab" data-cat="理财" onclick="switchTaskTab('理财')">理财 <span class="count" id="count-理财">0</span></button>
-      </div>
-      <div class="task-list" id="task-list"></div>
-    </div>
-
-    <!-- Study Page -->
-    <div id="page-study" class="page fade-in" style="display:none">
-      <div class="page-header">
-        <h2>学习进度</h2>
-        <div class="desc">系统分析师备考追踪 · 知识点管理与学习记录</div>
-      </div>
-      <div class="card study-overall">
-        <div class="card-title">总体进度</div>
-        <div style="display:flex;align-items:center;gap:16px">
-          <div class="progress-text" id="study-overall-pct">0%</div>
-          <div style="flex:1">
-            <div class="progress-bar"><div class="progress-fill" id="study-overall-bar" style="width:0%"></div></div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:4px" id="study-overall-detail">0 / 0 知识点已完成</div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <span>知识点清单</span>
-          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openTopicModal()">+ 添加</button>
-        </div>
-        <div id="topic-list"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <span>学习记录</span>
-          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openLogModal()">+ 记录</button>
-        </div>
-        <div id="study-log-list"></div>
-      </div>
-    </div>
-
-    <!-- Finance Page -->
-    <div id="page-finance" class="page fade-in" style="display:none">
-      <div class="page-header">
-        <h2>理财看板</h2>
-        <div class="desc">收支记录与月度汇总 · 手机/Mac 实时云同步</div>
-      </div>
-      <div class="finance-summary">
-        <div class="finance-card income">
-          <div class="label">本月收入</div>
-          <div class="amount" id="fin-income">¥0</div>
-        </div>
-        <div class="finance-card expense">
-          <div class="label">本月支出</div>
-          <div class="amount" id="fin-expense">¥0</div>
-        </div>
-        <div class="finance-card balance">
-          <div class="label">本月结余</div>
-          <div class="amount" id="fin-balance">¥0</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <span>收支明细</span>
-          <button class="btn btn-ghost" style="font-size:.8rem;padding:4px 10px" onclick="openFinanceModal()">+ 记账</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="finance-table" id="finance-table">
-            <thead>
-              <tr><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>备注</th><th></th></tr>
-            </thead>
-            <tbody id="finance-tbody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Settings Page -->
-    <div id="page-settings" class="page fade-in" style="display:none">
-      <div class="page-header">
-        <h2>设置</h2>
-        <div class="desc">本地数据存储、导入导出与应用配置</div>
-      </div>
-
-      <div class="card">
-        <div class="settings-section">
-          <h3>数据同步 · 腾讯云 CloudBase</h3>
-          <div class="settings-row">
-            <div>
-              <div class="label">连接状态</div>
-              <div class="desc" id="settings-cloud-status">正在连接...</div>
-            </div>
-            <span class="obsidian-dot" id="cloud-status-dot" style="background:var(--warning)"></span>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">环境 ID</div>
-              <div class="desc">yayaliu-d4g1i1dc2fdb04417</div>
-            </div>
-            <span style="font-size:.75rem;color:var(--success)">✅ 云数据库</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="settings-section">
-          <h3>数据管理</h3>
-          <div class="settings-row">
-            <div>
-              <div class="label">手动同步</div>
-              <div class="desc">从云端拉取最新数据</div>
-            </div>
-            <button class="btn btn-ghost" onclick="syncNow()">刷新</button>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">导出 Markdown</div>
-              <div class="desc">将所有数据导出为 Markdown 文件下载</div>
-            </div>
-            <button class="btn btn-ghost" onclick="exportMarkdown()">导出</button>
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">导入 Markdown</div>
-              <div class="desc">从 Markdown 文件导入数据</div>
-            </div>
-            <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">导入</button>
-            <input type="file" id="import-file" accept=".md" style="display:none" onchange="importMarkdown(event)">
-          </div>
-          <div class="settings-row">
-            <div>
-              <div class="label">退出登录</div>
-              <div class="desc">清除登录状态，下次需要重新输入密码</div>
-            </div>
-            <button class="btn btn-ghost" onclick="doLogout()" style="color:var(--danger);font-size:.8rem">退出登录</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="settings-section">
-          <h3>关于</h3>
-          <div class="settings-row">
-            <div class="label">个人工作台 v4.0</div>
-          </div>
-          <div class="settings-row">
-            <div class="desc">腾讯云 CloudBase 云数据库 · 手机/Mac 实时同步 · Markdown 导入导出</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
 </div>
 
-<!-- Bottom nav (mobile) -->
-<nav id="bottom-nav">
-  <button class="bn-item active" data-page="tasks" onclick="navigate('tasks')">
-    <span class="icon">✅</span><span>任务</span>
-  </button>
-  <button class="bn-item" data-page="study" onclick="navigate('study')">
-    <span class="icon">📚</span><span>学习</span>
-  </button>
-  <button class="bn-item" data-page="finance" onclick="navigate('finance')">
-    <span class="icon">💰</span><span>理财</span>
-  </button>
-  <button class="bn-item" data-page="settings" onclick="navigate('settings')">
-    <span class="icon">⚙️</span><span>设置</span>
-  </button>
+<!-- Top bar (mobile) -->
+<div id="topbar"><button class="menu-btn" onclick="toggleSidebar()">☰</button><h1>🌊 工作台</h1><div style="width:28px"></div></div>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div class="sidebar-top"><h1>🌊 个人工作台</h1><div class="sub">蓝天×阳光 · v5.0</div></div>
+  <div class="sidebar-nav" id="sidebar-nav"></div>
+  <div class="sidebar-footer">
+    <div class="status-row"><span class="dot off" id="cloud-dot"></span><span style="font-size:.7rem" id="cloud-text">连接中...</span></div>
+    <div class="sync" id="last-sync"></div>
+  </div>
 </nav>
+
+<!-- Main -->
+<main id="main">
+<!-- Page: Tasks -->
+<div id="pg-tasks" class="page" style="display:none">
+  <div class="page-header"><h2>✅ 待办任务</h2><div class="desc">按分类管理你的待办事项</div></div>
+  <div class="add-bar"><input id="task-input" placeholder="快速添加任务..." onkeypress="if(event.key==='Enter')addTask()"><select id="task-cat"><option value="工作">工作</option><option value="生活">生活</option><option value="广告">广告</option><option value="理财">理财</option></select><button class="btn btn-primary" onclick="addTask()">添加</button></div>
+  <div class="filter-tabs" id="task-tabs"></div>
+  <div id="task-list"></div>
+</div>
+
+<!-- Page: Finance News -->
+<div id="pg-finance" class="page" style="display:none">
+  <div class="page-header"><h2>📈 财经新闻</h2><div class="desc">关注你的投资领域</div></div>
+  <button class="btn btn-primary" style="margin-bottom:12px" onclick="openModal('finance')">+ 添加新闻</button>
+  <div class="filter-tabs" id="finance-tabs"></div>
+  <div id="finance-list"></div>
+</div>
+
+<!-- Page: Health -->
+<div id="pg-health" class="page" style="display:none">
+  <div class="page-header"><h2>💪 健康减重</h2><div class="desc">记录身体变化，看见进步</div></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="openModal('health')">+ 添加记录</button>
+    <button class="btn btn-ghost btn-sm" onclick="renderHealth()">刷新统计</button>
+  </div>
+  <div class="stats-grid" id="health-stats"></div>
+  <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+  <div id="health-list" class="card" style="padding:0"></div>
+</div>
+
+<!-- Page: XHS -->
+<div id="pg-xhs" class="page" style="display:none">
+  <div class="page-header"><h2>📕 小红书运营</h2><div class="desc">内容管理 + 热点追踪</div></div>
+  <div class="filter-tabs" style="margin-bottom:12px">
+    <button class="filter-tab active" onclick="xhsTab='content';renderXHS()">内容管理</button>
+    <button class="filter-tab" onclick="xhsTab='hot';renderXHS()">热点追踪</button>
+  </div>
+  <div id="xhs-content"></div>
+</div>
+
+<!-- Page: Study -->
+<div id="pg-study" class="page" style="display:none">
+  <div class="page-header"><h2>📖 学习笔记</h2><div class="desc">读书 · 课程 · 感悟 · 技能</div></div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" onclick="openModal('study')">+ 新建笔记</button>
+    <button class="btn btn-yellow btn-sm" onclick="syncToObsidian()">📤 同步 Obsidian</button>
+  </div>
+  <div class="filter-tabs" id="study-tabs"></div>
+  <div id="study-list"></div>
+</div>
+
+<!-- Page: Inspiration -->
+<div id="pg-insp" class="page" style="display:none">
+  <div class="page-header"><h2>💡 灵感库</h2><div class="desc">一闪而过的想法，都值得留住</div></div>
+  <div class="insp-quick"><input id="insp-input" placeholder="快速记录想法..." onkeypress="if(event.key==='Enter')addInsp()"><button class="btn btn-yellow btn-sm" onclick="addInsp()">保存</button></div>
+  <div class="filter-tabs" id="insp-tabs"></div>
+  <div id="insp-list"></div>
+</div>
+
+</main>
+
+<!-- AI Command Bar -->
+<div class="ai-bar" id="ai-bar"><input id="ai-input" placeholder="🤖 对我说：添加任务、查体重、找新闻..." onkeypress="if(event.key==='Enter')runAI()"><button class="ai-send" onclick="runAI()">发送</button></div>
+<div class="ai-msg" id="ai-msg"></div>
 
 <!-- Modal -->
 <div id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal" id="modal-content"></div>
+  <div class="modal" id="modal-body"></div>
 </div>
 
 <!-- Toast -->
 <div id="toast"></div>
+
+<!-- Bottom nav (mobile) -->
+<div id="bottom-nav"></div>
+
+</div>
 
 <script>
 // ============================================================
@@ -554,1091 +329,514 @@ ul{list-style:none}
 const Store = {
   data: {
     tasks: [],
-    study: { subject:'系统分析师', topics:[], logs:[] },
-    finance: { records: [] }
+    study_notes: [],
+    finance_news: [],
+    health_records: [],
+    xhs_content: [],
+    hot_topics: [],
+    inspirations: []
   },
   envId: 'yayaliu-d4g1i1dc2fdb04417',
-  app: null,
-  auth: null,
-  db: null,
-  ready: false,
-  cloudOk: false,
-  _hadSyncBefore: false,
-  _deviceId: '',
-
-  // ---- CloudBase 初始化（匿名登录，仅用于数据库访问） ----
+  app: null, auth: null, db: null, ready: false, cloudOk: false,
+  _hadSyncBefore: false, _syncTimer: null,
   async initCloud() {
     try {
-      // Step 1: 检查 SDK 是否加载
-      if (typeof cloudbase === 'undefined') {
-        throw new Error('SDK未加载，请检查网络');
-      }
-      console.log('[CloudBase] Step 1: SDK loaded');
-
-      // Step 2: 初始化应用
+      if (typeof cloudbase === 'undefined') throw new Error('SDK未加载');
       const app = cloudbase.init({ env: this.envId });
-      console.log('[CloudBase] Step 2: app initialized, env=' + this.envId);
-
-      // Step 3: 统一账号登录 admin/admin123，所有设备同身份
-      let loginState = null;
-      try { loginState = await app.auth.getLoginState(); } catch(e){}
-      if (loginState) {
-        console.log('[CloudBase] Step 3: using existing login');
-      } else {
-        const { data, error } = await app.auth.signInWithPassword({
-          username: 'admin',
-          password: 'Admin123'
-        });
+      let ls;
+      try { ls = await app.auth.getLoginState(); } catch(e){}
+      if (!ls) {
+        const { error } = await app.auth.signInWithPassword({ username: 'admin', password: 'Admin123' });
         if (error) throw new Error(error.message || '登录失败');
-        console.log('[CloudBase] Step 3: signed in as admin');
       }
-      this.auth = app.auth;
-      this.app = app;
-
-      // Step 4: 获取数据库引用
-      this.db = app.database();
-      this.ready = true;
+      this.auth = app.auth; this.app = app; this.db = app.database(); this.ready = true;
       this.updateStatus('connecting');
-      console.log('[CloudBase] Step 4: db ref obtained');
-
-      // Step 5: 加载数据
       await this.loadFromCloud();
-      // DB连接成功即视为在线（即使部分集合加载失败，侧边栏也应显示已连接）
-      this.cloudOk = true;
-      this.updateStatus('cloud');
-      console.log('[CloudBase] Step 5: data loaded');
+      this.cloudOk = true; this.updateStatus('cloud');
       return true;
     } catch(e) {
-      const msg = e.message || String(e);
-      console.error('[CloudBase] init failed:', msg);
-      this.ready = false;
-      this.cloudOk = false;
-      this.updateStatus('offline');
-      // 显示具体错误给用户
-      if (msg.includes('SDK未加载')) {
-        toast('云数据库连接失败：SDK加载超时，请检查手机网络后刷新重试');
-      } else if (msg.includes('signIn') || msg.includes('auth') || msg.includes('anonymous') || msg.includes('ACCESS_TOKEN')) {
-        toast('云数据库连接失败：匿名登录未开启或SDK版本不兼容，请检查CloudBase控制台设置');
-      } else if (msg.includes('permission') || msg.includes('403') || msg.includes('unauthorized')) {
-        toast('云数据库连接失败：数据库权限不足，请检查集合权限设置');
-      } else if (msg.includes('Network') || msg.includes('fetch') || msg.includes('timeout')) {
-        toast('云数据库连接失败：网络超时，请检查手机网络');
-      } else {
-        toast('云数据库连接失败：' + msg);
-      }
+      this.ready = false; this.cloudOk = false; this.updateStatus('offline');
+      toast('连接失败: ' + (e.message || '网络错误'));
       return false;
     }
   },
-
-  // ---- 从云端加载（独立查询，单个失败不影响其他） ----
   async loadFromCloud() {
-    if (!this.ready || !this.db) return false;
-    const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...rest}=d; return rest; };
-    const dedup = (arr, key='id') => { const seen=new Set(); return arr.filter(x=>{ const v=x[key]||''; if(seen.has(v)) return false; seen.add(v); return true; }); };
-    let hasCloud = false, ok = true;
-    // 逐集合独立查询，一个失败不影响其他
-    const safeGet = async (col) => { try { const r=await this.db.collection(col).limit(1000).get(); return r.data||[]; } catch(e){ console.warn('[CloudBase] '+col+' query failed:',e.message); ok=false; return []; } };
-    const cloudTasks = dedup((await safeGet('tasks')).map(strip));
-    const cloudTopics = dedup((await safeGet('study_topics')).map(strip));
-    const cloudLogs = (await safeGet('study_logs')).map(strip);
-    const configData = await safeGet('study_config');
-    const cloudRecords = (await safeGet('finance_records')).map(strip);
-    if (cloudTasks.length > 0) { this.data.tasks = cloudTasks; hasCloud = true; }
-    if (cloudTopics.length > 0) { this.data.study.topics = cloudTopics; hasCloud = true; }
-    if (cloudLogs.length > 0) { this.data.study.logs = cloudLogs; hasCloud = true; }
-    if (cloudRecords.length > 0) { this.data.finance.records = cloudRecords; hasCloud = true; }
-    if (configData.length > 0 && configData[0].subject) { this.data.study.subject = configData[0].subject; }
-    if (hasCloud) {
-      this.saveLocal();
-      this.updateSyncTime();
-    } else if ((this.data.tasks.length > 0 || this.data.study.topics.length > 0) && !this._hadSyncBefore) {
-      // 仅在首次使用时自动上传本地种子数据。如果之前同步过（云端被手动清空），不自动回传
-      await this.saveToCloud();
-    } else if (this._hadSyncBefore) {
-      // 云端已被清空，清空本地缓存保持同步
-      this.data.tasks = [];
-      this.data.finance.records = [];
-      this.data.study.logs = [];
-      this.saveLocal();
-    }
-    return ok;
+    if (!this.ready || !this.db) return;
+    const dedup = (arr, key='id') => { const s=new Set(); return arr.filter(x=>{ const v=x[key]||''; if(s.has(v)) return false; s.add(v); return true; }); };
+    const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...r}=d; return r; };
+    const sg = async (col, key) => { try { const r=await this.db.collection(col).limit(1000).get(); return (r.data||[]).map(strip); } catch(e){ return []; } };
+    const ct = dedup(await sg('tasks'));
+    const sn = dedup(await sg('study_notes'));
+    const fn = await sg('finance_news');
+    const hr = dedup(await sg('health_records'));
+    const xc = dedup(await sg('xiaohongshu'));
+    const ht = dedup(await sg('hot_topics'));
+    const ins = dedup(await sg('inspirations'));
+    let hasCloud = false;
+    if (ct.length) { this.data.tasks = ct; hasCloud = true; }
+    if (sn.length) { this.data.study_notes = sn; hasCloud = true; }
+    if (fn.length) { this.data.finance_news = fn; hasCloud = true; }
+    if (hr.length) { this.data.health_records = hr; hasCloud = true; }
+    if (xc.length) { this.data.xhs_content = xc; hasCloud = true; }
+    if (ht.length) { this.data.hot_topics = ht; hasCloud = true; }
+    if (ins.length) { this.data.inspirations = ins; hasCloud = true; }
+    if (hasCloud) { this.saveLocal(); this.updateSyncTime(); }
+    else if (this._hadSyncBefore) { this.data.tasks=[]; this.data.finance_news=[]; this.data.health_records=[]; this.data.xhs_content=[]; this.data.hot_topics=[]; this.data.inspirations=[]; this.saveLocal(); }
+    else if (this.data.tasks.length||this.data.study_notes.length) { await this.saveToCloud(); }
   },
-
-  // ---- 保存到云端 ----
   async saveToCloud() {
     if (!this.ready || !this.db) return;
-    try {
-      // 按 id 逐条去重保存，避免多设备同时保存的竞态条件
-      const upsertByKey = async (col, items, key='id') => {
-        for (const item of items) {
-          if (!item[key]) { await col.add({...item}); continue; }
-          try {
-            const existing = await col.where({ [key]: item[key] }).get();
-            for (const doc of existing.data || []) {
-              try { await col.doc(doc._id).remove(); } catch(e){}
-            }
-          } catch(e){}
-          await col.add({...item});
-        }
-        // 清理当前列表中已不存在的项（用户删掉的数据）
-        const currentIds = new Set(items.map(x=>x[key]).filter(Boolean));
-        if (currentIds.size > 0) {
-          try {
-            const allDocs = await col.limit(1000).get();
-            for (const doc of allDocs.data || []) {
-              if (!doc[key] || currentIds.has(doc[key])) continue;
-              try { await col.doc(doc._id).remove(); } catch(e){}
-            }
-          } catch(e){}
-        }
-      };
-      // 逐集合独立保存，一个失败不影响其他
-      const safeSave = async (name, fn) => {
-        try { await fn(); } catch(e) {
-          console.warn('[CloudBase] '+name+' save failed:', e.message); ok = false;
-        }
-      };
-      let ok = true;
-      await safeSave('tasks', () => upsertByKey(this.db.collection('tasks'), this.data.tasks));
-      await safeSave('study_topics', () => upsertByKey(this.db.collection('study_topics'), this.data.study.topics));
-      await safeSave('study_logs', () => upsertByKey(this.db.collection('study_logs'), this.data.study.logs, 'date'));
-      await safeSave('study_config', () => upsertByKey(this.db.collection('study_config'), [{subject: this.data.study.subject}], 'subject'));
-      await safeSave('finance_records', () => upsertByKey(this.db.collection('finance_records'), this.data.finance.records));
-      if (ok) {
-        this.updateSyncTime();
-        this.updateStatus('cloud');
-        console.log('[CloudBase] 数据已同步到云端，tasks:', this.data.tasks.length);
-      } else {
-        toast('部分数据云端同步失败，可能需要检查网络');
-      }
-    } catch(e) {
-      console.error('[CloudBase] 保存失败:', e.message || e);
-      toast('云端同步失败，请检查网络后重试');
-    }
+    const repl = async (col, items) => {
+      const ex = await col.limit(1000).get();
+      for (const d of ex.data||[]) try { await col.doc(d._id).remove(); } catch(e){}
+      for (const i of items) await col.add({...i});
+    };
+    try { const o=await repl(this.db.collection('tasks'),this.data.tasks); } catch(e){}
+    try { await repl(this.db.collection('study_notes'),this.data.study_notes); } catch(e){}
+    try { await repl(this.db.collection('finance_news'),this.data.finance_news); } catch(e){}
+    try { await repl(this.db.collection('health_records'),this.data.health_records); } catch(e){}
+    try { await repl(this.db.collection('xiaohongshu'),this.data.xhs_content); } catch(e){}
+    try { await repl(this.db.collection('hot_topics'),this.data.hot_topics); } catch(e){}
+    try { await repl(this.db.collection('inspirations'),this.data.inspirations); } catch(e){}
+    this.updateSyncTime(); this.updateStatus('cloud');
   },
-
-  // ---- LocalStorage fallback ----
   loadLocal() {
     try {
-      const raw = localStorage.getItem('workspace_data');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        this.data = Object.assign(this.data, parsed);
-      } else {
-        this.initSeedData();
-      }
-      this._hadSyncBefore = localStorage.getItem('workspace_hadsync') === '1';
-      this._deviceId = localStorage.getItem('workspace_deviceid');
-      if (!this._deviceId) {
-        this._deviceId = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
-        localStorage.setItem('workspace_deviceid', this._deviceId);
-      }
-    } catch(e) { this.initSeedData(); }
+      const r = localStorage.getItem('ws_data');
+      if (r) { const p=JSON.parse(r); this.data = Object.assign(this.data, p); }
+      else { this.data.study_notes = [{id:'s1',title:'系统分析师备考',category:'课程',content:'## 知识点\n- 计算机系统基础\n- 软件工程',tags:['考试'],createdAt:'2026-07-29',updatedAt:'2026-07-29'}]; }
+      this._hadSyncBefore = localStorage.getItem('ws_hadsync')==='1';
+    } catch(e) {}
   },
-  saveLocal() {
-    localStorage.setItem('workspace_data', JSON.stringify(this.data));
-  },
-  initSeedData() {
-    this.data.study.topics = [
-      { id:'t1', name:'计算机系统基础知识', completed:false, progress:0 },
-      { id:'t2', name:'信息系统基础知识', completed:false, progress:0 },
-      { id:'t3', name:'系统架构设计', completed:false, progress:0 },
-      { id:'t4', name:'软件工程', completed:false, progress:0 },
-      { id:'t5', name:'项目管理', completed:false, progress:0 },
-      { id:'t6', name:'系统分析与设计方法', completed:false, progress:0 },
-      { id:'t7', name:'信息安全', completed:false, progress:0 },
-      { id:'t8', name:'法律法规与标准', completed:false, progress:0 },
-    ];
-  },
-
-  // ---- UI 状态 ----
-  updateStatus(mode) {
-    const dot = document.getElementById('cloud-dot');
-    const text = document.getElementById('cloud-text');
-    const sdot = document.getElementById('cloud-status-dot');
-    const sText = document.getElementById('settings-cloud-status');
-    if (!dot) return;
-    dot.classList.remove('connected');
-    if (mode === 'connecting') {
-      text.textContent = '正在连接云数据库...';
-      if (sdot) sdot.style.background = 'var(--warning)';
-      if (sText) sText.textContent = '正在连接 CloudBase...';
-    } else if (mode === 'cloud') {
-      dot.classList.add('connected');
-      text.textContent = '云端已连接';
-      if (sdot) sdot.style.background = 'var(--success)';
-      if (sText) sText.textContent = '数据实时同步到腾讯云，手机/Mac 随时随地可用';
-    } else {
-      text.textContent = '离线模式';
-      if (sdot) sdot.style.background = 'var(--danger)';
-      if (sText) sText.textContent = '离线模式 — 数据仅保存在浏览器中，连接云端后可同步';
-    }
+  saveLocal() { localStorage.setItem('ws_data', JSON.stringify(this.data)); },
+  async save() { this.saveLocal(); clearTimeout(this._syncTimer); this._syncTimer = setTimeout(()=>this.saveToCloud(),500); },
+  updateStatus(s) {
+    const d=document.getElementById('cloud-dot'),t=document.getElementById('cloud-text');
+    if (s==='cloud') { d.classList.add('on'); d.classList.remove('off'); t.textContent='已连接'; }
+    else if (s==='connecting') { d.classList.add('on'); d.classList.remove('off'); t.textContent='连接中...'; }
+    else { d.classList.add('off'); d.classList.remove('on'); t.textContent='离线'; }
   },
   updateSyncTime() {
-    const now = new Date();
-    const t = now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const el = document.getElementById('last-sync');
-    if (el) el.textContent = '已同步 ' + t;
-    this._hadSyncBefore = true;
-    localStorage.setItem('workspace_hadsync', '1');
-  },
-
-  // ---- 统一保存 ----
-  async save() {
-    this.saveLocal();
-    clearTimeout(this._syncTimer);
-    this._syncTimer = setTimeout(() => this.saveToCloud(), 500);
-  },
-
-  // ---- ID 生成器 ----
-  uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-};
-
-// ============================================================
-// Markdown Serializer/Parser (Obsidian compatible)
-// ============================================================
-const Markdown = {
-  // ---- Tasks ----
-  serializeTasks(tasks) {
-    const cats = ['工作','生活','广告','理财'];
-    const now = new Date().toISOString();
-    let md = `---\ntype: workspace-tasks\nupdated: ${now}\n---\n\n`;
-    for (const cat of cats) {
-      const items = tasks.filter(t => t.category === cat);
-      if (items.length === 0) continue;
-      md += `## ${cat}\n\n`;
-      for (const t of items) {
-        const check = t.completed ? '[x]' : '[ ]';
-        const pri = `**[${t.priority}]**`;
-        let line = `- ${check} ${pri} ${t.title}`;
-        if (t.dueDate) line += ` \`due:${t.dueDate}\``;
-        if (t.notes) line += `\n  - ${t.notes}`;
-        md += line + '\n';
-      }
-      md += '\n';
-    }
-    // Uncategorized
-    const others = tasks.filter(t => !cats.includes(t.category));
-    if (others.length > 0) {
-      md += '## 其他\n\n';
-      for (const t of others) {
-        const check = t.completed ? '[x]' : '[ ]';
-        const pri = `**[${t.priority||'中'}]**`;
-        md += `- ${check} ${pri} ${t.title}\n`;
-      }
-    }
-    return md;
-  },
-  parseTasks(md) {
-    const tasks = [];
-    if (!md) return tasks;
-    let currentCat = '';
-    const lines = md.split('\n');
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const catMatch = line.match(/^## (.+)/);
-      if (catMatch) { currentCat = catMatch[1].trim(); continue; }
-      const taskMatch = line.match(/^- \[([ x])\] \*\*\[(.+?)\]\*\*\s+(.+?)(?:\s+`due:(.+?)`)?$/);
-      if (taskMatch) {
-        let notes = '';
-        if (i+1 < lines.length && lines[i+1].startsWith('  - ')) {
-          notes = lines[i+1].slice(4).trim();
-          i++;
-        }
-        tasks.push({
-          id: Store.uid(),
-          title: taskMatch[3].trim(),
-          category: currentCat || '其他',
-          priority: taskMatch[2].trim(),
-          completed: taskMatch[1] === 'x',
-          dueDate: taskMatch[4] || '',
-          notes: notes,
-          createdAt: new Date().toISOString().slice(0,10)
-        });
-      }
-    }
-    return tasks;
-  },
-
-  // ---- Study ----
-  serializeStudy(study) {
-    const now = new Date().toISOString();
-    const completed = study.topics.filter(t => t.completed).length;
-    const total = study.topics.length;
-    const pct = total > 0 ? Math.round(completed/total*100) : 0;
-    let md = `---\ntype: workspace-study\nupdated: ${now}\n---\n\n`;
-    md += `## ${study.subject || '学习计划'}\n\n`;
-    md += `### 知识点进度\n\n`;
-    md += `> 总体进度: ${pct}% (${completed}/${total})\n\n`;
-    for (const t of study.topics) {
-      const check = t.completed ? '[x]' : '[ ]';
-      md += `- ${check} ${t.name} (${t.progress||0}%)\n`;
-    }
-    md += '\n### 学习记录\n\n';
-    const sortedLogs = [...study.logs].sort((a,b) => b.date.localeCompare(a.date));
-    for (const log of sortedLogs) {
-      const time = log.duration ? ` (${log.duration}h)` : '';
-      md += `- **${log.date}**: ${log.content}${time}\n`;
-    }
-    return md;
-  },
-  parseStudy(md) {
-    if (!md) return Store.data.study;
-    const lines = md.split('\n');
-    let subject = '系统分析师';
-    let topics = [];
-    let logs = [];
-    let section = '';
-    for (let line of lines) {
-      const subMatch = line.match(/^## (.+)/);
-      if (subMatch) { subject = subMatch[1].trim(); section = ''; continue; }
-      if (line.startsWith('### 知识点进度')) { section = 'topics'; continue; }
-      if (line.startsWith('### 学习记录')) { section = 'logs'; continue; }
-      if (section === 'topics') {
-        const m = line.match(/^- \[([ x])\] (.+?) \((\d+)%\)$/);
-        if (m) {
-          topics.push({ id: Store.uid(), name: m[2].trim(), completed: m[1]==='x', progress: parseInt(m[3]) });
-        }
-      } else if (section === 'logs') {
-        const m = line.match(/^- \*\*(.+?)\*\*:(.+?)(?:\s+\((\d+(?:\.\d+)?)h\))?$/);
-        if (m) {
-          logs.push({ id: Store.uid(), date: m[1].trim(), content: m[2].trim(), duration: m[3] ? parseFloat(m[3]) : 0 });
-        }
-      }
-    }
-    return { subject, topics, logs };
-  },
-
-  // ---- Finance ----
-  serializeFinance(finance) {
-    const now = new Date().toISOString();
-    const ym = new Date().toISOString().slice(0,7);
-    let md = `---\ntype: workspace-finance\nupdated: ${now}\n---\n\n`;
-    // Group by month
-    const byMonth = {};
-    for (const r of finance.records) {
-      const month = (r.date||'').slice(0,7);
-      if (!byMonth[month]) byMonth[month] = [];
-      byMonth[month].push(r);
-    }
-    const months = Object.keys(byMonth).sort().reverse();
-    for (const month of months) {
-      const records = byMonth[month];
-      let income = 0, expense = 0;
-      for (const r of records) {
-        if (r.type === '收入') income += r.amount;
-        else expense += r.amount;
-      }
-      md += `## ${month}\n\n`;
-      md += `### 收支明细\n\n`;
-      md += `| 日期 | 类型 | 分类 | 金额 | 备注 |\n|------|------|------|------|------|\n`;
-      for (const r of records) {
-        md += `| ${r.date} | ${r.type} | ${r.category} | ${r.amount} | ${r.note||''} |\n`;
-      }
-      md += `\n### 月度汇总\n\n`;
-      md += `- 收入: ${income}\n- 支出: ${expense}\n- 结余: ${income - expense}\n\n`;
-    }
-    return md;
-  },
-  parseFinance(md) {
-    if (!md) return { records: [] };
-    const records = [];
-    const lines = md.split('\n');
-    for (let line of lines) {
-      const m = line.match(/^\| (\d{4}-\d{2}-\d{2}) \| (.+?) \| (.+?) \| (\d+(?:\.\d+)?) \| (.*) \|$/);
-      if (m) {
-        records.push({
-          id: Store.uid(),
-          date: m[1].trim(),
-          type: m[2].trim(),
-          category: m[3].trim(),
-          amount: parseFloat(m[4]),
-          note: m[5].trim()
-        });
-      }
-    }
-    return { records };
+    const n=new Date(),el=document.getElementById('last-sync');
+    if(el) el.textContent='同步 '+n.toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    this._hadSyncBefore=true; localStorage.setItem('ws_hadsync','1');
   }
 };
 
 // ============================================================
-// UI Rendering
+// Helpers
 // ============================================================
-let currentTaskTab = '全部';
-let currentPage = 'tasks';
+const genId = () => 'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today = () => new Date().toISOString().slice(0,10);
 
-function navigate(page) {
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-  document.getElementById('page-' + page).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
-  document.querySelectorAll('.bn-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
-  // Close sidebar on mobile
-  document.getElementById('sidebar').classList.remove('open');
-  // Render page
-  if (page === 'tasks') renderTasks();
-  else if (page === 'study') renderStudy();
-  else if (page === 'finance') renderFinance();
-  else if (page === 'settings') { updateTokenBadge(); updateProxySelect(); runDiagnostic(); }
+function toast(msg) {
+  const e = document.getElementById('toast'); e.textContent = msg; e.classList.add('show');
+  setTimeout(() => e.classList.remove('show'), 2000);
 }
 
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
+let currentPage = 'tasks', currentModal = null, editId = null;
+let taskFilter = '全部', financeFilter = '全部', studyFilter = '全部', inspFilter = '全部', xhsTab = 'content';
+
+// ============================================================
+// Navigation
+// ============================================================
+const pages = [
+  {id:'tasks', icon:'✅', label:'待办任务', cat:'tasks'},
+  {id:'finance', icon:'📈', label:'财经新闻', cat:'finance_news'},
+  {id:'health', icon:'💪', label:'健康减重', cat:'health_records'},
+  {id:'xhs', icon:'📕', label:'小红书运营', cat:'xhs_content'},
+  {id:'study', icon:'📖', label:'学习笔记', cat:'study_notes'},
+  {id:'insp', icon:'💡', label:'灵感库', cat:'inspirations'},
+];
+
+function navigate(id) {
+  currentPage = id;
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.getElementById('pg-'+id).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.querySelector('.nav-item[data-page="'+id+'"]')?.classList.add('active');
+  document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('active'));
+  document.querySelector('.bn-item[data-page="'+id+'"]')?.classList.add('active');
+  if (id==='tasks') renderTasks();
+  if (id==='finance') renderFinance();
+  if (id==='health') renderHealth();
+  if (id==='xhs') renderXHS();
+  if (id==='study') renderStudy();
+  if (id==='insp') renderInsp();
+  if (window.innerWidth<=768) document.getElementById('sidebar').classList.remove('open');
 }
 
-// ---- Tasks ----
-function renderTasks() {
-  const tasks = Store.data.tasks;
-  const cats = ['全部','工作','生活','广告','理财'];
-  // Update counts
-  for (const cat of cats) {
-    const count = cat === '全部'
-      ? tasks.filter(t => !t.completed).length
-      : tasks.filter(t => t.category === cat && !t.completed).length;
-    const el = document.getElementById('count-' + cat);
-    if (el) el.textContent = count;
-  }
-  const badge = document.getElementById('badge-tasks');
-  if (badge) badge.textContent = tasks.filter(t => !t.completed).length;
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
-  // Filter
-  let filtered = tasks;
-  if (currentTaskTab !== '全部') filtered = tasks.filter(t => t.category === currentTaskTab);
-  // Sort: incomplete first, then by priority
-  const priOrder = { '高':0, '中':1, '低':2 };
-  filtered.sort((a,b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    return (priOrder[a.priority]||1) - (priOrder[b.priority]||1);
+function buildNav() {
+  let h=''; let b='';
+  pages.forEach(p=>{
+    h+=`<button class="nav-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
+    if (p.id!=='insp' && p.id!=='study') b+=`<button class="bn-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
   });
-
-  const list = document.getElementById('task-list');
-  if (filtered.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📝</div><div class="text">暂无任务，添加一个开始吧</div></div>';
-    return;
-  }
-  list.innerHTML = filtered.map(t => `
-    <div class="task-item ${t.completed?'done':''}">
-      <div class="task-checkbox ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div>
-      <div class="task-body">
-        <div class="task-title">${esc(t.title)}</div>
-        <div class="task-meta">
-          <span class="task-priority ${esc(t.priority)}">${esc(t.priority)}</span>
-          <span class="task-cat">${esc(t.category)}</span>
-          ${t.dueDate ? `<span class="task-date">📅 ${esc(t.dueDate)}</span>` : ''}
-          ${t.notes ? `<span class="task-date">💬 ${esc(t.notes)}</span>` : ''}
-        </div>
-      </div>
-      <div class="task-actions">
-        <button onclick="editTask('${t.id}')" title="编辑">✏️</button>
-        <button onclick="deleteTask('${t.id}')" title="删除">🗑️</button>
-      </div>
-    </div>
-  `).join('');
+  b+=`<button class="bn-item" data-page="more" onclick="toggleSidebar()"><span class="icon">📋</span>更多</button>`;
+  document.getElementById('sidebar-nav').innerHTML = h;
+  document.getElementById('bottom-nav').innerHTML = b;
+  navigate('tasks');
 }
 
-function switchTaskTab(cat) {
-  currentTaskTab = cat;
-  document.querySelectorAll('.task-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
-  renderTasks();
-}
-
-function quickAddTask() {
-  const input = document.getElementById('quick-add-input');
-  const cat = document.getElementById('quick-add-cat').value;
-  const title = input.value.trim();
+// ============================================================
+// Tasks Module
+// ============================================================
+function addTask() {
+  const inp = document.getElementById('task-input'), title = inp.value.trim();
   if (!title) return;
-  Store.data.tasks.push({
-    id: Store.uid(),
-    title,
-    category: cat,
-    priority: '中',
-    completed: false,
-    dueDate: '',
-    notes: '',
-    createdAt: new Date().toISOString().slice(0,10)
-  });
-  input.value = '';
-  Store.save();
-  renderTasks();
-  toast('任务已添加');
+  Store.data.tasks.unshift({ id:genId(), title, category:document.getElementById('task-cat').value, priority:'中', dueDate:'', notes:'', completed:false, createdAt:today() });
+  inp.value = ''; Store.save(); renderTasks();
 }
 
 function toggleTask(id) {
-  const t = Store.data.tasks.find(x => x.id === id);
-  if (t) {
-    t.completed = !t.completed;
-    Store.save();
-    renderTasks();
-  }
+  const t = Store.data.tasks.find(x=>x.id===id); if(!t) return;
+  t.completed = !t.completed; Store.save(); renderTasks();
 }
 
 function deleteTask(id) {
-  Store.data.tasks = Store.data.tasks.filter(t => t.id !== id);
-  Store.save();
-  renderTasks();
-  toast('任务已删除');
+  Store.data.tasks = Store.data.tasks.filter(x=>x.id!==id);
+  Store.save(); renderTasks();
 }
 
 function editTask(id) {
-  const t = Store.data.tasks.find(x => x.id === id);
-  if (!t) return;
-  openModal(`
+  const t = Store.data.tasks.find(x=>x.id===id); if(!t) return;
+  editId = id; currentModal = 'task';
+  document.getElementById('modal-body').innerHTML = `
     <h3>编辑任务</h3>
-    <div class="modal-field">
-      <label>任务标题</label>
-      <input type="text" id="edit-title" value="${esc(t.title)}">
-    </div>
-    <div class="modal-field">
-      <label>分类</label>
-      <select id="edit-cat">
-        <option value="工作" ${t.category==='工作'?'selected':''}>工作</option>
-        <option value="生活" ${t.category==='生活'?'selected':''}>生活</option>
-        <option value="广告" ${t.category==='广告'?'selected':''}>广告</option>
-        <option value="理财" ${t.category==='理财'?'selected':''}>理财</option>
-      </select>
-    </div>
-    <div class="modal-field">
-      <label>优先级</label>
-      <select id="edit-pri">
-        <option value="高" ${t.priority==='高'?'selected':''}>高</option>
-        <option value="中" ${t.priority==='中'?'selected':''}>中</option>
-        <option value="低" ${t.priority==='低'?'selected':''}>低</option>
-      </select>
-    </div>
-    <div class="modal-field">
-      <label>截止日期</label>
-      <input type="date" id="edit-due" value="${t.dueDate||''}">
-    </div>
-    <div class="modal-field">
-      <label>备注</label>
-      <textarea id="edit-notes">${esc(t.notes||'')}</textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveEditTask('${id}')">保存</button>
-    </div>
-  `);
-}
-
-function saveEditTask(id) {
-  const t = Store.data.tasks.find(x => x.id === id);
-  if (!t) return;
-  t.title = document.getElementById('edit-title').value.trim();
-  t.category = document.getElementById('edit-cat').value;
-  t.priority = document.getElementById('edit-pri').value;
-  t.dueDate = document.getElementById('edit-due').value;
-  t.notes = document.getElementById('edit-notes').value.trim();
-  Store.save();
-  closeModal();
-  renderTasks();
-  toast('任务已更新');
-}
-
-// ---- Study ----
-function renderStudy() {
-  const study = Store.data.study;
-  const total = study.topics.length;
-  const completed = study.topics.filter(t => t.completed).length;
-  const pct = total > 0 ? Math.round(completed/total*100) : 0;
-  document.getElementById('study-overall-pct').textContent = pct + '%';
-  document.getElementById('study-overall-bar').style.width = pct + '%';
-  document.getElementById('study-overall-detail').textContent = `${completed} / ${total} 知识点已完成`;
-
-  const topicList = document.getElementById('topic-list');
-  if (study.topics.length === 0) {
-    topicList.innerHTML = '<div class="empty-state"><div class="icon">📚</div><div class="text">暂无知识点，添加一个开始吧</div></div>';
-  } else {
-    topicList.innerHTML = study.topics.map(t => `
-      <div class="topic-item">
-        <div class="topic-checkbox ${t.completed?'checked':''}" onclick="toggleTopic('${t.id}')">${t.completed?'✓':''}</div>
-        <span class="topic-name">${esc(t.name)}</span>
-        <div class="topic-progress-bar"><div class="topic-progress-fill" style="width:${t.progress||0}%"></div></div>
-        <span class="topic-progress">${t.progress||0}%</span>
-        <button onclick="editTopic('${t.id}')" style="padding:4px;font-size:.85rem;color:var(--muted)">✏️</button>
-        <button onclick="deleteTopic('${t.id}')" style="padding:4px;font-size:.85rem;color:var(--muted)">🗑️</button>
-      </div>
-    `).join('');
-  }
-
-  const logList = document.getElementById('study-log-list');
-  const logs = [...study.logs].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 20);
-  if (logs.length === 0) {
-    logList.innerHTML = '<div class="empty-state"><div class="icon">📖</div><div class="text">暂无学习记录</div></div>';
-  } else {
-    logList.innerHTML = logs.map(l => `
-      <div class="study-log-entry">
-        <span class="study-log-date">${esc(l.date)}</span>
-        <span class="study-log-content">${esc(l.content)}</span>
-        ${l.duration ? `<span class="study-log-time">${l.duration}h</span>` : ''}
-      </div>
-    `).join('');
-  }
-}
-
-function toggleTopic(id) {
-  const t = Store.data.study.topics.find(x => x.id === id);
-  if (t) {
-    t.completed = !t.completed;
-    if (t.completed) t.progress = 100;
-    else if (t.progress === 100) t.progress = 0;
-    Store.save();
-    renderStudy();
-  }
-}
-
-function openTopicModal() {
-  openModal(`
-    <h3>添加知识点</h3>
-    <div class="modal-field">
-      <label>知识点名称</label>
-      <input type="text" id="topic-name" placeholder="例如：数据库设计">
-    </div>
-    <div class="modal-field">
-      <label>初始进度 (%)</label>
-      <input type="number" id="topic-progress" value="0" min="0" max="100">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="addTopic()">添加</button>
-    </div>
-  `);
-}
-
-function addTopic() {
-  const name = document.getElementById('topic-name').value.trim();
-  const progress = parseInt(document.getElementById('topic-progress').value) || 0;
-  if (!name) return;
-  Store.data.study.topics.push({
-    id: Store.uid(),
-    name,
-    completed: progress >= 100,
-    progress
-  });
-  Store.save();
-  closeModal();
-  renderStudy();
-  toast('知识点已添加');
-}
-
-function editTopic(id) {
-  const t = Store.data.study.topics.find(x => x.id === id);
-  if (!t) return;
-  openModal(`
-    <h3>编辑知识点</h3>
-    <div class="modal-field">
-      <label>名称</label>
-      <input type="text" id="edit-topic-name" value="${esc(t.name)}">
-    </div>
-    <div class="modal-field">
-      <label>进度 (%)</label>
-      <input type="number" id="edit-topic-progress" value="${t.progress||0}" min="0" max="100">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="saveEditTopic('${id}')">保存</button>
-    </div>
-  `);
-}
-
-function saveEditTopic(id) {
-  const t = Store.data.study.topics.find(x => x.id === id);
-  if (!t) return;
-  t.name = document.getElementById('edit-topic-name').value.trim();
-  t.progress = parseInt(document.getElementById('edit-topic-progress').value) || 0;
-  t.completed = t.progress >= 100;
-  Store.save();
-  closeModal();
-  renderStudy();
-}
-
-function deleteTopic(id) {
-  Store.data.study.topics = Store.data.study.topics.filter(t => t.id !== id);
-  Store.save();
-  renderStudy();
-}
-
-function openLogModal() {
-  const today = new Date().toISOString().slice(0,10);
-  openModal(`
-    <h3>添加学习记录</h3>
-    <div class="modal-field">
-      <label>日期</label>
-      <input type="date" id="log-date" value="${today}">
-    </div>
-    <div class="modal-field">
-      <label>学习内容</label>
-      <textarea id="log-content" placeholder="今天学了什么？"></textarea>
-    </div>
-    <div class="modal-field">
-      <label>学习时长 (小时)</label>
-      <input type="number" id="log-duration" value="1" step="0.5" min="0">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="addLog()">添加</button>
-    </div>
-  `);
-}
-
-function addLog() {
-  const date = document.getElementById('log-date').value;
-  const content = document.getElementById('log-content').value.trim();
-  const duration = parseFloat(document.getElementById('log-duration').value) || 0;
-  if (!date || !content) return;
-  Store.data.study.logs.push({ id: Store.uid(), date, content, duration });
-  Store.save();
-  closeModal();
-  renderStudy();
-  toast('学习记录已添加');
-}
-
-// ---- Finance ----
-function renderFinance() {
-  const records = Store.data.finance.records;
-  const ym = new Date().toISOString().slice(0,7);
-  const monthRecords = records.filter(r => (r.date||'').startsWith(ym));
-  let income = 0, expense = 0;
-  for (const r of monthRecords) {
-    if (r.type === '收入') income += r.amount;
-    else expense += r.amount;
-  }
-  document.getElementById('fin-income').textContent = '¥' + income.toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
-  document.getElementById('fin-expense').textContent = '¥' + expense.toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
-  document.getElementById('fin-balance').textContent = '¥' + (income-expense).toLocaleString('zh-CN',{minimumFractionDigits:0,maximumFractionDigits:2});
-
-  const sorted = [...records].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 50);
-  const tbody = document.getElementById('finance-tbody');
-  if (sorted.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">暂无记录，点击右上角添加</td></tr>';
-    return;
-  }
-  tbody.innerHTML = sorted.map(r => `
-    <tr>
-      <td>${esc(r.date)}</td>
-      <td><span class="type-${r.type==='收入'?'income':'expense'}">${esc(r.type)}</span></td>
-      <td>${esc(r.category)}</td>
-      <td style="font-weight:600" class="${r.type==='收入'?'type-income':'type-expense'}">${r.type==='收入'?'+':'-'}¥${r.amount}</td>
-      <td>${esc(r.note||'')}</td>
-      <td><button onclick="deleteFinance('${r.id}')" style="padding:2px 6px;font-size:.8rem;color:var(--muted)">🗑️</button></td>
-    </tr>
-  `).join('');
-}
-
-function openFinanceModal() {
-  const today = new Date().toISOString().slice(0,10);
-  openModal(`
-    <h3>记一笔</h3>
-    <div class="modal-field">
-      <label>类型</label>
-      <select id="fin-type">
-        <option value="支出">支出</option>
-        <option value="收入">收入</option>
-      </select>
-    </div>
-    <div class="modal-field">
-      <label>日期</label>
-      <input type="date" id="fin-date" value="${today}">
-    </div>
-    <div class="modal-field">
-      <label>分类</label>
-      <select id="fin-cat">
-        <option value="餐饮">餐饮</option>
-        <option value="交通">交通</option>
-        <option value="购物">购物</option>
-        <option value="娱乐">娱乐</option>
-        <option value="居住">居住</option>
-        <option value="医疗">医疗</option>
-        <option value="教育">教育</option>
-        <option value="工资">工资</option>
-        <option value="理财">理财收益</option>
-        <option value="其他">其他</option>
-      </select>
-    </div>
-    <div class="modal-field">
-      <label>金额 (¥)</label>
-      <input type="number" id="fin-amount" placeholder="0.00" step="0.01" min="0">
-    </div>
-    <div class="modal-field">
-      <label>备注</label>
-      <input type="text" id="fin-note" placeholder="可选">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
-      <button class="btn btn-primary" onclick="addFinance()">添加</button>
-    </div>
-  `);
-}
-
-function addFinance() {
-  const type = document.getElementById('fin-type').value;
-  const date = document.getElementById('fin-date').value;
-  const category = document.getElementById('fin-cat').value;
-  const amount = parseFloat(document.getElementById('fin-amount').value);
-  const note = document.getElementById('fin-note').value.trim();
-  if (!date || !amount || amount <= 0) { toast('请填写日期和金额'); return; }
-  Store.data.finance.records.push({ id: Store.uid(), date, type, category, amount, note });
-  Store.save();
-  closeModal();
-  renderFinance();
-  toast('记账成功');
-}
-
-function deleteFinance(id) {
-  Store.data.finance.records = Store.data.finance.records.filter(r => r.id !== id);
-  Store.save();
-  renderFinance();
-}
-
-// ---- Settings ----
-async function syncNow() {
-  if (!Store.ready) {
-    toast('云数据库未连接，请检查网络后刷新页面');
-    return;
-  }
-  toast('正在从云端同步...');
-  const ok = await Store.loadFromCloud();
-  if (ok) {
-    renderAll();
-    toast('数据已刷新');
-  } else {
-    toast('同步失败，请检查网络');
-  }
-}
-
-function exportMarkdown() {
-  const files = [
-    { name: '待办任务.md', content: Markdown.serializeTasks(Store.data.tasks) },
-    { name: '学习进度.md', content: Markdown.serializeStudy(Store.data.study) },
-    { name: '理财记录.md', content: Markdown.serializeFinance(Store.data.finance) }
-  ];
-  for (const f of files) {
-    const blob = new Blob([f.content], { type:'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = f.name; a.click();
-    URL.revokeObjectURL(url);
-  }
-  toast('已导出 3 个 Markdown 文件');
-}
-
-function importMarkdown(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const content = e.target.result;
-    const name = file.name;
-    if (name.includes('待办任务')) {
-      Store.data.tasks = Markdown.parseTasks(content);
-    } else if (name.includes('学习进度')) {
-      Store.data.study = Markdown.parseStudy(content);
-    } else if (name.includes('理财记录')) {
-      Store.data.finance = Markdown.parseFinance(content);
-    } else {
-      toast('无法识别文件类型，请导入待办任务.md/学习进度.md/理财记录.md');
-      return;
-    }
-    Store.save();
-    renderAll();
-    toast('导入成功: ' + name);
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-// ============================================================
-// Utilities
-// ============================================================
-function openModal(html) {
-  document.getElementById('modal-content').innerHTML = html;
+    <div class="modal-field"><label>标题</label><input id="me-title" value="${t.title||''}"></div>
+    <div class="modal-field"><label>分类</label><select id="me-cat">${['工作','生活','广告','理财'].map(c=>`<option ${t.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="modal-field"><label>优先级</label><select id="me-pri">${['高','中','低'].map(p=>`<option ${t.priority===p?'selected':''}>${p}</option>`).join('')}</select></div>
+    <div class="modal-field"><label>截止日期</label><input id="me-due" type="date" value="${t.dueDate||''}"></div>
+    <div class="modal-field"><label>备注</label><textarea id="me-notes">${t.notes||''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveTaskEdit()">保存</button></div>`;
   document.getElementById('modal-overlay').classList.add('show');
 }
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('show');
+
+function saveTaskEdit() {
+  const t = Store.data.tasks.find(x=>x.id===editId); if(!t) return;
+  t.title = document.getElementById('me-title').value;
+  t.category = document.getElementById('me-cat').value;
+  t.priority = document.getElementById('me-pri').value;
+  t.dueDate = document.getElementById('me-due').value;
+  t.notes = document.getElementById('me-notes').value;
+  closeModal(); Store.save(); renderTasks();
 }
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
-}
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function renderAll() {
-  renderTasks();
-  renderStudy();
-  renderFinance();
+
+function renderTasks() {
+  const cats = ['全部','工作','生活','广告','理财'];
+  const counts = {}; cats.forEach(c=>{ counts[c] = c==='全部'?Store.data.tasks.length:Store.data.tasks.filter(x=>x.category===c).length; });
+  document.getElementById('task-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${taskFilter===c?'active':''}" onclick="taskFilter='${c}';renderTasks()">${c}<span class="count">${counts[c]}</span></button>`).join('');
+  const filtered = taskFilter==='全部'?Store.data.tasks:Store.data.tasks.filter(x=>x.category===taskFilter);
+  document.getElementById('task-list').innerHTML = filtered.length===0
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)">🌊 暂无任务，添加一个开始吧</div>'
+    : filtered.map(t=>`<div class="task-item ${t.completed?'done':''}">
+      <div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div>
+      <div class="task-body"><div class="task-title">${t.title}</div>
+        <div class="task-meta"><span class="badge-tag badge-${t.priority==='高'?'coral':t.priority==='中'?'yellow':'blue'}">${t.priority}</span><span class="badge-tag badge-gray">${t.category}</span>${t.dueDate?`<span style="color:var(--muted)">${t.dueDate}</span>`:''}</div>
+        ${t.notes?`<div style="font-size:.75rem;color:var(--muted);margin-top:3px">${t.notes}</div>`:''}</div>
+      <div class="task-actions"><button class="btn-ghost btn-xs" onclick="editTask('${t.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteTask('${t.id}')">🗑</button></div></div>`).join('');
+  updateBadge('tasks', Store.data.tasks.filter(x=>!x.completed).length);
 }
 
 // ============================================================
-// Init — 先加载本地缓存，检查登录状态，连接云端
+// Finance Module
 // ============================================================
-(async function init() {
-  Store.loadLocal();
-  renderAll();
+const financeTags = ['金钼股份','恒生科技','半导体','通信ETF','有色','AI算力'];
 
-  // 检查是否已登录（硬编码 admin/admin123）
-  const loggedIn = localStorage.getItem('workspace_logged_in') === '1';
-  if (!loggedIn) {
-    showLoginOverlay();
-    return;
-  }
+function renderFinance() {
+  const cats = ['全部',...financeTags];
+  const counts = {}; cats.forEach(c=>{ counts[c] = c==='全部'?Store.data.finance_news.length:Store.data.finance_news.filter(x=>(x.tags||[]).includes(c)).length; });
+  document.getElementById('finance-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${financeFilter===c?'active':''}" onclick="financeFilter='${c}';renderFinance()">${c}<span class="count">${counts[c]}</span></button>`).join('');
+  const filtered = financeFilter==='全部'?Store.data.finance_news:Store.data.finance_news.filter(x=>(x.tags||[]).includes(financeFilter));
+  document.getElementById('finance-list').innerHTML = filtered.length===0
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)">📈 暂无新闻，添加一条吧</div>'
+    : filtered.map(n=>`<div class="news-card">
+      <div class="news-title">${n.title||''}</div>
+      ${n.summary?`<div class="news-summary">${n.summary}</div>`:''}
+      <div class="news-tags">${(n.tags||[]).map(t=>`<span class="badge-tag badge-blue">${t}</span>`).join('')}</div>
+      <div class="news-footer"><div style="font-size:.7rem;color:var(--muted)">${n.createdAt||''}${n.remark?` · ${n.remark}`:''}</div>
+        <div style="display:flex;gap:4px">${n.url?`<a href="${n.url}" target="_blank" style="font-size:.75rem;color:var(--blue)">🔗</a>`:''}<button class="btn-ghost btn-xs" onclick="editFinance('${n.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteFinance('${n.id}')">🗑</button></div></div></div>`).join('');
+}
 
-  // 已登录，连接云数据库
-  await Store.initCloud();
-  if (Store.cloudOk) renderAll();
-})();
+function deleteFinance(id) { Store.data.finance_news = Store.data.finance_news.filter(x=>x.id!==id); Store.save(); renderFinance(); }
 
 // ============================================================
-// Hardcoded Login — admin / admin123
+// Health Module
 // ============================================================
-function showLoginOverlay() {
-  document.getElementById('login-overlay').style.display = 'flex';
-}
+let weightChart = null;
 
-function hideLoginOverlay() {
-  document.getElementById('login-overlay').style.display = 'none';
-}
+function renderHealth() {
+  const recs = Store.data.health_records.sort((a,b)=>b.date.localeCompare(a.date));
+  const now = new Date(); const d = now.getDay(); const mon = new Date(now); mon.setDate(now.getDate()-(d===0?6:d-1));
+  const weekStart = mon.toISOString().slice(0,10);
+  const week = recs.filter(r=>r.date>=weekStart);
+  const avgW = week.length?((week.reduce((s,r)=>s+(r.weight||0),0)/week.filter(r=>r.weight).length)||0).toFixed(1):0;
+  const totC = week.reduce((s,r)=>s+(r.calories||0),0);
+  const trD = week.filter(r=>r.training&&r.training!=='休息').length;
+  const daD = week.filter(r=>r.dance).length;
+  document.getElementById('health-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${avgW||'--'}kg</div><div class="stat-label">平均体重</div></div>
+    <div class="stat-card"><div class="stat-val">${totC}</div><div class="stat-label">总消耗(kcal)</div></div>
+    <div class="stat-card"><div class="stat-val">${trD}次</div><div class="stat-label">训练</div></div>
+    <div class="stat-card"><div class="stat-val">${daD}天</div><div class="stat-label">跳舞</div></div>`;
+  document.getElementById('health-list').innerHTML = recs.length===0
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)">💪 暂无记录</div>'
+    : recs.map(r=>`<div class="health-row"><span class="hr-date">${r.date}</span><span class="hr-weight">${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'💃':''}</span><span style="font-size:.75rem;color:var(--muted);flex:1">${r.notes||''}</span><button class="btn-ghost btn-xs" onclick="editHealth('${r.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteHealth('${r.id}')">🗑</button></div>`).join('');
 
-async function doLogin() {
-  const username = document.getElementById('login-username').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-err');
-  const btn = document.getElementById('btn-login');
-
-  if (username !== 'admin' || password !== 'Admin123') {
-    errEl.textContent = '用户名或密码错误';
-    return;
-  }
-
-  errEl.textContent = '';
-  btn.disabled = true;
-  btn.textContent = '登录中...';
-  localStorage.setItem('workspace_logged_in', '1');
-
-  hideLoginOverlay();
-  Store.loadLocal(); // 先加载本地缓存，防止云端为空时数据丢失
-  const ok = await Store.initCloud();
-  if (ok) renderAll();
-  toast('登录成功');
-  btn.disabled = false;
-  btn.textContent = '登录';
-}
-
-async function doLogout() {
-  Store.ready = false;
-  Store.cloudOk = false;
-  Store.db = null;
-  localStorage.removeItem('workspace_logged_in');
-  localStorage.removeItem('workspace_hadsync');
-  Store.updateStatus('offline');
-  showLoginOverlay();
-  toast('已退出登录');
-}
-
-// Close sidebar on outside click (mobile)
-document.addEventListener('click', (e) => {
-  const sidebar = document.getElementById('sidebar');
-  if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !e.target.closest('.menu-btn')) {
-    sidebar.classList.remove('open');
-  }
-});
-
-// Keyboard shortcut: Escape closes modal
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeModal();
-});
-
-// ========== Pull-to-Refresh / 数据同步 ==========
-let pullState = 0; // 0=idle, 1=pulling, 2=loading
-let pullStartY = 0;
-let pullDist = 0;
-const PULL_THRESHOLD = 60;
-const pullEl = document.getElementById('pull-indicator');
-
-function isAtTop() {
-  return window.scrollY <= 0;
-}
-
-document.addEventListener('touchstart', (e) => {
-  if (!isAtTop() || pullState === 2) return;
-  pullStartY = e.touches[0].clientY;
-  pullState = 1;
-}, { passive: true });
-
-document.addEventListener('touchmove', (e) => {
-  if (pullState !== 1) return;
-  pullDist = e.touches[0].clientY - pullStartY;
-  if (pullDist < 10) return;
-  e.preventDefault();
-  if (pullDist > 10) {
-    pullEl.classList.add('show');
-    pullEl.style.opacity = Math.min(pullDist / PULL_THRESHOLD, 1);
-  }
-}, { passive: false });
-
-document.addEventListener('touchend', async () => {
-  if (pullState !== 1) return;
-  pullState = 2;
-  if (pullDist >= PULL_THRESHOLD) {
-    pullEl.querySelector('.spinner').style.animation = 'spin .6s linear infinite';
-    await refreshData();
-    pullEl.classList.add('success');
-  } else {
-    pullEl.classList.remove('show');
-  }
-  setTimeout(() => {
-    pullEl.classList.remove('show', 'success');
-    pullEl.querySelector('.spinner').style.animation = '';
-    pullState = 0;
-    pullDist = 0;
-  }, 800);
-});
-
-async function refreshData() {
-  try {
-    if (!Store.ready) {
-      toast('云数据库未连接');
-      return;
-    }
-    const ok = await Store.loadFromCloud();
-    if (ok) {
-      renderAll();
-      toast('数据已刷新');
-    } else {
-      toast('刷新失败，请检查网络');
-    }
-  } catch(e) {
-    toast('刷新失败，请重试');
-  }
-}
-
-// ========== PWA Service Worker ==========
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then((reg) => {
-    console.log('[PWA] Service Worker 已注册');
-    // 检测 SW 更新
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing;
-      newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          toast('发现新版本，页面即将刷新...');
-          setTimeout(() => location.reload(), 1000);
-        }
-      });
-    });
-  }).catch(() => {});
-  // 接收 SW 的更新通知
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'SW_UPDATED') {
-      console.log('[PWA] SW 已更新，刷新页面');
-      location.reload();
-    }
+  // Chart.js
+  const ctx = document.getElementById('weight-chart');
+  if (!ctx) return;
+  if (weightChart) weightChart.destroy();
+  const chartData = [...recs].reverse();
+  const labels = chartData.map(r=>r.date.slice(5));
+  const weights = chartData.map(r=>r.weight||null);
+  weightChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label:'体重(kg)', data:weights, borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,.08)', fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#2563EB', borderWidth:2 }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false, grid:{color:'#f1f5f9'} }, x:{ grid:{display:false} } } }
   });
 }
+
+function deleteHealth(id) { Store.data.health_records = Store.data.health_records.filter(x=>x.id!==id); Store.save(); renderHealth(); }
+
+// ============================================================
+// XHS Module
+// ============================================================
+function renderXHS() {
+  const tabs = document.querySelectorAll('#pg-xhs .filter-tab');
+  tabs.forEach(t=>t.classList.remove('active'));
+  tabs[xhsTab==='content'?0:1].classList.add('active');
+
+  if (xhsTab === 'content') {
+    const stages = ['选题','拍摄','剪辑','已发布'];
+    document.getElementById('xhs-content').innerHTML = `
+      <button class="btn btn-primary btn-sm" style="margin-bottom:10px" onclick="openModal('xhs')">+ 添加内容</button>
+      <div class="kanban">${stages.map(st=>{
+        const items = Store.data.xhs_content.filter(x=>x.stage===st);
+        return `<div class="kanban-col"><div class="col-hd">${st}<span class="col-count">${items.length}</span></div>
+        ${items.map(x=>`<div class="kanban-card" onclick="editXHS('${x.id}')"><div class="kc-title">${x.title}</div>${x.product?`<div class="kc-meta">产品: ${x.product}</div>`:''}</div>`).join('')}
+        <div class="kanban-add" onclick="openModal('xhs')">+ 添加</div></div>`;
+      }).join('')}</div>`;
+  } else {
+    document.getElementById('xhs-content').innerHTML = `
+      <button class="btn btn-yellow btn-sm" style="margin-bottom:10px" onclick="openModal('hot')">+ 添加热点</button>
+      <div class="filter-tabs">${['全部','小红书','抖音','微博','B站'].map(p=>`<button class="filter-tab ${financeFilter===p?'active':''}" onclick="financeFilter='${p}';renderXHS()">${p}</button>`).join('')}</div>
+      <div>${Store.data.hot_topics.filter(x=>financeFilter==='全部'||x.platform===financeFilter).map(h=>`<div class="card card-sm" style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-weight:600;font-size:.9rem">${h.title}</div><span class="badge-tag ${h.heat==='高'?'badge-coral':h.heat==='中'?'badge-yellow':'badge-gray'}">${h.heat}</span></div>
+        ${h.description?`<div style="font-size:.8rem;color:var(--muted);margin:4px 0">${h.description}</div>`:''}
+        <div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-size:.75rem"><span>${h.platform}</span><span>${h.trend==='↑上升'?'📈':h.trend==='↓下降'?'📉':'➡️'} ${h.trend}</span>${h.link?`<a href="${h.link}" target="_blank">🔗</a>`:''}</div>
+      </div>`).join('')||'<div style="text-align:center;padding:40px;color:var(--muted)">🔥 暂无热点</div>'}</div>`;
+  }
+}
+
+function editXHS(id) { editId=id; currentModal='xhs'; const x=Store.data.xhs_content.find(a=>a.id===id); if(!x)return; showXHSModal(x); }
+function deleteXHS(id) { Store.data.xhs_content=Store.data.xhs_content.filter(x=>x.id!==id); Store.save(); renderXHS(); }
+function deleteHot(id) { Store.data.hot_topics=Store.data.hot_topics.filter(x=>x.id!==id); Store.save(); renderXHS(); }
+function showXHSModal(data) {
+  document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑内容':'添加内容'}</h3>
+    <div class="modal-field"><label>标题</label><input id="me-xhs-title" value="${data?.title||''}"></div>
+    <div class="modal-field"><label>阶段</label><select id="me-xhs-stage">${['选题','拍摄','剪辑','已发布'].map(s=>`<option ${data?.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="modal-field"><label>关联产品</label><input id="me-xhs-product" value="${data?.product||''}"></div>
+    <div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">${data?.notes||''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function saveXHS() {
+  if (editId) { const x=Store.data.xhs_content.find(a=>a.id===editId); if(x){x.title=document.getElementById('me-xhs-title').value; x.stage=document.getElementById('me-xhs-stage').value; x.product=document.getElementById('me-xhs-product').value; x.notes=document.getElementById('me-xhs-notes').value; } }
+  else { Store.data.xhs_content.unshift({id:genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:document.getElementById('me-xhs-notes').value,createdAt:today()}); }
+  closeModal(); Store.save(); renderXHS();
+}
+function saveHot() {
+  if (editId) { const h=Store.data.hot_topics.find(x=>x.id===editId); if(h){h.title=document.getElementById('me-hot-title').value; h.platform=document.getElementById('me-hot-plat').value; h.description=document.getElementById('me-hot-desc').value; h.heat=document.getElementById('me-hot-heat').value; h.trend=document.getElementById('me-hot-trend').value; h.link=document.getElementById('me-hot-link').value; } }
+  else { Store.data.hot_topics.unshift({id:genId(),title:document.getElementById('me-hot-title').value,platform:document.getElementById('me-hot-plat').value,description:document.getElementById('me-hot-desc').value,heat:document.getElementById('me-hot-heat').value,trend:document.getElementById('me-hot-trend').value,link:document.getElementById('me-hot-link').value,createdAt:today()}); }
+  closeModal(); Store.save(); renderXHS();
+}
+
+// ============================================================
+// Study Module
+// ============================================================
+function renderStudy() {
+  const cats = ['全部','读书','课程','感悟','技能'];
+  document.getElementById('study-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${studyFilter===c?'active':''}" onclick="studyFilter='${c}';renderStudy()">${c}<span class="count">${c==='全部'?Store.data.study_notes.length:Store.data.study_notes.filter(x=>x.category===c).length}</span></button>`).join('');
+  const filtered = studyFilter==='全部'?Store.data.study_notes:Store.data.study_notes.filter(x=>x.category===studyFilter);
+  document.getElementById('study-list').innerHTML = filtered.length===0
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)">📖 暂无笔记</div>'
+    : filtered.map(n=>`<div class="note-card" onclick="editStudy('${n.id}')">
+      <div class="note-title">${n.title}</div>
+      <div class="note-meta"><span class="badge-tag badge-blue">${n.category||''}</span>${(n.tags||[]).map(t=>`<span class="badge-tag badge-yellow">${t}</span>`).join('')}<span style="font-size:.7rem;color:var(--muted);margin-left:auto">${n.updatedAt||n.createdAt||''}</span></div>
+      ${n.content?`<div class="note-preview">${n.content.replace(/[#*`]/g,'').slice(0,100)}</div>`:''}</div>`).join('');
+}
+
+function deleteStudy(id) { Store.data.study_notes = Store.data.study_notes.filter(x=>x.id!==id); Store.save(); renderStudy(); }
+
+// ============================================================
+// Inspiration Module
+// ============================================================
+function addInsp() {
+  const inp = document.getElementById('insp-input'), title = inp.value.trim();
+  if (!title) return;
+  Store.data.inspirations.unshift({ id:genId(), title, category:'通用', status:'未整理', tags:[], createdAt:today() });
+  inp.value = ''; Store.save(); renderInsp();
+}
+function updateInspStatus(id) {
+  const i = Store.data.inspirations.find(x=>x.id===id); if(!i) return;
+  i.status = i.status==='未整理'?'已记录':'已执行'; Store.save(); renderInsp();
+}
+function deleteInsp(id) { Store.data.inspirations = Store.data.inspirations.filter(x=>x.id!==id); Store.save(); renderInsp(); }
+
+function renderInsp() {
+  const cats = ['全部','未整理','已记录','已执行'];
+  document.getElementById('insp-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${inspFilter===c?'active':''}" onclick="inspFilter='${c}';renderInsp()">${c}<span class="count">${c==='全部'?Store.data.inspirations.length:Store.data.inspirations.filter(x=>x.status===c).length}</span></button>`).join('');
+  const filtered = inspFilter==='全部'?Store.data.inspirations:Store.data.inspirations.filter(x=>x.status===inspFilter);
+  document.getElementById('insp-list').innerHTML = filtered.length===0
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)">💡 暂无灵感，记录一个吧</div>'
+    : filtered.map(i=>`<div class="insp-card">
+      <span class="insp-status badge-tag ${i.status==='未整理'?'badge-coral':i.status==='已记录'?'badge-yellow':'badge-blue'}">${i.status}</span>
+      <div class="insp-body"><div class="insp-title">${i.title}</div><div class="insp-meta"><span>${i.category}</span>${(i.tags||[]).map(t=>`<span>#${t}</span>`).join('')}<span>${i.createdAt}</span></div></div>
+      <div class="insp-actions">${i.status!=='已执行'?`<button class="btn btn-yellow btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记录':'已执行'}</button>`:''}<button class="btn-danger btn-xs" onclick="deleteInsp('${i.id}')">🗑</button></div></div>`).join('');
+}
+
+// ============================================================
+// Modal System
+// ============================================================
+function openModal(type, data) {
+  editId = (data||{}).id||null; currentModal = type;
+  if (type === 'task') { editTask(data?.id); return; }
+  if (type === 'finance') {
+    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑新闻':'添加新闻'}</h3>
+      <div class="modal-field"><label>标题</label><input id="me-fn-title" value="${data?.title||''}"></div>
+      <div class="modal-field"><label>摘要</label><textarea id="me-fn-sum" style="min-height:60px">${data?.summary||''}</textarea></div>
+      <div class="modal-field"><label>链接</label><input id="me-fn-url" value="${data?.url||''}"></div>
+      <div class="modal-field"><label>标签</label><div style="display:flex;flex-wrap:wrap;gap:6px">${financeTags.map(t=>`<label style="font-size:.8rem"><input type="checkbox" value="${t}" ${(data?.tags||[]).includes(t)?'checked':''} onchange=""> ${t}</label>`).join('')}</div></div>
+      <div class="modal-field"><label>备注</label><input id="me-fn-remark" value="${data?.remark||''}"></div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveFinance()">保存</button></div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+  if (type === 'health') {
+    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑记录':'添加记录'}</h3>
+      <div class="modal-field"><label>日期</label><input id="me-hr-date" type="date" value="${data?.date||today()}"></div>
+      <div class="modal-field"><label>体重(kg)</label><input id="me-hr-weight" type="number" step="0.1" value="${data?.weight||''}"></div>
+      <div class="modal-field"><label>热量(kcal)</label><input id="me-hr-cal" type="number" value="${data?.calories||''}"></div>
+      <div class="modal-field"><label>训练</label><select id="me-hr-train"><option value="">--</option>${['力量','有氧','瑜伽','跳舞','休息'].map(t=>`<option ${data?.training===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="modal-field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="me-hr-dance" ${data?.dance?'checked':''}> 跳舞</label></div>
+      <div class="modal-field"><label>备注</label><input id="me-hr-notes" value="${data?.notes||''}"></div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveHealth()">保存</button></div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+  if (type === 'study') {
+    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑笔记':'新建笔记'}</h3>
+      <div class="modal-field"><label>标题</label><input id="me-sn-title" value="${data?.title||''}"></div>
+      <div class="modal-field"><label>分类</label><select id="me-sn-cat">${['读书','课程','感悟','技能'].map(c=>`<option ${data?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      <div class="modal-field"><label>标签（逗号分隔）</label><input id="me-sn-tags" value="${(data?.tags||[]).join(',')}"></div>
+      <div class="modal-field"><label>正文（Markdown）</label><textarea id="me-sn-content" style="min-height:150px">${data?.content||''}</textarea></div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button><button class="btn btn-danger btn-sm" onclick="deleteStudy('${data?.id||''}');closeModal()">删除</button></div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+  if (type === 'xhs') { showXHSModal(data); }
+  if (type === 'hot') {
+    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑热点':'添加热点'}</h3>
+      <div class="modal-field"><label>标题</label><input id="me-hot-title" value="${data?.title||''}"></div>
+      <div class="modal-field"><label>平台</label><select id="me-hot-plat">${['小红书','抖音','微博','B站'].map(p=>`<option ${data?.platform===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div class="modal-field"><label>描述</label><textarea id="me-hot-desc" style="min-height:60px">${data?.description||''}</textarea></div>
+      <div class="modal-field"><label>热度</label><select id="me-hot-heat">${['高','中','低'].map(h=>`<option ${data?.heat===h?'selected':''}>${h}</option>`).join('')}</select></div>
+      <div class="modal-field"><label>趋势</label><select id="me-hot-trend">${['↑上升','→平稳','↓下降'].map(t=>`<option ${data?.trend===t?'selected':''}>${t}</option>`).join('')}</select></div>
+      <div class="modal-field"><label>链接</label><input id="me-hot-link" value="${data?.link||''}"></div>
+      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveHot()">保存</button></div>`;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); currentModal=null; editId=null; }
+
+// ============================================================
+// Save Handlers
+// ============================================================
+function saveFinance() {
+  const tags = []; document.querySelectorAll('#pg-finance input[type=checkbox]:checked, #modal-body input[type=checkbox]:checked').forEach(cb=>tags.push(cb.value));
+  const data = { id: editId||genId(), title: document.getElementById('me-fn-title').value, summary: document.getElementById('me-fn-sum').value, url: document.getElementById('me-fn-url').value, tags, remark: document.getElementById('me-fn-remark').value, createdAt: today() };
+  if (editId) { const idx=Store.data.finance_news.findIndex(x=>x.id===editId); if(idx>=0) Store.data.finance_news[idx]=data; } else Store.data.finance_news.unshift(data);
+  closeModal(); Store.save(); renderFinance();
+}
+function saveHealth() {
+  const data = { id: editId||genId(), date: document.getElementById('me-hr-date').value, weight: parseFloat(document.getElementById('me-hr-weight').value)||0, calories: parseInt(document.getElementById('me-hr-cal').value)||0, training: document.getElementById('me-hr-train').value, dance: document.getElementById('me-hr-dance').checked, notes: document.getElementById('me-hr-notes').value, createdAt: today() };
+  if (editId) { const idx=Store.data.health_records.findIndex(x=>x.id===editId); if(idx>=0) Store.data.health_records[idx]=data; } else Store.data.health_records.unshift(data);
+  closeModal(); Store.save(); renderHealth();
+}
+function saveStudy() {
+  const tags = (document.getElementById('me-sn-tags').value||'').split(',').map(t=>t.trim()).filter(Boolean);
+  const data = { id: editId||genId(), title: document.getElementById('me-sn-title').value, category: document.getElementById('me-sn-cat').value, content: document.getElementById('me-sn-content').value, tags, createdAt: today(), updatedAt: today() };
+  if (editId) { const idx=Store.data.study_notes.findIndex(x=>x.id===editId); if(idx>=0){ data.createdAt=Store.data.study_notes[idx].createdAt; Store.data.study_notes[idx]=data; } } else Store.data.study_notes.unshift(data);
+  closeModal(); Store.save(); renderStudy();
+}
+
+// ============================================================
+// AI Command Bar
+// ============================================================
+function runAI() {
+  const inp = document.getElementById('ai-input'), q = inp.value.trim();
+  if (!q) return; inp.value = '';
+  const msg = document.getElementById('ai-msg'); msg.style.display = 'block';
+
+  if (q.includes('添加')||q.includes('记录')||q.includes('新建')) {
+    if (q.includes('体重')||q.includes('健身')||q.includes('运动')||q.includes('健康')) { openModal('health'); msg.textContent = '💡 已打开健康记录表单'; }
+    else if (q.includes('新闻')||q.includes('财报')||q.includes('股票')) { openModal('finance'); msg.textContent = '💡 已打开财经新闻表单'; }
+    else if (q.includes('笔记')||q.includes('学习')) { openModal('study'); msg.textContent = '💡 已打开学习笔记表单'; }
+    else { document.getElementById('task-input').value = q.replace(/添加|帮我|一个|明天/g,'').trim(); document.getElementById('task-cat').value = q.includes('工作')?'工作':q.includes('生活')?'生活':q.includes('广告')?'广告':q.includes('理财')?'理财':'工作'; addTask(); msg.textContent = '✅ 已添加任务'; }
+  } else if (q.includes('体重')||q.includes('趋势')||q.includes('健康')||q.includes('减肥')) { navigate('health'); msg.textContent = '💡 已打开健康减重'; }
+  else if (q.includes('新闻')||q.includes('投资')||q.includes('钼')||q.includes('恒生')||q.includes('芯片')) { navigate('finance'); msg.textContent = '💡 已打开财经新闻'; }
+  else if (q.includes('热点')||q.includes('运营')||q.includes('小红书')) { navigate('xhs'); msg.textContent = '💡 已打开小红书运营'; }
+  else if (q.includes('笔记')||q.includes('学习')||q.includes('读书')) { navigate('study'); msg.textContent = '💡 已打开学习笔记'; }
+  else if (q.includes('灵感')||q.includes('想法')) { navigate('insp'); msg.textContent = '💡 已打开灵感库'; }
+  else { msg.textContent = '🤔 复杂问题已标记，下次 WorkBuddy 对话时帮你分析～'; }
+  setTimeout(() => { msg.style.display = 'none'; }, 3000);
+}
+
+// ============================================================
+// Login
+// ============================================================
+function showLogin() { document.getElementById('login-overlay').style.display = 'flex'; }
+function hideLogin() { document.getElementById('login-overlay').style.display = 'none'; }
+
+async function doLogin() {
+  const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value, e = document.getElementById('login-err'), b = document.querySelector('.btn-full');
+  if (u!=='admin'||p!=='Admin123') { e.textContent='用户名或密码错误'; return; }
+  e.textContent=''; b.disabled=true; b.textContent='登录中...'; hideLogin();
+  Store.loadLocal();
+  await Store.initCloud();
+  toast(Store.cloudOk?'已连接云端':'离线模式');
+  renderAll();
+  b.disabled=false; b.textContent='登录';
+}
+
+// ============================================================
+// Obsidian Sync
+// ============================================================
+function syncToObsidian() { toast('请运行 sync_to_obsidian.py 同步到 Obsidian'); }
+
+function updateBadge(page, n) {
+  const item = document.querySelector(`.nav-item[data-page="${page}"] .badge`);
+  if (item) item.textContent = n||'';
+}
+
+function renderAll() {
+  navigate(currentPage);
+}
+
+// ============================================================
+// Init
+// ============================================================
+(async function init() {
+  buildNav();
+  const loggedIn = localStorage.getItem('ws_logged') === '1';
+  if (!loggedIn) { showLogin(); return; }
+  hideLogin();
+  Store.loadLocal();
+  await Store.initCloud();
+  renderAll();
+  localStorage.setItem('ws_logged', '1');
+})();
 </script>
 </body>
 </html>
