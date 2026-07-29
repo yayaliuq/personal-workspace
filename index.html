@@ -650,11 +650,21 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      // 按 id 逐条去重保存，避免多用户匿名 ID 产生重复数据
+      // 按 id 逐条去重保存，清理用户已删除的项
       const upsertByKey = async (col, items, key='id') => {
+        // 1. 收集当前所有 id
+        const currentIds = new Set(items.map(x=>x[key]).filter(Boolean));
+        // 2. 清理数据库中该用户拥有、但已不在当前列表中的文档
+        try {
+          const allDocs = await col.limit(1000).get();
+          for (const doc of allDocs.data || []) {
+            if (!doc[key] || currentIds.has(doc[key])) continue;
+            try { await col.doc(doc._id).remove(); } catch(e){}
+          }
+        } catch(e){}
+        // 3. 逐条去重写入
         for (const item of items) {
           if (!item[key]) { await col.add({...item}); continue; }
-          // 查询同 id 文档，删除自己能删的（其他人的删不掉但没关系）
           try {
             const existing = await col.where({ [key]: item[key] }).get();
             for (const doc of existing.data || []) {
