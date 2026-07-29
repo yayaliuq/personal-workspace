@@ -158,12 +158,12 @@ ul{list-style:none}
 .insp-card .insp-meta{font-size:.7rem;color:var(--muted);margin-top:2px;display:flex;gap:6px}
 .insp-card .insp-actions{display:flex;gap:4px;flex-shrink:0}
 
-/* ====== AI Command Bar ====== */
-.ai-bar{position:fixed;bottom:20px;left:calc(var(--sidebar-w) + 20px);right:20px;z-index:50;display:flex;gap:8px;align-items:center}
-.ai-bar input{flex:1;padding:12px 16px;border:2px solid var(--border);border-radius:30px;background:#fff;font-size:.9rem;box-shadow:var(--shadow-md);transition:all .15s}
-.ai-bar input:focus{border-color:var(--blue);box-shadow:0 4px 16px rgba(37,99,235,.15)}
-.ai-bar .ai-send{padding:10px 18px;border-radius:30px;background:linear-gradient(135deg,var(--blue),var(--blue-light));color:#fff;font-weight:600;font-size:.85rem;box-shadow:0 2px 8px rgba(37,99,235,.3);white-space:nowrap}
-.ai-msg{position:fixed;bottom:80px;left:calc(var(--sidebar-w) + 20px);right:20px;z-index:49;padding:8px 16px;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow);font-size:.8rem;display:none;max-width:600px}
+/* ====== AI Command Bar (Mac) ====== */
+.ai-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px;padding:0}
+.ai-bar input{flex:1;padding:10px 16px;border:2px solid var(--border);border-radius:24px;background:#fff;font-size:.9rem;transition:all .15s}
+.ai-bar input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.ai-bar .ai-send{padding:10px 20px;border-radius:24px;background:var(--blue);color:#fff;font-weight:600;font-size:.85rem;white-space:nowrap}
+.ai-msg{padding:8px 16px;background:var(--blue-bg);border-radius:var(--radius-sm);font-size:.8rem;display:none;margin-bottom:12px}
 
 /* ====== Modal ====== */
 #modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
@@ -201,40 +201,83 @@ ul{list-style:none}
 .tag-chip .tag-rm{cursor:pointer;font-size:.9rem;line-height:1;margin-left:2px}
 .tag-input-wrap input{border:none;outline:none;flex:1;min-width:60px;padding:2px;font-size:.85rem;background:transparent}
 
-/* ====== Responsive - iPhone 优化 ====== */
+/* ====== iPhone 专属布局 ====== */
 @media(max-width:768px){
-  #sidebar{transform:translateX(-100%);width:280px}
-  #sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.2)}
-  #sidebar .nav-item{padding:12px 18px;font-size:.9rem}
-  #main{margin-left:0;padding:60px 12px 106px}
-  #topbar{display:flex;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0))}
-  #topbar .menu-btn{min-width:44px;min-height:44px;display:flex;align-items:center}
-  #bottom-nav{display:flex;padding:8px 0 env(safe-area-inset-bottom,8px)}
-  #bottom-nav .bn-item{font-size:.7rem;padding:8px 0;min-height:60px;gap:4px}
-  .ai-bar{left:8px;right:8px;bottom:92px}
-  .ai-bar input{padding:10px 14px;font-size:.85rem}
-  .ai-msg{left:8px;right:8px;bottom:142px;font-size:.75rem}
-  .kanban{grid-template-columns:repeat(2,1fr);gap:6px}
-  .kanban-col{padding:8px;min-height:100px}
-  .kanban-card{padding:6px 8px;font-size:.75rem}
-  .stats-grid{grid-template-columns:repeat(2,1fr);gap:6px}
-  .stat-card{padding:12px 8px}
-  .stat-card .stat-val{font-size:1.2rem}
-  .chart-wrap{height:200px;padding:10px}
-  .card{padding:12px;margin-bottom:8px}
-  .task-item{padding:10px 12px}
-  .task-cb{min-width:24px;min-height:24px}
-  .news-card,.note-card,.insp-card{padding:10px 12px}
-  .add-bar{gap:6px;margin-bottom:10px}
-  .add-bar input{padding:10px 12px;font-size:16px}
-  .add-bar select{padding:10px 8px}
-  .btn{padding:8px 14px;font-size:.8rem;min-height:40px}
-  .filter-tab{padding:5px 12px;font-size:.75rem}
-  .page-header h2{font-size:1.15rem}
-  .modal{max-width:100%;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0));max-height:80vh}
-  #modal-overlay{padding:0;align-items:flex-end}
-  .login-card{padding:24px 18px;max-width:100%;margin:16px}
-  #toast{bottom:140px}
+  /* 侧边栏变抽屉 */
+  #sidebar{transform:translateX(-100%);width:280px;padding-top:env(safe-area-inset-top,0)}
+  #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.25)}
+  #sidebar .nav-item{padding:14px 18px;font-size:.9rem}
+
+  /* 主内容区全宽 */
+  #main{margin-left:0;padding:56px 14px 110px}
+
+  /* 顶部导航栏 */
+  #topbar{display:flex;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0));height:auto}
+  #topbar .menu-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border-radius:10px}
+  #topbar h1{font-size:1rem}
+
+  /* 底部导航栏 */
+  #bottom-nav{display:flex;padding:10px 0 env(safe-area-inset-bottom,10px);background:#fff;box-shadow:0 -2px 12px rgba(0,0,0,.05)}
+  #bottom-nav .bn-item{font-size:.68rem;padding:6px 0;min-height:56px;gap:4px;justify-content:center}
+
+  /* AI 输入栏 - 固定底部导航上方 */
+  .ai-bar{position:fixed;left:12px;right:12px;bottom:80px;z-index:50;margin-bottom:0;padding:0}
+  .ai-bar input{padding:10px 14px;font-size:.85rem;border-radius:24px}
+  .ai-bar .ai-send{padding:10px 16px;font-size:.8rem;border-radius:24px}
+  .ai-msg{position:fixed;left:12px;right:12px;bottom:140px;z-index:49;font-size:.78rem;padding:10px 14px;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-md);margin-bottom:0}
+
+  /* 卡片间距收紧 */
+  .card{padding:14px;margin-bottom:10px;border-radius:var(--radius-sm)}
+  .card-sm{padding:10px}
+  .page-header{margin-bottom:12px}
+  .page-header h2{font-size:1.2rem}
+
+  /* 按钮变大 */
+  .btn{padding:10px 16px;font-size:.82rem;min-height:42px}
+  .btn-sm{padding:8px 14px;font-size:.78rem;min-height:36px}
+
+  /* 标签筛选 */
+  .filter-tab{padding:7px 14px;font-size:.78rem}
+  .filter-tabs{gap:6px;margin-bottom:12px}
+
+  /* 添加栏 */
+  .add-bar{gap:8px;margin-bottom:10px}
+  .add-bar input,.add-bar select{padding:12px 14px;font-size:16px}
+  .add-bar input{border-radius:12px}
+
+  /* 任务卡片 */
+  .task-item{padding:12px 14px;border-radius:12px;gap:10px}
+  .task-cb{min-width:26px;min-height:26px;border-radius:8px}
+  .task-actions{opacity:1}
+
+  /* 统计 */
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .stat-card{padding:16px 12px;border-radius:12px}
+  .stat-card .stat-val{font-size:1.4rem}
+
+  /* 看板 */
+  .kanban{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kanban-col{padding:10px;min-height:100px;border-radius:12px}
+  .kanban-card{padding:8px 10px;font-size:.78rem;border-radius:8px}
+
+  /* 图表 */
+  .chart-wrap{height:220px;padding:12px;border-radius:var(--radius-sm)}
+
+  /* 新闻/笔记/灵感卡片 */
+  .news-card,.note-card,.insp-card{padding:12px;border-radius:12px}
+  .insp-quick{flex-direction:column}
+  .insp-quick input{padding:12px;border-radius:12px}
+
+  /* 弹窗 - 底部滑出 */
+  #modal-overlay{align-items:flex-end}
+  .modal{max-width:100%;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0));max-height:78vh}
+  .modal h3{font-size:.95rem}
+
+  /* 登录 */
+  .login-card{padding:28px 20px;max-width:100%;margin:20px;border-radius:16px}
+
+  /* Toast */
+  #toast{bottom:150px;font-size:.78rem;padding:8px 20px}
 }
 </style>
 </head>
