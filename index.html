@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#2563EB">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>个人工作台 v5.0</title>
+<title>个人工作台</title>
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ====== Design System: 蓝天×阳光 ====== */
+/* ====== Design System:  ====== */
 :root {
   --blue: #2563EB; --blue-light: #3B82F6; --blue-deep: #1D4ED8; --blue-bg: #EFF6FF;
   --yellow: #F59E0B; --yellow-light: #FBBF24; --yellow-bg: #FFFBEB; --yellow-deep: #D97706;
@@ -222,8 +222,8 @@ ul{list-style:none}
 <!-- Login -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
-    <h2>🌊 个人工作台 v5.0</h2>
-    <div class="sub">蓝天×阳光 · 元气满满</div>
+    <h2> 个人工作台</h2>
+    <div class="sub">个人工作台</div>
     <div class="field"><label>用户名</label><input id="login-user" placeholder="admin"></div>
     <div class="field"><label>密码</label><input id="login-pass" type="password" placeholder="Admin123"></div>
     <div class="err" id="login-err"></div>
@@ -232,11 +232,11 @@ ul{list-style:none}
 </div>
 
 <!-- Top bar (mobile) -->
-<div id="topbar"><button class="menu-btn" onclick="toggleSidebar()">☰</button><h1>🌊 工作台</h1><div style="width:28px"></div></div>
+<div id="topbar"><button class="menu-btn" onclick="toggleSidebar()"></button><h1> 工作台</h1><div style="width:28px"></div></div>
 
 <!-- Sidebar -->
 <nav id="sidebar">
-  <div class="sidebar-top"><h1>🌊 个人工作台</h1><div class="sub">蓝天×阳光 · v5.0</div></div>
+  <div class="sidebar-top"><h1>个人工作台</h1></div>
   <div class="sidebar-nav" id="sidebar-nav"></div>
   <div class="sidebar-footer">
     <div class="status-row"><span class="dot off" id="cloud-dot"></span><span style="font-size:.7rem" id="cloud-text">连接中...</span></div>
@@ -248,7 +248,7 @@ ul{list-style:none}
 <main id="main">
 <!-- Page: Tasks -->
 <div id="pg-tasks" class="page" style="display:none">
-  <div class="page-header"><h2>✅ 待办任务</h2><div class="desc">按分类管理你的待办事项</div></div>
+  <div class="page-header"><h2> 待办任务</h2><div class="desc">按分类管理你的待办事项</div></div>
   <div class="add-bar"><input id="task-input" placeholder="快速添加任务..." onkeypress="if(event.key==='Enter')addTask()"><select id="task-cat"><option value="工作">工作</option><option value="生活">生活</option><option value="广告">广告</option><option value="理财">理财</option></select><button class="btn btn-primary" onclick="addTask()">添加</button></div>
   <div class="filter-tabs" id="task-tabs"></div>
   <div id="task-list"></div>
@@ -256,7 +256,7 @@ ul{list-style:none}
 
 <!-- Page: Finance News -->
 <div id="pg-finance" class="page" style="display:none">
-  <div class="page-header"><h2>📈 财经新闻</h2><div class="desc">关注你的投资领域</div></div>
+  <div class="page-header"><h2> 财经新闻</h2><div class="desc">关注你的投资领域</div></div>
   <button class="btn btn-primary" style="margin-bottom:12px" onclick="openModal('finance')">+ 添加新闻</button>
   <div class="filter-tabs" id="finance-tabs"></div>
   <div id="finance-list"></div>
@@ -264,7 +264,7 @@ ul{list-style:none}
 
 <!-- Page: Health -->
 <div id="pg-health" class="page" style="display:none">
-  <div class="page-header"><h2>💪 健康减重</h2><div class="desc">记录身体变化，看见进步</div></div>
+  <div class="page-header"><h2> 健康减重</h2><div class="desc">记录身体变化，看见进步</div></div>
   <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
     <button class="btn btn-primary btn-sm" onclick="openModal('health')">+ 添加记录</button>
     <button class="btn btn-ghost btn-sm" onclick="renderHealth()">刷新统计</button>
@@ -276,7 +276,7 @@ ul{list-style:none}
 
 <!-- Page: XHS -->
 <div id="pg-xhs" class="page" style="display:none">
-  <div class="page-header"><h2>📕 小红书运营</h2><div class="desc">内容管理 + 热点追踪</div></div>
+  <div class="page-header"><h2> 小红书运营</h2><div class="desc">内容管理 + 热点追踪</div></div>
   <div class="filter-tabs" style="margin-bottom:12px">
     <button class="filter-tab active" onclick="xhsTab='content';renderXHS()">内容管理</button>
     <button class="filter-tab" onclick="xhsTab='hot';renderXHS()">热点追踪</button>
@@ -286,10 +286,10 @@ ul{list-style:none}
 
 <!-- Page: Study -->
 <div id="pg-study" class="page" style="display:none">
-  <div class="page-header"><h2>📖 学习笔记</h2><div class="desc">读书 · 课程 · 感悟 · 技能</div></div>
+  <div class="page-header"><h2> 学习笔记</h2><div class="desc">读书 · 课程 · 感悟 · 技能</div></div>
   <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
     <button class="btn btn-primary btn-sm" onclick="openModal('study')">+ 新建笔记</button>
-    <button class="btn btn-yellow btn-sm" onclick="syncToObsidian()">📤 同步 Obsidian</button>
+    <button class="btn btn-yellow btn-sm" onclick="syncToObsidian()"> 同步 Obsidian</button>
   </div>
   <div class="filter-tabs" id="study-tabs"></div>
   <div id="study-list"></div>
@@ -297,7 +297,7 @@ ul{list-style:none}
 
 <!-- Page: Inspiration -->
 <div id="pg-insp" class="page" style="display:none">
-  <div class="page-header"><h2>💡 灵感库</h2><div class="desc">一闪而过的想法，都值得留住</div></div>
+  <div class="page-header"><h2> 灵感库</h2><div class="desc">一闪而过的想法，都值得留住</div></div>
   <div class="insp-quick"><input id="insp-input" placeholder="快速记录想法..." onkeypress="if(event.key==='Enter')addInsp()"><button class="btn btn-yellow btn-sm" onclick="addInsp()">保存</button></div>
   <div class="filter-tabs" id="insp-tabs"></div>
   <div id="insp-list"></div>
@@ -306,7 +306,7 @@ ul{list-style:none}
 </main>
 
 <!-- AI Command Bar -->
-<div class="ai-bar" id="ai-bar"><input id="ai-input" placeholder="🤖 对我说：添加任务、查体重、找新闻..." onkeypress="if(event.key==='Enter')runAI()"><button class="ai-send" onclick="runAI()">发送</button></div>
+<div class="ai-bar" id="ai-bar"><input id="ai-input" placeholder=" 对我说：添加任务、查体重、找新闻..." onkeypress="if(event.key==='Enter')runAI()"><button class="ai-send" onclick="runAI()">发送</button></div>
 <div class="ai-msg" id="ai-msg"></div>
 
 <!-- Modal -->
@@ -441,12 +441,12 @@ let taskFilter = '全部', financeFilter = '全部', studyFilter = '全部', ins
 // Navigation
 // ============================================================
 const pages = [
-  {id:'tasks', icon:'✅', label:'待办任务', cat:'tasks'},
-  {id:'finance', icon:'📈', label:'财经新闻', cat:'finance_news'},
-  {id:'health', icon:'💪', label:'健康减重', cat:'health_records'},
-  {id:'xhs', icon:'📕', label:'小红书运营', cat:'xhs_content'},
-  {id:'study', icon:'📖', label:'学习笔记', cat:'study_notes'},
-  {id:'insp', icon:'💡', label:'灵感库', cat:'inspirations'},
+  {id:'tasks', icon:'', label:'待办任务', cat:'tasks'},
+  {id:'finance', icon:'', label:'财经新闻', cat:'finance_news'},
+  {id:'health', icon:'', label:'健康减重', cat:'health_records'},
+  {id:'xhs', icon:'', label:'小红书运营', cat:'xhs_content'},
+  {id:'study', icon:'', label:'学习笔记', cat:'study_notes'},
+  {id:'insp', icon:'', label:'灵感库', cat:'inspirations'},
 ];
 
 function navigate(id) {
@@ -474,7 +474,7 @@ function buildNav() {
     h+=`<button class="nav-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
     if (p.id!=='insp' && p.id!=='study') b+=`<button class="bn-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
   });
-  b+=`<button class="bn-item" data-page="more" onclick="toggleSidebar()"><span class="icon">📋</span>更多</button>`;
+  b+=`<button class="bn-item" data-page="more" onclick="toggleSidebar()"><span class="icon"></span>更多</button>`;
   document.getElementById('sidebar-nav').innerHTML = h;
   document.getElementById('bottom-nav').innerHTML = b;
   navigate('tasks');
@@ -530,13 +530,13 @@ function renderTasks() {
   document.getElementById('task-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${taskFilter===c?'active':''}" onclick="taskFilter='${c}';renderTasks()">${c}<span class="count">${counts[c]}</span></button>`).join('');
   const filtered = taskFilter==='全部'?Store.data.tasks:Store.data.tasks.filter(x=>x.category===taskFilter);
   document.getElementById('task-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--muted)">🌊 暂无任务，添加一个开始吧</div>'
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无任务，添加一个开始吧</div>'
     : filtered.map(t=>`<div class="task-item ${t.completed?'done':''}">
-      <div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div>
+      <div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'':''}</div>
       <div class="task-body"><div class="task-title">${t.title}</div>
         <div class="task-meta"><span class="badge-tag badge-${t.priority==='高'?'coral':t.priority==='中'?'yellow':'blue'}">${t.priority}</span><span class="badge-tag badge-gray">${t.category}</span>${t.dueDate?`<span style="color:var(--muted)">${t.dueDate}</span>`:''}</div>
         ${t.notes?`<div style="font-size:.75rem;color:var(--muted);margin-top:3px">${t.notes}</div>`:''}</div>
-      <div class="task-actions"><button class="btn-ghost btn-xs" onclick="editTask('${t.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteTask('${t.id}')">🗑</button></div></div>`).join('');
+      <div class="task-actions"><button class="btn-ghost btn-xs" onclick="editTask('${t.id}')">️</button><button class="btn-danger btn-xs" onclick="deleteTask('${t.id}')"></button></div></div>`).join('');
   updateBadge('tasks', Store.data.tasks.filter(x=>!x.completed).length);
 }
 
@@ -551,13 +551,13 @@ function renderFinance() {
   document.getElementById('finance-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${financeFilter===c?'active':''}" onclick="financeFilter='${c}';renderFinance()">${c}<span class="count">${counts[c]}</span></button>`).join('');
   const filtered = financeFilter==='全部'?Store.data.finance_news:Store.data.finance_news.filter(x=>(x.tags||[]).includes(financeFilter));
   document.getElementById('finance-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--muted)">📈 暂无新闻，添加一条吧</div>'
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无新闻</div>'
     : filtered.map(n=>`<div class="news-card">
       <div class="news-title">${n.title||''}</div>
       ${n.summary?`<div class="news-summary">${n.summary}</div>`:''}
       <div class="news-tags">${(n.tags||[]).map(t=>`<span class="badge-tag badge-blue">${t}</span>`).join('')}</div>
       <div class="news-footer"><div style="font-size:.7rem;color:var(--muted)">${n.createdAt||''}${n.remark?` · ${n.remark}`:''}</div>
-        <div style="display:flex;gap:4px">${n.url?`<a href="${n.url}" target="_blank" style="font-size:.75rem;color:var(--blue)">🔗</a>`:''}<button class="btn-ghost btn-xs" onclick="editFinance('${n.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteFinance('${n.id}')">🗑</button></div></div></div>`).join('');
+        <div style="display:flex;gap:4px">${n.url?`<a href="${n.url}" target="_blank" style="font-size:.75rem;color:var(--blue)"></a>`:''}<button class="btn-ghost btn-xs" onclick="editFinance('${n.id}')">️</button><button class="btn-danger btn-xs" onclick="deleteFinance('${n.id}')"></button></div></div></div>`).join('');
 }
 
 function deleteFinance(id) { Store.data.finance_news = Store.data.finance_news.filter(x=>x.id!==id); Store.save(); renderFinance(); }
@@ -582,8 +582,8 @@ function renderHealth() {
     <div class="stat-card"><div class="stat-val">${trD}次</div><div class="stat-label">训练</div></div>
     <div class="stat-card"><div class="stat-val">${daD}天</div><div class="stat-label">跳舞</div></div>`;
   document.getElementById('health-list').innerHTML = recs.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--muted)">💪 暂无记录</div>'
-    : recs.map(r=>`<div class="health-row"><span class="hr-date">${r.date}</span><span class="hr-weight">${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'💃':''}</span><span style="font-size:.75rem;color:var(--muted);flex:1">${r.notes||''}</span><button class="btn-ghost btn-xs" onclick="editHealth('${r.id}')">✏️</button><button class="btn-danger btn-xs" onclick="deleteHealth('${r.id}')">🗑</button></div>`).join('');
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无记录</div>'
+    : recs.map(r=>`<div class="health-row"><span class="hr-date">${r.date}</span><span class="hr-weight">${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'':''}</span><span style="font-size:.75rem;color:var(--muted);flex:1">${r.notes||''}</span><button class="btn-ghost btn-xs" onclick="editHealth('${r.id}')">️</button><button class="btn-danger btn-xs" onclick="deleteHealth('${r.id}')"></button></div>`).join('');
 
   // Chart.js
   const ctx = document.getElementById('weight-chart');
@@ -626,8 +626,8 @@ function renderXHS() {
       <div>${Store.data.hot_topics.filter(x=>financeFilter==='全部'||x.platform===financeFilter).map(h=>`<div class="card card-sm" style="margin-bottom:8px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-weight:600;font-size:.9rem">${h.title}</div><span class="badge-tag ${h.heat==='高'?'badge-coral':h.heat==='中'?'badge-yellow':'badge-gray'}">${h.heat}</span></div>
         ${h.description?`<div style="font-size:.8rem;color:var(--muted);margin:4px 0">${h.description}</div>`:''}
-        <div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-size:.75rem"><span>${h.platform}</span><span>${h.trend==='↑上升'?'📈':h.trend==='↓下降'?'📉':'➡️'} ${h.trend}</span>${h.link?`<a href="${h.link}" target="_blank">🔗</a>`:''}</div>
-      </div>`).join('')||'<div style="text-align:center;padding:40px;color:var(--muted)">🔥 暂无热点</div>'}</div>`;
+        <div style="display:flex;gap:6px;align-items:center;margin-top:4px;font-size:.75rem"><span>${h.platform}</span><span>${h.trend==='↑上升'?'':h.trend==='↓下降'?'':'️'} ${h.trend}</span>${h.link?`<a href="${h.link}" target="_blank"></a>`:''}</div>
+      </div>`).join('')||'<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无热点</div>'}</div>`;
   }
 }
 
@@ -662,7 +662,7 @@ function renderStudy() {
   document.getElementById('study-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${studyFilter===c?'active':''}" onclick="studyFilter='${c}';renderStudy()">${c}<span class="count">${c==='全部'?Store.data.study_notes.length:Store.data.study_notes.filter(x=>x.category===c).length}</span></button>`).join('');
   const filtered = studyFilter==='全部'?Store.data.study_notes:Store.data.study_notes.filter(x=>x.category===studyFilter);
   document.getElementById('study-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--muted)">📖 暂无笔记</div>'
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无笔记</div>'
     : filtered.map(n=>`<div class="note-card" onclick="editStudy('${n.id}')">
       <div class="note-title">${n.title}</div>
       <div class="note-meta"><span class="badge-tag badge-blue">${n.category||''}</span>${(n.tags||[]).map(t=>`<span class="badge-tag badge-yellow">${t}</span>`).join('')}<span style="font-size:.7rem;color:var(--muted);margin-left:auto">${n.updatedAt||n.createdAt||''}</span></div>
@@ -691,11 +691,11 @@ function renderInsp() {
   document.getElementById('insp-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${inspFilter===c?'active':''}" onclick="inspFilter='${c}';renderInsp()">${c}<span class="count">${c==='全部'?Store.data.inspirations.length:Store.data.inspirations.filter(x=>x.status===c).length}</span></button>`).join('');
   const filtered = inspFilter==='全部'?Store.data.inspirations:Store.data.inspirations.filter(x=>x.status===inspFilter);
   document.getElementById('insp-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--muted)">💡 暂无灵感，记录一个吧</div>'
+    ? '<div style="text-align:center;padding:40px;color:var(--muted)"> 暂无灵感</div>'
     : filtered.map(i=>`<div class="insp-card">
       <span class="insp-status badge-tag ${i.status==='未整理'?'badge-coral':i.status==='已记录'?'badge-yellow':'badge-blue'}">${i.status}</span>
       <div class="insp-body"><div class="insp-title">${i.title}</div><div class="insp-meta"><span>${i.category}</span>${(i.tags||[]).map(t=>`<span>#${t}</span>`).join('')}<span>${i.createdAt}</span></div></div>
-      <div class="insp-actions">${i.status!=='已执行'?`<button class="btn btn-yellow btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记录':'已执行'}</button>`:''}<button class="btn-danger btn-xs" onclick="deleteInsp('${i.id}')">🗑</button></div></div>`).join('');
+      <div class="insp-actions">${i.status!=='已执行'?`<button class="btn btn-yellow btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记录':'已执行'}</button>`:''}<button class="btn-danger btn-xs" onclick="deleteInsp('${i.id}')"></button></div></div>`).join('');
 }
 
 // ============================================================
@@ -780,16 +780,16 @@ function runAI() {
   const msg = document.getElementById('ai-msg'); msg.style.display = 'block';
 
   if (q.includes('添加')||q.includes('记录')||q.includes('新建')) {
-    if (q.includes('体重')||q.includes('健身')||q.includes('运动')||q.includes('健康')) { openModal('health'); msg.textContent = '💡 已打开健康记录表单'; }
-    else if (q.includes('新闻')||q.includes('财报')||q.includes('股票')) { openModal('finance'); msg.textContent = '💡 已打开财经新闻表单'; }
-    else if (q.includes('笔记')||q.includes('学习')) { openModal('study'); msg.textContent = '💡 已打开学习笔记表单'; }
-    else { document.getElementById('task-input').value = q.replace(/添加|帮我|一个|明天/g,'').trim(); document.getElementById('task-cat').value = q.includes('工作')?'工作':q.includes('生活')?'生活':q.includes('广告')?'广告':q.includes('理财')?'理财':'工作'; addTask(); msg.textContent = '✅ 已添加任务'; }
-  } else if (q.includes('体重')||q.includes('趋势')||q.includes('健康')||q.includes('减肥')) { navigate('health'); msg.textContent = '💡 已打开健康减重'; }
-  else if (q.includes('新闻')||q.includes('投资')||q.includes('钼')||q.includes('恒生')||q.includes('芯片')) { navigate('finance'); msg.textContent = '💡 已打开财经新闻'; }
-  else if (q.includes('热点')||q.includes('运营')||q.includes('小红书')) { navigate('xhs'); msg.textContent = '💡 已打开小红书运营'; }
-  else if (q.includes('笔记')||q.includes('学习')||q.includes('读书')) { navigate('study'); msg.textContent = '💡 已打开学习笔记'; }
-  else if (q.includes('灵感')||q.includes('想法')) { navigate('insp'); msg.textContent = '💡 已打开灵感库'; }
-  else { msg.textContent = '🤔 复杂问题已标记，下次 WorkBuddy 对话时帮你分析～'; }
+    if (q.includes('体重')||q.includes('健身')||q.includes('运动')||q.includes('健康')) { openModal('health'); msg.textContent = ' 已打开健康记录表单'; }
+    else if (q.includes('新闻')||q.includes('财报')||q.includes('股票')) { openModal('finance'); msg.textContent = ' 已打开财经新闻表单'; }
+    else if (q.includes('笔记')||q.includes('学习')) { openModal('study'); msg.textContent = ' 已打开学习笔记表单'; }
+    else { document.getElementById('task-input').value = q.replace(/添加|帮我|一个|明天/g,'').trim(); document.getElementById('task-cat').value = q.includes('工作')?'工作':q.includes('生活')?'生活':q.includes('广告')?'广告':q.includes('理财')?'理财':'工作'; addTask(); msg.textContent = ' 已添加任务'; }
+  } else if (q.includes('体重')||q.includes('趋势')||q.includes('健康')||q.includes('减肥')) { navigate('health'); msg.textContent = ' 已打开健康减重'; }
+  else if (q.includes('新闻')||q.includes('投资')||q.includes('钼')||q.includes('恒生')||q.includes('芯片')) { navigate('finance'); msg.textContent = ' 已打开财经新闻'; }
+  else if (q.includes('热点')||q.includes('运营')||q.includes('小红书')) { navigate('xhs'); msg.textContent = ' 已打开小红书运营'; }
+  else if (q.includes('笔记')||q.includes('学习')||q.includes('读书')) { navigate('study'); msg.textContent = ' 已打开学习笔记'; }
+  else if (q.includes('灵感')||q.includes('想法')) { navigate('insp'); msg.textContent = ' 已打开灵感库'; }
+  else { msg.textContent = ' 复杂问题已标记，下次 WorkBuddy 对话时帮你分析～'; }
   setTimeout(() => { msg.style.display = 'none'; }, 3000);
 }
 
