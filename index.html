@@ -201,18 +201,40 @@ ul{list-style:none}
 .tag-chip .tag-rm{cursor:pointer;font-size:.9rem;line-height:1;margin-left:2px}
 .tag-input-wrap input{border:none;outline:none;flex:1;min-width:60px;padding:2px;font-size:.85rem;background:transparent}
 
-/* ====== Responsive ====== */
+/* ====== Responsive - iPhone 优化 ====== */
 @media(max-width:768px){
-  #sidebar{transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0)}
-  #main{margin-left:0;padding:48px 10px 80px}
-  #topbar{display:flex}
-  #bottom-nav{display:flex}
-  .ai-bar{left:10px;right:10px;bottom:75px}
-  .ai-msg{left:10px;right:10px;bottom:125px}
-  .kanban{grid-template-columns:repeat(2,1fr)}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .add-bar{flex-direction:column}
+  #sidebar{transform:translateX(-100%);width:280px}
+  #sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,.2)}
+  #sidebar .nav-item{padding:12px 18px;font-size:.9rem}
+  #main{margin-left:0;padding:60px 12px 96px}
+  #topbar{display:flex;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0))}
+  #topbar .menu-btn{min-width:44px;min-height:44px;display:flex;align-items:center}
+  #bottom-nav{display:flex;padding:6px 0 env(safe-area-inset-bottom,6px)}
+  #bottom-nav .bn-item{font-size:.6rem;padding:4px 0;min-height:50px;gap:1px}
+  .ai-bar{left:8px;right:8px;bottom:82px}
+  .ai-bar input{padding:10px 14px;font-size:.85rem}
+  .ai-msg{left:8px;right:8px;bottom:132px;font-size:.75rem}
+  .kanban{grid-template-columns:repeat(2,1fr);gap:6px}
+  .kanban-col{padding:8px;min-height:100px}
+  .kanban-card{padding:6px 8px;font-size:.75rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:6px}
+  .stat-card{padding:12px 8px}
+  .stat-card .stat-val{font-size:1.2rem}
+  .chart-wrap{height:200px;padding:10px}
+  .card{padding:12px;margin-bottom:8px}
+  .task-item{padding:10px 12px}
+  .task-cb{min-width:24px;min-height:24px}
+  .news-card,.note-card,.insp-card{padding:10px 12px}
+  .add-bar{gap:6px;margin-bottom:10px}
+  .add-bar input{padding:10px 12px;font-size:16px}
+  .add-bar select{padding:10px 8px}
+  .btn{padding:8px 14px;font-size:.8rem;min-height:40px}
+  .filter-tab{padding:5px 12px;font-size:.75rem}
+  .page-header h2{font-size:1.15rem}
+  .modal{max-width:100%;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0));max-height:80vh}
+  #modal-overlay{padding:0;align-items:flex-end}
+  .login-card{padding:24px 18px;max-width:100%;margin:16px}
+  #toast{bottom:130px}
 }
 </style>
 </head>
