@@ -577,12 +577,19 @@ const Store = {
       const app = cloudbase.init({ env: this.envId });
       console.log('[CloudBase] Step 2: app initialized, env=' + this.envId);
 
-      // Step 3: v2 匿名登录
-      const { data, error } = await app.auth.signInAnonymously();
-      if (error) throw new Error(error.message || '匿名登录失败');
+      // Step 3: 检查是否已有登录态，避免每次创建新匿名用户
+      let loginState = null;
+      try { loginState = await app.auth.getLoginState(); } catch(e){}
+      if (loginState && !loginState.isAnonymous) {
+        // 已有非匿名登录，直接复用
+        console.log('[CloudBase] Step 3: using existing login, uid=' + loginState.user?.uid);
+      } else {
+        const { data, error } = await app.auth.signInAnonymously();
+        if (error) throw new Error(error.message || '匿名登录失败');
+        console.log('[CloudBase] Step 3: new anonymous auth, uid=' + (data.user?.id || 'unknown'));
+      }
       this.auth = app.auth;
       this.app = app;
-      console.log('[CloudBase] Step 3: anonymous auth success, uid=' + (data.user?.id || 'unknown'));
 
       // Step 4: 获取数据库引用
       this.db = app.database();
