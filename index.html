@@ -315,11 +315,10 @@ ul{list-style:none}
 <main id="main">
 <!-- Page: Home (今日概览) -->
 <div id="pg-home" class="page" style="display:none">
-  <div class="hero"><div class="hero-left"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc">愿你稳步向理想的自己靠近</div></div><div class="hero-right" id="hero-time">--:--</div></div>
+  <div class="hero"><div class="hero-left"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc" id="hero-quote"></div></div><div class="hero-right" id="hero-time">--:--</div></div>
   <div class="card"><div class="card-title"><div class="card-title-left">今日概览</div></div>
     <div class="stats-row" id="home-stats"></div></div>
-  <div class="card"><div class="card-title"><div class="card-title-left">今日主任务</div></div><div id="home-main-task"></div></div>
-  <div class="card"><div class="card-title"><div class="card-title-left">本周睡眠趋势</div><button class="btn btn-ghost btn-xs" onclick="navigate('health')">查看详情</button></div><div class="chart-wrap" style="height:160px"><canvas id="home-chart"></canvas></div></div>
+  <div class="card" style="background:linear-gradient(135deg,var(--peach-bg),var(--butter-bg));border:1px solid rgba(244,167,139,.12)"><div class="card-title"><div class="card-title-left">今日主任务</div></div><div id="home-main-task"></div></div>
   <div class="card"><div class="card-title"><div class="card-title-left">支线任务</div><span class="badge-tag badge-soft" id="home-support-count">0 项</span></div><div id="home-support"></div></div>
 </div>
 
@@ -560,61 +559,26 @@ function renderHome() {
   else if (h >= 18) greet = '晚上好';
   document.getElementById('hero-greet').textContent = greet;
   document.getElementById('hero-time').textContent = new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',weekday:'short'});
-
-  const tasks = Store.data.tasks, recs = Store.data.health_records, studies = Store.data.study_notes;
-  const pending = tasks.filter(t=>!t.completed).length;
-  const total = tasks.length;
-  const done = tasks.filter(t=>t.completed).length;
-  const habitPct = total?Math.round(done/total*100):0;
-
-  const now = new Date(); const d = now.getDay(); const mon = new Date(now); mon.setDate(now.getDate()-(d===0?6:d-1));
-  const ws = mon.toISOString().slice(0,10);
-  const week = recs.filter(r=>r.date>=ws);
-  const wk = week.filter(r=>r.weight);
-  const avgW = wk.length?((wk.reduce((s,r)=>s+(r.weight||0),0)/wk.length)||0).toFixed(1):0;
-  const totC = week.reduce((s,r)=>s+(r.calories||0),0);
-  const training = week.filter(r=>r.training&&r.training!=='休息').length;
-  const studyDone = studies.filter(s=>s.category==='课程'||s.category==='读书').length;
-  const studyPct = studies.length?Math.round(studyDone/studies.length*100):0;
-
-  const mk = (pct) => `<svg viewBox="0 0 36 36" width="${pct?64:48}" height="${pct?64:48}"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="3"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="${pct} ${100-pct}" stroke-linecap="round"/></svg>`;
-
-  document.getElementById('home-stats').innerHTML = `
-    <div class="stat-circle" style="color:var(--mint)">${mk(habitPct)}<div class="pct">${habitPct}%</div><div class="stat-name">习惯</div><div class="stat-val">${done}/${total}</div></div>
-    <div class="stat-circle" style="color:var(--lavender)">${mk(studyPct)}<div class="pct">${studyPct}%</div><div class="stat-name">学习</div><div class="stat-val">${studyDone}/${studies.length}</div></div>
-    <div class="stat-circle" style="color:var(--peach)">${mk(training*20)}<div class="pct">${training}</div><div class="stat-name">训练</div><div class="stat-val">本周次</div></div>
-    <div class="stat-circle" style="color:var(--sky)">${mk(avgW?Math.min(100,Math.round((80-avgW)*4)):0)}<div class="pct">${avgW||'--'}</div><div class="stat-name">体重</div><div class="stat-val">本周平均</div></div>`;
-
-  // Main task
-  const mainT = tasks.find(t=>!t.completed&&t.priority==='高');
-  document.getElementById('home-main-task').innerHTML = mainT ? `<div class="task-card" style="background:var(--peach-bg);border-color:var(--peach)">
-    <div class="task-cb" onclick="toggleTask('${mainT.id}')"></div>
-    <div class="task-body"><div class="task-title">${mainT.title}</div>
-    <div class="task-meta"><span class="badge-tag badge-coral">高优先级</span><span class="badge-tag badge-soft">${mainT.category}</span>${mainT.dueDate?`<span style="color:var(--text-soft)">截止 ${mainT.dueDate}</span>`:''}</div></div>
-    <button class="btn btn-primary btn-xs" onclick="toggleTask('${mainT.id}')">继续专注</button></div>` : '<div style="text-align:center;color:var(--text-soft);padding:20px">今天没有紧急任务，享受生活吧</div>';
-
-  // Support tasks
-  const supp = tasks.filter(t=>!t.completed&&t.priority!=='高').slice(0,3);
-  document.getElementById('home-support').innerHTML = supp.length?supp.map(t=>`<div class="task-card">
-    <div class="task-cb" onclick="toggleTask('${t.id}')"></div>
-    <div class="task-body"><div class="task-title">${t.title}</div>
-    <div class="task-meta"><span class="badge-tag badge-soft">${t.category}</span><span class="badge-tag badge-${t.priority==='中'?'butter':'mint'}">${t.priority}</span></div></div>
-    <div class="task-actions"><button onclick="editTask('${t.id}')">编</button><button onclick="deleteTask('${t.id}')">删</button></div></div>`).join('') : '<div style="text-align:center;color:var(--text-soft);padding:10px">支线清空了</div>';
-  document.getElementById('home-support-count').textContent = supp.length+' 项';
-
-  // Sleep chart
-  const ctx = document.getElementById('home-chart');
-  if (ctx) {
-    if (homeChart) homeChart.destroy();
-    const sortedRecs = [...recs].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).reverse();
-    homeChart = new Chart(ctx, {
-      type:'line',
-      data:{ labels:sortedRecs.map(r=>r.date.slice(5)), datasets:[{ data:sortedRecs.map(r=>r.weight||null), borderColor:'#F4A78B', backgroundColor:'rgba(244,167,139,.15)', fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#F4A78B', borderWidth:2 }] },
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{display:false},x:{grid:{display:false}}} }
-    });
-  }
+  const quotes=["今天也是闪闪发光的一天","你比想象中更强大","每一步都算数","慢慢来，比较快","阳光正好，继续前行","别怕，你正在变好的路上","今天也是值得的一天","保持热爱，奔赴山海","做自己的小太阳","认真生活的你最可爱","慢慢变好，是给自己最好的礼物","今天的努力是明天的底气"];
+  document.getElementById('hero-quote').textContent=quotes[Math.floor(Math.random()*quotes.length)];
+  const tasks=Store.data.tasks,recs=Store.data.health_records,studies=Store.data.study_notes;
+  const total=tasks.length,done=tasks.filter(t=>t.completed).length,habitPct=total?Math.round(done/total*100):0;
+  const now=new Date(),d=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(d===0?6:d-1));
+  const ws=mon.toISOString().slice(0,10),week=recs.filter(r=>r.date>=ws),wk=week.filter(r=>r.weight);
+  const avgW=wk.length?((wk.reduce((s,r)=>s+(r.weight||0),0)/wk.length)||0).toFixed(1):0;
+  const training=week.filter(r=>r.training&&r.training!=='休息').length;
+  const studyDone=studies.filter(s=>s.category==='课程'||s.category==='读书').length;
+  const studyPct=studies.length?Math.round(studyDone/studies.length*100):0;
+  const mk=(pct)=>`<svg viewBox="0 0 36 36" width="${pct?64:48}" height="${pct?64:48}"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="3"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="${pct} ${100-pct}" stroke-linecap="round"/></svg>`;
+  document.getElementById('home-stats').innerHTML=`<div class="stat-circle" style="color:var(--mint)">${mk(habitPct)}<div class="pct">${habitPct}%</div><div class="stat-name">习惯</div><div class="stat-val">${done}/${total}</div></div><div class="stat-circle" style="color:var(--lavender)">${mk(studyPct)}<div class="pct">${studyPct}%</div><div class="stat-name">学习</div><div class="stat-val">${studyDone}/${studies.length}</div></div><div class="stat-circle" style="color:var(--peach)">${mk(training*20)}<div class="pct">${training}</div><div class="stat-name">训练</div><div class="stat-val">本周次</div></div><div class="stat-circle" style="color:var(--sky)">${mk(avgW?Math.min(100,Math.round((80-avgW)*4)):0)}<div class="pct">${avgW||'--'}</div><div class="stat-name">体重</div><div class="stat-val">本周平均</div></div>`;
+  const mainT=tasks.find(t=>!t.completed&&t.priority==='高')||tasks.find(t=>!t.completed&&t.priority==='中')||tasks.find(t=>!t.completed);
+  document.getElementById('home-main-task').innerHTML=mainT?`<div style="padding:8px 0"><div style="display:flex;align-items:center;gap:12px"><div class="task-cb" onclick="toggleTask('${mainT.id}')" style="min-width:26px;min-height:26px;border-radius:50%"></div><div style="flex:1"><div style="font-size:.9rem;font-weight:600;color:var(--text)">${mainT.title}</div><div style="display:flex;gap:6px;margin-top:4px;font-size:.72rem"><span class="badge-tag badge-${mainT.priority==='高'?'coral':'butter'}">${mainT.priority}优先级</span><span class="badge-tag badge-soft">${mainT.category}</span>${mainT.dueDate?`<span style="color:var(--text-soft)">${mainT.dueDate}</span>`:''}</div></div><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();toggleTask('${mainT.id}')">完成</button></div></div>`:'<div style="text-align:center;color:var(--text-soft);padding:20px">今天没有待办任务，给自己放个假吧</div>';
+  const pending=tasks.filter(t=>!t.completed&&t.id!==(mainT||{}).id);
+  const cats=['工作','生活','广告','理财'],grouped={};cats.forEach(c=>{grouped[c]=pending.filter(t=>t.category===c);});
+  const supportHTML=cats.filter(c=>grouped[c].length>0).map(c=>`<div style="margin-bottom:10px"><div style="font-size:.75rem;font-weight:700;color:var(--text-soft);margin-bottom:6px">${c} ${grouped[c].length}</div>${grouped[c].map(t=>`<div class="task-card" style="margin-bottom:6px"><div class="task-cb" onclick="toggleTask('${t.id}')"></div><div class="task-body"><div class="task-title">${t.title}</div><div class="task-meta"><span class="badge-tag badge-${t.priority==='高'?'coral':t.priority==='中'?'butter':'mint'}">${t.priority}</span>${t.dueDate?`<span style="color:var(--text-soft)">${t.dueDate}</span>`:''}</div></div><div class="task-actions"><button onclick="editTask('${t.id}')">编</button><button onclick="deleteTask('${t.id}')">删</button></div></div>`).join('')}</div>`).join('');
+  document.getElementById('home-support').innerHTML=supportHTML||'<div style="text-align:center;color:var(--text-soft);padding:10px">支线清空了</div>';
+  document.getElementById('home-support-count').textContent=pending.length+' 项';
 }
-
 // ============================================================
 // Tasks
 // ============================================================
