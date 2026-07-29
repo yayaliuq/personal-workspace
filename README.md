@@ -40,3 +40,4 @@ open http://localhost:3100
 - Node.js 本地服务器（标准库，零 npm 依赖）
 - Markdown 文件存储，Obsidian 兼容
 - 响应式设计，手机 + 电脑均可使用
+
