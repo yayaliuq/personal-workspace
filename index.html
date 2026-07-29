@@ -316,6 +316,7 @@ ul{list-style:none}
 <!-- Page: Home (今日概览) -->
 <div id="pg-home" class="page" style="display:none">
   <div class="hero"><div class="hero-left"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc" id="hero-quote"></div></div><div class="hero-right" id="hero-time">--:--</div></div>
+  <div class="card card-soft" id="assistant-card" style="border:1px solid var(--lavender);background:linear-gradient(135deg,#f8f0ff,#fff8f0)"><div style="display:flex;align-items:flex-start;gap:10px"><div style="font-size:1.5rem;line-height:1;flex-shrink:0;width:40px;height:40px;background:var(--lavender-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--lavender);font-weight:700">AI</div><div style="flex:1"><div id="assistant-msg" style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4"></div><div id="assistant-actions" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div></div></div></div>
   <div class="card"><div class="card-title"><div class="card-title-left">今日概览</div></div>
     <div class="stats-row" id="home-stats"></div></div>
   <div class="card" style="background:linear-gradient(135deg,var(--peach-bg),var(--butter-bg));border:1px solid rgba(244,167,139,.12)"><div class="card-title"><div class="card-title-left">今日主任务</div></div><div id="home-main-task"></div></div>
@@ -571,6 +572,22 @@ function renderHome() {
   const studyPct=studies.length?Math.round(studyDone/studies.length*100):0;
   const mk=(pct)=>`<svg viewBox="0 0 36 36" width="${pct?64:48}" height="${pct?64:48}"><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-opacity=".15" stroke-width="3"/><circle cx="18" cy="18" r="15.9155" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="${pct} ${100-pct}" stroke-linecap="round"/></svg>`;
   document.getElementById('home-stats').innerHTML=`<div class="stat-circle" style="color:var(--mint)">${mk(habitPct)}<div class="pct">${habitPct}%</div><div class="stat-name">习惯</div><div class="stat-val">${done}/${total}</div></div><div class="stat-circle" style="color:var(--lavender)">${mk(studyPct)}<div class="pct">${studyPct}%</div><div class="stat-name">学习</div><div class="stat-val">${studyDone}/${studies.length}</div></div><div class="stat-circle" style="color:var(--peach)">${mk(training*20)}<div class="pct">${training}</div><div class="stat-name">训练</div><div class="stat-val">本周次</div></div><div class="stat-circle" style="color:var(--sky)">${mk(avgW?Math.min(100,Math.round((80-avgW)*4)):0)}<div class="pct">${avgW||'--'}</div><div class="stat-name">体重</div><div class="stat-val">本周平均</div></div>`;
+
+  // === 小助理问候 ===
+  const todayStr=(new Date()).toISOString().slice(0,10);
+  const todayHealth=recs.filter(r=>r.date===todayStr);
+  const hasHealth=todayHealth.length>0&&(todayHealth.some(r=>r.weight)||todayHealth.some(r=>r.training));
+  const pendingTasks=tasks.filter(t=>!t.completed);
+  const highTask=tasks.find(t=>!t.completed&&t.priority==='高');
+  let assistMsg='';let assistHtml='';
+  if(!hasHealth&&pendingTasks.length===0) assistMsg='早上好，今天还没有安排和记录，想添加什么？';
+  else if(!hasHealth) assistMsg='你还没记录今天的身体数据，记得称个体重哦';
+  else if(pendingTasks.length===0) assistMsg='今天待办清空了，享受充实的一天吧';
+  else if(highTask) assistMsg='今日最重要的任务是「'+highTask.title+'」，加油';
+  else assistMsg='你今天有'+pendingTasks.length+'件待办，开始行动吧';
+  if(!hasHealth) assistHtml+=`<button class="btn btn-primary btn-xs" onclick="navigate('health');openModal('health')">快速记录身体数据</button>`;
+  document.getElementById('assistant-msg').textContent=assistMsg;
+  document.getElementById('assistant-actions').innerHTML=assistHtml;
   const mainT=tasks.find(t=>!t.completed&&t.priority==='高')||tasks.find(t=>!t.completed&&t.priority==='中')||tasks.find(t=>!t.completed);
   document.getElementById('home-main-task').innerHTML=mainT?`<div style="padding:8px 0"><div style="display:flex;align-items:center;gap:12px"><div class="task-cb" onclick="toggleTask('${mainT.id}')" style="min-width:26px;min-height:26px;border-radius:50%"></div><div style="flex:1"><div style="font-size:.9rem;font-weight:600;color:var(--text)">${mainT.title}</div><div style="display:flex;gap:6px;margin-top:4px;font-size:.72rem"><span class="badge-tag badge-${mainT.priority==='高'?'coral':'butter'}">${mainT.priority}优先级</span><span class="badge-tag badge-soft">${mainT.category}</span>${mainT.dueDate?`<span style="color:var(--text-soft)">${mainT.dueDate}</span>`:''}</div></div><button class="btn btn-primary btn-xs" onclick="event.stopPropagation();toggleTask('${mainT.id}')">完成</button></div></div>`:'<div style="text-align:center;color:var(--text-soft);padding:20px">今天没有待办任务，给自己放个假吧</div>';
   const pending=tasks.filter(t=>!t.completed&&t.id!==(mainT||{}).id);
