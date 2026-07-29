@@ -618,44 +618,30 @@ const Store = {
     }
   },
 
-  // ---- 从云端加载 ----
+  // ---- 从云端加载（独立查询，单个失败不影响其他） ----
   async loadFromCloud() {
     if (!this.ready || !this.db) return false;
-    try {
-      const [tasksR, topicsR, logsR, configR, recordsR] = await Promise.all([
-        this.db.collection('tasks').limit(1000).get(),
-        this.db.collection('study_topics').limit(100).get(),
-        this.db.collection('study_logs').limit(500).get(),
-        this.db.collection('study_config').limit(1).get(),
-        this.db.collection('finance_records').limit(500).get(),
-      ]);
-      const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...rest}=d; return rest; };
-      const cloudTasks = (tasksR.data || []).map(strip);
-      const cloudTopics = (topicsR.data || []).map(strip);
-      const cloudLogs = (logsR.data || []).map(strip);
-      const cloudRecords = (recordsR.data || []).map(strip);
-      // 如果云端有数据就用云端数据，否则保留本地数据（首次使用时云端为空）
-      if (cloudTasks.length > 0) this.data.tasks = cloudTasks;
-      if (cloudTopics.length > 0) this.data.study.topics = cloudTopics;
-      if (cloudLogs.length > 0) this.data.study.logs = cloudLogs;
-      if (cloudRecords.length > 0) this.data.finance.records = cloudRecords;
-      if (configR.data && configR.data.length > 0 && configR.data[0].subject) {
-        this.data.study.subject = configR.data[0].subject;
-      }
-      // 云端有数据：更新本地缓存；云端为空且本地有数据：上传到云端
-      const hasCloud = cloudTasks.length > 0 || cloudTopics.length > 0 || cloudRecords.length > 0;
-      if (hasCloud) {
-        this.saveLocal();
-        this.updateSyncTime();
-      } else if (this.data.tasks.length > 0 || this.data.study.topics.length > 0) {
-        // 云端空，本地有数据 → 首次上传
-        await this.saveToCloud();
-      }
-      return true;
-    } catch(e) {
-      console.error('CloudBase load failed:', e);
-      return false;
+    const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...rest}=d; return rest; };
+    let hasCloud = false, ok = true;
+    // 逐集合独立查询，一个失败不影响其他
+    const safeGet = async (col) => { try { const r=await this.db.collection(col).limit(1000).get(); return r.data||[]; } catch(e){ console.warn('[CloudBase] '+col+' query failed:',e.message); ok=false; return []; } };
+    const cloudTasks = (await safeGet('tasks')).map(strip);
+    const cloudTopics = (await safeGet('study_topics')).map(strip);
+    const cloudLogs = (await safeGet('study_logs')).map(strip);
+    const configData = await safeGet('study_config');
+    const cloudRecords = (await safeGet('finance_records')).map(strip);
+    if (cloudTasks.length > 0) { this.data.tasks = cloudTasks; hasCloud = true; }
+    if (cloudTopics.length > 0) { this.data.study.topics = cloudTopics; hasCloud = true; }
+    if (cloudLogs.length > 0) { this.data.study.logs = cloudLogs; hasCloud = true; }
+    if (cloudRecords.length > 0) { this.data.finance.records = cloudRecords; hasCloud = true; }
+    if (configData.length > 0 && configData[0].subject) { this.data.study.subject = configData[0].subject; }
+    if (hasCloud) {
+      this.saveLocal();
+      this.updateSyncTime();
+    } else if (this.data.tasks.length > 0 || this.data.study.topics.length > 0) {
+      await this.saveToCloud();
     }
+    return ok;
   },
 
   // ---- 保存到云端 ----
@@ -672,21 +658,30 @@ const Store = {
           await col.add({ ...item });
         }
       };
-      await Promise.all([
-        replaceAll(this.db.collection('tasks'), this.data.tasks),
-        replaceAll(this.db.collection('study_topics'), this.data.study.topics),
-        replaceAll(this.db.collection('study_logs'), this.data.study.logs),
-        (async () => {
-          const cc = this.db.collection('study_config');
-          const existing = await cc.limit(1).get();
-          for (const doc of existing.data || []) await cc.doc(doc._id).remove();
-          await cc.add({ subject: this.data.study.subject });
-        })(),
-        replaceAll(this.db.collection('finance_records'), this.data.finance.records),
-      ]);
-      this.updateSyncTime();
-      this.updateStatus('cloud');
-      console.log('[CloudBase] 数据已同步到云端，tasks:', this.data.tasks.length);
+      // 逐集合独立保存，一个失败不影响其他
+      const safeSave = async (name, fn) => {
+        try { await fn(); } catch(e) {
+          console.warn('[CloudBase] '+name+' save failed:', e.message); ok = false;
+        }
+      };
+      let ok = true;
+      await safeSave('tasks', () => replaceAll(this.db.collection('tasks'), this.data.tasks));
+      await safeSave('study_topics', () => replaceAll(this.db.collection('study_topics'), this.data.study.topics));
+      await safeSave('study_logs', () => replaceAll(this.db.collection('study_logs'), this.data.study.logs));
+      await safeSave('study_config', async () => {
+        const cc = this.db.collection('study_config');
+        const existing = await cc.limit(1).get();
+        for (const doc of existing.data || []) await cc.doc(doc._id).remove();
+        await cc.add({ subject: this.data.study.subject });
+      });
+      await safeSave('finance_records', () => replaceAll(this.db.collection('finance_records'), this.data.finance.records));
+      if (ok) {
+        this.updateSyncTime();
+        this.updateStatus('cloud');
+        console.log('[CloudBase] 数据已同步到云端，tasks:', this.data.tasks.length);
+      } else {
+        toast('部分数据云端同步失败，可能需要检查网络');
+      }
     } catch(e) {
       console.error('[CloudBase] 保存失败:', e.message || e);
       toast('云端同步失败，请检查网络后重试');
