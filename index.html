@@ -563,6 +563,8 @@ const Store = {
   db: null,
   ready: false,
   cloudOk: false,
+  _hadSyncBefore: false,
+  _deviceId: '',
 
   // ---- CloudBase 初始化（匿名登录，仅用于数据库访问） ----
   async initCloud() {
@@ -647,7 +649,8 @@ const Store = {
     if (hasCloud) {
       this.saveLocal();
       this.updateSyncTime();
-    } else if (this.data.tasks.length > 0 || this.data.study.topics.length > 0) {
+    } else if ((this.data.tasks.length > 0 || this.data.study.topics.length > 0) && !this._hadSyncBefore) {
+      // 仅在首次使用时自动上传本地种子数据。如果之前同步过（云端被手动清空），不自动回传
       await this.saveToCloud();
     }
     return ok;
@@ -657,28 +660,30 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      // 按 id 逐条去重保存，清理用户已删除的项
+      // 按 id 逐条保存，只删除当前设备创建的旧文档（用 _deviceId 标记）
+      const deviceId = this._deviceId;
       const upsertByKey = async (col, items, key='id') => {
-        // 1. 收集当前所有 id
         const currentIds = new Set(items.map(x=>x[key]).filter(Boolean));
-        // 2. 清理数据库中该用户拥有、但已不在当前列表中的文档
+        // 清理当前设备已删除的旧文档
         try {
           const allDocs = await col.limit(1000).get();
           for (const doc of allDocs.data || []) {
             if (!doc[key] || currentIds.has(doc[key])) continue;
+            if (doc._deviceId !== deviceId) continue;  // 不碰其他设备的文档
             try { await col.doc(doc._id).remove(); } catch(e){}
           }
         } catch(e){}
-        // 3. 逐条去重写入
+        // 逐条写入，带设备标记
         for (const item of items) {
-          if (!item[key]) { await col.add({...item}); continue; }
+          if (!item[key]) { await col.add({...item, _deviceId: deviceId}); continue; }
           try {
             const existing = await col.where({ [key]: item[key] }).get();
             for (const doc of existing.data || []) {
+              if (doc._deviceId !== deviceId) continue;  // 不删其他设备的
               try { await col.doc(doc._id).remove(); } catch(e){}
             }
           } catch(e){}
-          await col.add({...item});
+          await col.add({...item, _deviceId: deviceId});
         }
       };
       // 逐集合独立保存，一个失败不影响其他
@@ -715,6 +720,12 @@ const Store = {
         this.data = Object.assign(this.data, parsed);
       } else {
         this.initSeedData();
+      }
+      this._hadSyncBefore = localStorage.getItem('workspace_hadsync') === '1';
+      this._deviceId = localStorage.getItem('workspace_deviceid');
+      if (!this._deviceId) {
+        this._deviceId = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+        localStorage.setItem('workspace_deviceid', this._deviceId);
       }
     } catch(e) { this.initSeedData(); }
   },
@@ -762,6 +773,8 @@ const Store = {
     const t = now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     const el = document.getElementById('last-sync');
     if (el) el.textContent = '已同步 ' + t;
+    this._hadSyncBefore = true;
+    localStorage.setItem('workspace_hadsync', '1');
   },
 
   // ---- 统一保存 ----
@@ -1514,6 +1527,7 @@ async function doLogout() {
   Store.cloudOk = false;
   Store.db = null;
   localStorage.removeItem('workspace_logged_in');
+  localStorage.removeItem('workspace_hadsync');
   Store.updateStatus('offline');
   showLoginOverlay();
   toast('已退出登录');
