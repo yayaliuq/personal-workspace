@@ -662,14 +662,28 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      // 统一账号登录，所有设备同一身份，可直接全量替换
-      const replaceAll = async (col, items) => {
-        const existing = await col.limit(1000).get();
-        for (const doc of existing.data || []) {
-          try { await col.doc(doc._id).remove(); } catch(e){}
-        }
+      // 按 id 逐条去重保存，避免多设备同时保存的竞态条件
+      const upsertByKey = async (col, items, key='id') => {
         for (const item of items) {
-          await col.add({ ...item });
+          if (!item[key]) { await col.add({...item}); continue; }
+          try {
+            const existing = await col.where({ [key]: item[key] }).get();
+            for (const doc of existing.data || []) {
+              try { await col.doc(doc._id).remove(); } catch(e){}
+            }
+          } catch(e){}
+          await col.add({...item});
+        }
+        // 清理当前列表中已不存在的项（用户删掉的数据）
+        const currentIds = new Set(items.map(x=>x[key]).filter(Boolean));
+        if (currentIds.size > 0) {
+          try {
+            const allDocs = await col.limit(1000).get();
+            for (const doc of allDocs.data || []) {
+              if (!doc[key] || currentIds.has(doc[key])) continue;
+              try { await col.doc(doc._id).remove(); } catch(e){}
+            }
+          } catch(e){}
         }
       };
       // 逐集合独立保存，一个失败不影响其他
@@ -679,16 +693,11 @@ const Store = {
         }
       };
       let ok = true;
-      await safeSave('tasks', () => replaceAll(this.db.collection('tasks'), this.data.tasks));
-      await safeSave('study_topics', () => replaceAll(this.db.collection('study_topics'), this.data.study.topics));
-      await safeSave('study_logs', () => replaceAll(this.db.collection('study_logs'), this.data.study.logs));
-      await safeSave('study_config', async () => {
-        const cc = this.db.collection('study_config');
-        const existing = await cc.limit(1).get();
-        for (const doc of existing.data || []) await cc.doc(doc._id).remove();
-        await cc.add({ subject: this.data.study.subject });
-      });
-      await safeSave('finance_records', () => replaceAll(this.db.collection('finance_records'), this.data.finance.records));
+      await safeSave('tasks', () => upsertByKey(this.db.collection('tasks'), this.data.tasks));
+      await safeSave('study_topics', () => upsertByKey(this.db.collection('study_topics'), this.data.study.topics));
+      await safeSave('study_logs', () => upsertByKey(this.db.collection('study_logs'), this.data.study.logs, 'date'));
+      await safeSave('study_config', () => upsertByKey(this.db.collection('study_config'), [{subject: this.data.study.subject}], 'subject'));
+      await safeSave('finance_records', () => upsertByKey(this.db.collection('finance_records'), this.data.finance.records));
       if (ok) {
         this.updateSyncTime();
         this.updateStatus('cloud');
