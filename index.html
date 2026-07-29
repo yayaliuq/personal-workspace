@@ -789,7 +789,7 @@ function renderStudy() {
     : filtered.map(n=>`<div class="note-card" onclick="editStudy('${n.id}')">
       <div class="note-title">${n.title}</div>
       <div class="note-meta"><span class="badge-tag badge-peach">${n.category||''}</span>${(n.tags||[]).map(t=>`<span class="badge-tag badge-lavender">${t}</span>`).join('')}<span style="font-size:.7rem;color:var(--text-soft);margin-left:auto">${n.updatedAt||n.createdAt||''}</span></div>
-      ${n.content?`<div class="note-preview">${n.content.replace(/[#*`]/g,'').slice(0,100)}</div>`:''}</div>`).join('');
+      ${n.content?`<div class="note-preview">${n.content.replace(/[#*]/g,'').slice(0,100)}</div>`:''}</div>`).join('');
 }
 function deleteStudy(id) { Store.data.study_notes=Store.data.study_notes.filter(x=>x.id!==id); Store.save(); renderStudy(); }
 
