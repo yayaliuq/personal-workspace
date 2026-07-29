@@ -669,17 +669,18 @@ const Store = {
           const allDocs = await col.limit(1000).get();
           for (const doc of allDocs.data || []) {
             if (!doc[key] || currentIds.has(doc[key])) continue;
-            if (doc._deviceId !== deviceId) continue;  // 不碰其他设备的文档
+            if (doc._deviceId !== deviceId) continue;
             try { await col.doc(doc._id).remove(); } catch(e){}
           }
         } catch(e){}
-        // 逐条写入，带设备标记
+        // 逐条写入：只处理当前设备的数据（不重复上传别人的）
         for (const item of items) {
+          if (item._deviceId && item._deviceId !== deviceId) continue;  // 跳过其他设备的数据
           if (!item[key]) { await col.add({...item, _deviceId: deviceId}); continue; }
           try {
             const existing = await col.where({ [key]: item[key] }).get();
             for (const doc of existing.data || []) {
-              if (doc._deviceId !== deviceId) continue;  // 不删其他设备的
+              if (doc._deviceId !== deviceId) continue;
               try { await col.doc(doc._id).remove(); } catch(e){}
             }
           } catch(e){}
