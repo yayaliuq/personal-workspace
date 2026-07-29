@@ -579,16 +579,18 @@ const Store = {
       const app = cloudbase.init({ env: this.envId });
       console.log('[CloudBase] Step 2: app initialized, env=' + this.envId);
 
-      // Step 3: 检查是否已有登录态，避免每次创建新匿名用户
+      // Step 3: 统一账号登录 admin/admin123，所有设备同身份
       let loginState = null;
       try { loginState = await app.auth.getLoginState(); } catch(e){}
-      if (loginState && !loginState.isAnonymous) {
-        // 已有非匿名登录，直接复用
-        console.log('[CloudBase] Step 3: using existing login, uid=' + loginState.user?.uid);
+      if (loginState) {
+        console.log('[CloudBase] Step 3: using existing login');
       } else {
-        const { data, error } = await app.auth.signInAnonymously();
-        if (error) throw new Error(error.message || '匿名登录失败');
-        console.log('[CloudBase] Step 3: new anonymous auth, uid=' + (data.user?.id || 'unknown'));
+        const { data, error } = await app.auth.signInWithPassword({
+          username: 'admin',
+          password: 'admin123'
+        });
+        if (error) throw new Error(error.message || '登录失败');
+        console.log('[CloudBase] Step 3: signed in as admin');
       }
       this.auth = app.auth;
       this.app = app;
@@ -660,31 +662,14 @@ const Store = {
   async saveToCloud() {
     if (!this.ready || !this.db) return;
     try {
-      // 按 id 逐条保存，只删除当前设备创建的旧文档（用 _deviceId 标记）
-      const deviceId = this._deviceId;
-      const upsertByKey = async (col, items, key='id') => {
-        const currentIds = new Set(items.map(x=>x[key]).filter(Boolean));
-        // 清理当前设备已删除的旧文档
-        try {
-          const allDocs = await col.limit(1000).get();
-          for (const doc of allDocs.data || []) {
-            if (!doc[key] || currentIds.has(doc[key])) continue;
-            if (doc._deviceId !== deviceId) continue;
-            try { await col.doc(doc._id).remove(); } catch(e){}
-          }
-        } catch(e){}
-        // 逐条写入：只处理当前设备的数据（不重复上传别人的）
+      // 统一账号登录，所有设备同一身份，可直接全量替换
+      const replaceAll = async (col, items) => {
+        const existing = await col.limit(1000).get();
+        for (const doc of existing.data || []) {
+          try { await col.doc(doc._id).remove(); } catch(e){}
+        }
         for (const item of items) {
-          if (item._deviceId && item._deviceId !== deviceId) continue;  // 跳过其他设备的数据
-          if (!item[key]) { await col.add({...item, _deviceId: deviceId}); continue; }
-          try {
-            const existing = await col.where({ [key]: item[key] }).get();
-            for (const doc of existing.data || []) {
-              if (doc._deviceId !== deviceId) continue;
-              try { await col.doc(doc._id).remove(); } catch(e){}
-            }
-          } catch(e){}
-          await col.add({...item, _deviceId: deviceId});
+          await col.add({ ...item });
         }
       };
       // 逐集合独立保存，一个失败不影响其他
@@ -694,11 +679,16 @@ const Store = {
         }
       };
       let ok = true;
-      await safeSave('tasks', () => upsertByKey(this.db.collection('tasks'), this.data.tasks));
-      await safeSave('study_topics', () => upsertByKey(this.db.collection('study_topics'), this.data.study.topics));
-      await safeSave('study_logs', () => upsertByKey(this.db.collection('study_logs'), this.data.study.logs, 'date'));
-      await safeSave('study_config', () => upsertByKey(this.db.collection('study_config'), [{subject: this.data.study.subject}], 'subject'));
-      await safeSave('finance_records', () => upsertByKey(this.db.collection('finance_records'), this.data.finance.records));
+      await safeSave('tasks', () => replaceAll(this.db.collection('tasks'), this.data.tasks));
+      await safeSave('study_topics', () => replaceAll(this.db.collection('study_topics'), this.data.study.topics));
+      await safeSave('study_logs', () => replaceAll(this.db.collection('study_logs'), this.data.study.logs));
+      await safeSave('study_config', async () => {
+        const cc = this.db.collection('study_config');
+        const existing = await cc.limit(1).get();
+        for (const doc of existing.data || []) await cc.doc(doc._id).remove();
+        await cc.add({ subject: this.data.study.subject });
+      });
+      await safeSave('finance_records', () => replaceAll(this.db.collection('finance_records'), this.data.finance.records));
       if (ok) {
         this.updateSyncTime();
         this.updateStatus('cloud');
