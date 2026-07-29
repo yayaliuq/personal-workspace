@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234f46e5'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='50'>台</text></svg>">
 <title>个人工作台</title>
-<script src="https://static.cloudbase.net/cloudbase-js-sdk/1.7.2/cloudbase.full.js"></script>
+<script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
 <style>
 /* ========== Reset & Base ========== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -577,12 +577,12 @@ const Store = {
       const app = cloudbase.init({ env: this.envId });
       console.log('[CloudBase] Step 2: app initialized, env=' + this.envId);
 
-      // Step 3: 匿名登录
-      const auth = app.auth({ persistence: 'local' });
-      await auth.anonymousAuthProvider().signIn();
-      this.auth = auth;
+      // Step 3: v2 匿名登录
+      const { data, error } = await app.auth.signInAnonymously();
+      if (error) throw new Error(error.message || '匿名登录失败');
+      this.auth = app.auth;
       this.app = app;
-      console.log('[CloudBase] Step 3: anonymous auth success');
+      console.log('[CloudBase] Step 3: anonymous auth success, uid=' + (data.user?.id || 'unknown'));
 
       // Step 4: 获取数据库引用
       this.db = app.database();
@@ -605,8 +605,8 @@ const Store = {
       // 显示具体错误给用户
       if (msg.includes('SDK未加载')) {
         toast('云数据库连接失败：SDK加载超时，请检查手机网络后刷新重试');
-      } else if (msg.includes('signIn') || msg.includes('auth') || msg.includes('anonymous')) {
-        toast('云数据库连接失败：匿名登录未开启，请检查CloudBase控制台设置');
+      } else if (msg.includes('signIn') || msg.includes('auth') || msg.includes('anonymous') || msg.includes('ACCESS_TOKEN')) {
+        toast('云数据库连接失败：匿名登录未开启或SDK版本不兼容，请检查CloudBase控制台设置');
       } else if (msg.includes('permission') || msg.includes('403') || msg.includes('unauthorized')) {
         toast('云数据库连接失败：数据库权限不足，请检查集合权限设置');
       } else if (msg.includes('Network') || msg.includes('fetch') || msg.includes('timeout')) {
