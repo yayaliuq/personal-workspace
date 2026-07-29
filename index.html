@@ -654,6 +654,12 @@ const Store = {
     } else if ((this.data.tasks.length > 0 || this.data.study.topics.length > 0) && !this._hadSyncBefore) {
       // 仅在首次使用时自动上传本地种子数据。如果之前同步过（云端被手动清空），不自动回传
       await this.saveToCloud();
+    } else if (this._hadSyncBefore) {
+      // 云端已被清空，清空本地缓存保持同步
+      this.data.tasks = [];
+      this.data.finance.records = [];
+      this.data.study.logs = [];
+      this.saveLocal();
     }
     return ok;
   },
