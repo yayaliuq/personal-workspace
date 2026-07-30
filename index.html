@@ -27,8 +27,11 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .sub-icon{width:18px;text-align:center;font-size:.75rem;flex-shrink:0}
 .side-toggle{display:none}
 
-#main{flex:1;margin-left:200px;padding:20px 28px 40px;max-width:1200px}
-#content{display:grid;grid-template-columns:1fr;gap:14px}
+#main{flex:1;margin-left:200px;padding:20px 28px 40px}
+/* 自适应桌面布局：宽屏双列，窄屏单列 */
+#content{display:flex;flex-wrap:wrap;gap:14px}
+#content>.card{flex:1 1 380px;margin-bottom:0}
+#content>.hero-card{flex:1 1 100%}
 #topbar{padding:0 0 16px;display:flex;align-items:center;justify-content:space-between}
 #topbar h1{font-size:1.3rem;font-weight:700}
 .breadcrumb{font-size:.8rem;color:var(--muted)}
@@ -106,10 +109,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .login-err{font-size:.72rem;color:#E84040;min-height:20px;margin-bottom:8px}
 .login-btn{width:100%;padding:13px;background:var(--peach);color:#fff;border-radius:22px;font-size:.95rem;font-weight:700}
 
-/* 桌面端更宽的布局 */
-@media(min-width:1024px){
-  #content{grid-template-columns:1fr 1fr}
-  #content>.hero-card{grid-column:span 2}
 }
 
 @media(max-width:768px){
