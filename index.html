@@ -113,7 +113,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 
 @media(max-width:768px){
   #sidebar-backdrop{display:none!important;background:rgba(0,0,0,.2)}
-  #sidebar-backdrop.show,#sidebar.open~#sidebar-backdrop{display:block!important}
+  #sidebar-backdrop.show{display:block!important}
   html{font-size:17px}
   #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
@@ -150,12 +150,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
   </div>
 </div>
 
-<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99"></div>
 <nav id="sidebar">
   <div class="side-toggle" onclick="toggleSidebar()">✕</div>
   <div class="side-logo">鸭鸭的加油站</div>
   <div class="sub-nav" id="sub-nav"></div>
 </nav>
+<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.25)"></div>
 
 <main id="main">
   <div id="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><h1 id="page-title">总览</h1></div><div class="breadcrumb" id="breadcrumb"></div></div>
