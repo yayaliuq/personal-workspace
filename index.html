@@ -3,940 +3,487 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#FFE0CC">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F4A78B">
 <title>鸭鸭的加油站</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ====== 治愈系设计系统 ====== */
-:root {
-  --bg: #FBF6EE;
-  --bg-soft: #F5EBDC;
-  --card: #FFFFFF;
-  --card-warm: #FFF8EE;
-  --text: #5C4D3A;
-  --text-soft: #97876E;
-  --border: #F0E5D2;
-
-  --peach: #F4A78B;        --peach-bg: #FCE8DC;
-  --mint: #88C9A1;         --mint-bg: #DDF1E5;
-  --lavender: #B8A0D9;     --lavender-bg: #EBE3F4;
-  --sky: #88B8DD;          --sky-bg: #D9E6F2;
-  --coral: #F47B5E;        --coral-bg: #FCDDD3;
-  --butter: #E8C57A;       --butter-bg: #FBEFCF;
-  --rose: #E89CB0;         --rose-bg: #F8DDE5;
-
-  --radius: 18px;
-  --radius-sm: 14px;
-  --radius-xs: 10px;
-  --shadow: 0 2px 8px rgba(180,140,90,.06), 0 1px 3px rgba(180,140,90,.04);
-  --shadow-md: 0 4px 16px rgba(180,140,90,.08);
-  --sidebar-w: 200px;
-
-  --font: -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
-}
+:root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--radius:16px;--radius-sm:12px;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;--nav-h:56px}
 *{box-sizing:border-box;margin:0;padding:0}
-html{font-size:16px;-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.55;min-height:100vh}
-button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:.9rem}
-input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--text);outline:none}
-a{color:var(--peach);text-decoration:none}
-ul{list-style:none}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;font-size:.85rem}
+input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--text);outline:none;border:1px solid var(--border);border-radius:10px;padding:9px 12px;background:var(--card)}
+input:focus,textarea:focus,select:focus{border-color:var(--peach)}
+a{color:var(--peach)}
 
-/* ====== Layout ====== */
 #app{display:flex;min-height:100vh}
+#sidebar{width:48px;background:var(--card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s;overflow:hidden;padding:12px 8px}
+#sidebar.open{width:180px}
+.side-toggle{text-align:center;padding:4px 0 12px;font-size:1.1rem;color:var(--muted);cursor:pointer}
+.sub-nav{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .2s}
+#sidebar.open .sub-nav{opacity:1}
+.sub-item{padding:8px 10px;border-radius:8px;font-size:.75rem;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:8px;transition:all .15s}
+.sub-item:hover{background:var(--peach-bg);color:var(--text)}
+.sub-item.active{background:var(--peach);color:#fff;font-weight:600}
+.sub-icon{width:16px;text-align:center;font-size:.75rem;flex-shrink:0}
 
-/* ====== Sidebar (Mac) - 奶油色 ====== */
-#sidebar{width:var(--sidebar-w);background:var(--card-warm);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;border-right:1px solid var(--border)}
-.sidebar-top{padding:24px 20px 16px}
-.sidebar-top h1{font-size:1.05rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
-.sidebar-top .sub{font-size:.7rem;color:var(--text-soft);margin-top:4px}
-.sidebar-nav{flex:1;padding:8px 12px;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:var(--radius-xs);margin-bottom:2px;font-size:.85rem;color:var(--text-soft);transition:all .15s;width:100%;text-align:left;font-weight:500}
-.nav-item:hover{background:var(--bg-soft);color:var(--text)}
-.nav-item.active{background:var(--coral);color:#fff;font-weight:600}
-.nav-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0;font-weight:700}
-.nav-item .badge{min-width:20px;height:20px;padding:0 6px;background:var(--coral);color:#fff;font-size:.65rem;border-radius:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto}
-.sidebar-footer{padding:12px 16px;border-top:1px solid var(--border);font-size:.7rem;color:var(--text-soft)}
-.sidebar-footer .status-row{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-.sidebar-footer .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sidebar-footer .dot.on{background:var(--mint)}
-.sidebar-footer .dot.off{background:#E89380}
+#main{flex:1;margin-left:48px;padding:16px 20px 80px;max-width:960px}
+#main.sidebar-open{margin-left:180px}
 
-#main{flex:1;margin-left:var(--sidebar-w);padding:18px 24px 60px;max-width:1080px}
+#topbar{position:sticky;top:0;z-index:50;background:var(--bg);padding:0 0 12px;display:flex;align-items:center;justify-content:space-between}
+#topbar h1{font-size:1.1rem;font-weight:700}
+.breadcrumb{font-size:.75rem;color:var(--muted)}
 
-/* ====== Top bar (iPhone) ====== */
-#topbar{display:none;position:fixed;top:0;left:0;right:0;z-index:99;background:var(--card-warm);color:var(--text);padding:12px 16px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-#topbar h1{font-size:1rem;font-weight:700}
-#topbar .menu-btn{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text)}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+.card-title{font-size:.85rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.card-title-left{display:flex;align-items:center;gap:6px}
 
-/* ====== Bottom nav (iPhone) ====== */
-#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:99;background:#fff;padding:8px 0 env(safe-area-inset-bottom,8px);box-shadow:0 -2px 12px rgba(180,140,90,.06);justify-content:space-around;align-items:center}
-#bottom-nav .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;font-size:.62rem;color:var(--text-soft);min-height:50px;justify-content:center;font-weight:500}
-#bottom-nav .bn-item.active{color:var(--coral);font-weight:700}
-#bottom-nav .bn-item .icon{font-size:1.3rem;font-weight:700}
-#bottom-nav .bn-fab{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--coral),var(--peach));color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:300;margin-top:-22px;box-shadow:0 4px 12px rgba(244,123,94,.4);flex-shrink:0;line-height:1}
-
-/* ====== AI Bar (Mac) ====== */
-.ai-bar{display:flex;gap:8px;align-items:center;margin-bottom:16px}
-.ai-bar input{flex:1;padding:11px 18px;border:1.5px solid var(--border);border-radius:24px;background:var(--card);font-size:.9rem;color:var(--text);transition:all .15s}
-.ai-bar input::placeholder{color:var(--text-soft)}
-.ai-bar input:focus{border-color:var(--peach);box-shadow:0 0 0 4px rgba(244,167,139,.1)}
-.ai-bar .ai-send{padding:11px 22px;border-radius:24px;background:var(--coral);color:#fff;font-weight:600;font-size:.85rem}
-.ai-msg{padding:10px 16px;background:var(--peach-bg);border-radius:var(--radius-sm);font-size:.8rem;color:var(--text);display:none;margin-bottom:12px;border:1px solid var(--peach)33}
-
-/* ====== Hero Greeting Card ====== */
-.hero{background:linear-gradient(135deg,var(--peach-bg),var(--butter-bg));border-radius:var(--radius);padding:20px 24px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(244,167,139,.15)}
-.hero-left h2{font-size:1.4rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3}
-.hero-left .greeting-desc{font-size:.82rem;color:var(--text-soft)}
-.hero-right{font-size:2rem;font-weight:300;color:var(--peach);line-height:1}
-
-/* ====== Cards Common ====== */
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:14px;border:1px solid var(--border)}
-.card-soft{background:var(--card-warm)}
-.card-title{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px;justify-content:space-between}
-.card-title-left{display:flex;align-items:center;gap:8px}
-
-.page-header{margin-bottom:14px}
-.page-header h2{font-size:1.25rem;font-weight:700;color:var(--text)}
-.page-header .desc{font-size:.8rem;color:var(--text-soft);margin-top:3px}
-
-.btn{padding:9px 18px;border-radius:24px;font-size:.85rem;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
-.btn-primary{background:var(--coral);color:#fff}
-.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
-.btn-yellow{background:var(--butter);color:#fff}
-.btn-ghost{background:var(--bg-soft);color:var(--text-soft)}
-.btn-ghost:hover{background:var(--bg)}
-.btn-danger{color:var(--coral);background:var(--coral-bg)}
-.btn-xs{padding:4px 12px;font-size:.72rem}
-.btn-sm{padding:7px 14px;font-size:.8rem}
-
-/* ====== Circular Progress (今日概览) ====== */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-.stat-circle{background:var(--card);border-radius:var(--radius);padding:16px 10px;text-align:center;border:1px solid var(--border)}
-.circle-wrap{position:relative;width:64px;height:64px;margin:0 auto 8px}
-.circle-wrap svg{transform:rotate(-90deg)}
-.circle-wrap .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;color:var(--text)}
-.stat-circle .stat-name{font-size:.75rem;color:var(--text-soft);margin-bottom:2px;font-weight:600}
-.stat-circle .stat-val{font-size:.7rem;color:var(--text)}
-
-/* ====== Filter Tabs ====== */
-.filter-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.filter-tab{padding:6px 14px;border-radius:16px;font-size:.78rem;font-weight:500;background:var(--card);color:var(--text-soft);border:1px solid var(--border);white-space:nowrap;transition:all .15s}
-.filter-tab:hover{border-color:var(--peach);color:var(--peach)}
-.filter-tab.active{background:var(--peach);color:#fff;border-color:var(--peach)}
-.filter-tab .count{font-size:.65rem;opacity:.8;margin-left:3px}
-
-/* ====== Tasks ====== */
-.add-bar{display:flex;gap:8px;margin-bottom:14px}
-.add-bar input{flex:1;padding:11px 16px;border:1px solid var(--border);border-radius:24px;background:var(--card)}
-.add-bar input:focus{border-color:var(--peach)}
-.add-bar select{padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card)}
-
-.task-card{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin-bottom:8px;transition:all .15s}
-.task-card:hover{border-color:var(--peach);box-shadow:var(--shadow)}
-.task-card.done{opacity:.5}
-.task-card.done .task-title{text-decoration:line-through}
-.task-cb{width:22px;height:22px;border:2px solid var(--border);border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;transition:all .15s}
-.task-cb.checked{background:var(--mint);border-color:var(--mint);color:#fff}
-.task-body{flex:1;min-width:0}
-.task-title{font-size:.88rem;font-weight:500;color:var(--text)}
-.task-meta{display:flex;gap:6px;margin-top:3px;font-size:.7rem;flex-wrap:wrap}
-.task-actions{display:flex;gap:2px}
-.task-actions button{font-size:.8rem;padding:4px 6px;color:var(--text-soft);border-radius:6px}
-.task-actions button:hover{background:var(--bg-soft)}
-
-.badge-tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.68rem;font-weight:600}
+.btn{padding:8px 16px;border-radius:20px;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.btn-primary{background:var(--peach);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-outline{border:1.5px solid var(--border);color:var(--text)}
+.btn-sm{padding:5px 12px;font-size:.72rem}
+.btn-xs{padding:3px 10px;font-size:.68rem}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:600}
 .badge-peach{background:var(--peach-bg);color:#A8604A}
 .badge-mint{background:var(--mint-bg);color:#3E8E66}
 .badge-lavender{background:var(--lavender-bg);color:#6B4F8C}
-.badge-sky{background:var(--sky-bg);color:#3F6F95}
-.badge-coral{background:var(--coral-bg);color:#C45A3F}
-.badge-butter{background:var(--butter-bg);color:#A07A2D}
-.badge-rose{background:var(--rose-bg);color:#B25A75}
-.badge-soft{background:var(--bg-soft);color:var(--text-soft)}
+.badge-soft{background:var(--bg);color:var(--muted)}
 
-/* ====== XHS Kanban ====== */
-.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.kanban-col{background:var(--card-warm);border-radius:var(--radius-sm);padding:10px;min-height:140px;border:1px solid var(--border)}
-.kanban-col .col-hd{font-size:.75rem;font-weight:700;color:var(--text-soft);margin-bottom:8px;display:flex;align-items:center;gap:4px;justify-content:space-between}
-.kanban-col .col-count{background:var(--peach);color:#fff;font-size:.62rem;padding:1px 7px;border-radius:10px;font-weight:600}
-.kanban-card{padding:8px 10px;background:var(--card);border-radius:var(--radius-xs);margin-bottom:6px;font-size:.78rem;cursor:pointer;border:1px solid transparent;transition:all .15s}
-.kanban-card:hover{border-color:var(--peach);box-shadow:var(--shadow)}
-.kanban-add{font-size:.72rem;color:var(--peach);cursor:pointer;padding:6px;text-align:center;border-radius:var(--radius-xs);border:1px dashed var(--border)}
-.kanban-add:hover{background:var(--peach-bg)}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.85rem}
+.task-row:last-child{border-bottom:none}
+.task-cb{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:transparent;transition:all .15s}
+.task-cb.checked{background:var(--mint);border-color:var(--mint);color:#fff}
+.task-title{flex:1;font-weight:500}
+.task-done{opacity:.5;text-decoration:line-through}
+.task-actions{display:flex;gap:2px;opacity:.5}
+.task-row:hover .task-actions{opacity:1}
 
-/* ====== News Cards ====== */
-.news-card{padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin-bottom:8px;transition:all .15s}
-.news-card:hover{border-color:var(--peach)}
-.news-title{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:4px}
-.news-summary{font-size:.78rem;color:var(--text-soft);margin-bottom:8px;line-height:1.5}
-.news-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
-.news-footer{display:flex;align-items:center;justify-content:space-between;font-size:.72rem;color:var(--text-soft)}
+.add-bar{display:flex;gap:6px;margin-bottom:10px}
+.add-bar input{flex:1}
+.add-bar select{border:1px solid var(--border);border-radius:10px;padding:9px;background:var(--card)}
 
-/* ====== Health ====== */
-.chart-wrap{background:var(--card);border-radius:var(--radius);padding:16px;border:1px solid var(--border);margin-bottom:14px;height:240px}
-.health-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem;color:var(--text)}
-.health-row:last-child{border-bottom:none}
-.health-row .hr-date{min-width:70px;color:var(--text-soft);font-size:.78rem}
-.health-row .hr-weight{font-weight:600;color:var(--peach);min-width:60px}
+.invest-item,.store-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:.85rem}
+.invest-item:last-child,.store-item:last-child{border-bottom:none}
 
-/* ====== Notes & Inspiration ====== */
-.note-card{padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin-bottom:8px;cursor:pointer;transition:all .15s}
-.note-card:hover{border-color:var(--peach)}
-.note-card .note-title{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:4px}
-.note-card .note-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.note-card .note-preview{font-size:.78rem;color:var(--text-soft);margin-top:6px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.note-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:.85rem;cursor:pointer}
+.note-item:hover{background:var(--peach-bg)}
+.note-item:last-child{border-bottom:none}
 
-.insp-quick{display:flex;gap:8px;margin-bottom:14px}
-.insp-quick input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:24px;background:var(--card)}
-.insp-quick input:focus{border-color:var(--butter)}
-.insp-card{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card);margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
-.insp-card .insp-body{flex:1}
-.insp-card .insp-title{font-size:.88rem;font-weight:500;color:var(--text)}
-.insp-card .insp-meta{font-size:.7rem;color:var(--text-soft);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap}
+.health-item{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.82rem;display:flex;align-items:center;gap:10px}
+.health-item:last-child{border-bottom:none}
 
-/* ====== Modal ====== */
-#modal-overlay{position:fixed;inset:0;background:rgba(60,40,20,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
-#modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);padding:22px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(180,140,90,.2)}
-.modal h3{font-size:1rem;font-weight:700;margin-bottom:16px;color:var(--text)}
-.modal-field{margin-bottom:14px}
-.modal-field label{display:block;font-size:.75rem;color:var(--text-soft);margin-bottom:5px;font-weight:600}
-.modal-field input,.modal-field textarea,.modal-field select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-xs);background:var(--card-warm);color:var(--text)}
-.modal-field input:focus,.modal-field textarea:focus{border-color:var(--peach)}
-.modal-field textarea{resize:vertical;min-height:80px}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,6px)}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.62rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
+.nav-tab.active{color:var(--peach);font-weight:700}
+.nav-tab .nav-icon{font-size:1.1rem;font-weight:700}
 
-/* ====== Toast ====== */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(80,60,40,.92);color:#fff;padding:10px 24px;border-radius:24px;font-size:.8rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
+.ai-fab{position:fixed;bottom:80px;right:16px;z-index:85;width:48px;height:48px;border-radius:50%;background:var(--peach);color:#fff;box-shadow:0 4px 16px rgba(244,167,139,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;transition:all .2s}
+.ai-fab:hover{transform:scale(1.05)}
+.ai-panel{position:fixed;bottom:140px;right:16px;z-index:84;width:300px;max-height:400px;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;flex-direction:column;overflow:hidden}
+.ai-panel.show{display:flex}
+.ai-panel-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ai-panel-body{flex:1;overflow-y:auto;padding:8px;min-height:100px;font-size:.8rem}
+.ai-panel-input{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px}
+.ai-panel-input input{flex:1}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(60,40,20,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:.95rem;margin-bottom:14px}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+.modal-field input,.modal-field select,.modal-field textarea{width:100%}
+.modal-field textarea{min-height:70px;resize:vertical}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+
+#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(80,60,40,.9);color:#fff;padding:8px 20px;border-radius:20px;font-size:.75rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
 
-/* ====== Login ====== */
-.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,var(--peach-bg),var(--butter-bg),var(--lavender-bg));z-index:9999;display:flex;align-items:center;justify-content:center}
-.login-card{background:var(--card);border-radius:var(--radius);padding:32px 28px;box-shadow:var(--shadow-md);width:340px;max-width:90vw;border:1px solid var(--border)}
-.login-card h2{font-size:1.2rem;margin-bottom:4px;text-align:center;color:var(--text);font-weight:700}
-.login-card .sub{font-size:.75rem;color:var(--text-soft);text-align:center;margin-bottom:22px}
-.login-card .field{margin-bottom:14px}
-.login-card .field label{display:block;font-size:.75rem;color:var(--text-soft);margin-bottom:4px;font-weight:600}
-.login-card .field input{width:100%;padding:11px 16px;border:1px solid var(--border);border-radius:24px;font-size:.95rem;background:var(--card-warm)}
-.login-card .field input:focus{border-color:var(--peach)}
-.login-card .err{font-size:.7rem;color:var(--coral);margin-top:4px;min-height:18px}
-.login-card .btn-full{width:100%;padding:13px;background:var(--coral);color:#fff;border-radius:24px;font-size:.95rem;font-weight:700;margin-top:6px}
-.login-card .btn-full:disabled{opacity:.5}
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#FCE8DC,#FBEFCF);z-index:9999;display:flex;align-items:center;justify-content:center}
+.login-card{background:#fff;border-radius:var(--radius);padding:28px 24px;width:320px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
+.login-card h2{text-align:center;margin-bottom:16px;font-size:1.1rem}
+.login-field{margin-bottom:12px}
+.login-field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.login-field input{width:100%;padding:10px 14px;border-radius:20px}
+.login-err{font-size:.7rem;color:#E84040;min-height:18px;margin-bottom:8px}
+.login-btn{width:100%;padding:11px;background:var(--peach);color:#fff;border-radius:20px;font-size:.9rem;font-weight:700}
 
-/* ====== iPhone 专属布局 ====== */
 @media(max-width:768px){
-  #sidebar{transform:translateX(-100%);width:280px;padding-top:env(safe-area-inset-top,0);box-shadow:0 0 30px rgba(180,140,90,.2)}
-  #sidebar.open{transform:translateX(0)}
-  #main{margin-left:0;padding:60px 14px 100px}
-  #topbar{display:flex;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0))}
-  #topbar .menu-btn{font-size:1.4rem;color:var(--text)}
-  #bottom-nav{display:flex}
-
-  /* Hero */
-  .hero{padding:16px 18px;margin-bottom:12px}
-  .hero-left h2{font-size:1.15rem}
-  .hero-right{font-size:1.6rem}
-
-  /* Stats */
-  .stats-row{grid-template-columns:repeat(4,1fr);gap:6px}
-  .stat-circle{padding:12px 4px}
-  .circle-wrap{width:48px;height:48px}
-  .stat-circle .stat-name{font-size:.65rem}
-  .stat-circle .stat-val{font-size:.62rem}
-
-  /* Cards */
-  .card{padding:14px;margin-bottom:10px;border-radius:var(--radius-sm)}
-  .page-header h2{font-size:1.1rem}
-  .btn{padding:8px 14px;font-size:.8rem;min-height:42px}
-
-  /* Tasks */
-  .task-card{padding:10px 12px;border-radius:14px}
-  .task-cb{min-width:24px;min-height:24px}
-  .task-actions{opacity:1}
-
-  /* Kanban 2 columns */
-  .kanban{grid-template-columns:repeat(2,1fr);gap:8px}
-
-  /* AI bar fixed at bottom */
-  .ai-bar{position:fixed;left:12px;right:12px;bottom:78px;z-index:50;margin-bottom:0;background:var(--card);padding:6px;border-radius:24px;box-shadow:0 4px 16px rgba(180,140,90,.12)}
-  .ai-bar input{border:none;background:transparent}
-  .ai-bar .ai-send{padding:8px 16px;font-size:.78rem}
-  .ai-msg{position:fixed;left:12px;right:12px;bottom:140px;z-index:49;background:var(--card);border-radius:14px;box-shadow:var(--shadow-md);padding:10px 14px;margin-bottom:0}
-
-  /* Chart */
-  .chart-wrap{height:200px;padding:10px}
-
-  /* Filter */
-  .filter-tab{padding:5px 12px;font-size:.72rem}
-  .add-bar input,.add-bar select{padding:11px 14px;font-size:16px}
-
-  /* Modal */
-  #modal-overlay{align-items:flex-end}
-  .modal{max-width:100%;border-radius:18px 18px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0));max-height:78vh}
-
-  /* Toast */
-  #toast{bottom:160px}
+  #sidebar{transform:translateX(-100%);width:200px;padding-top:env(safe-area-inset-top,0)}
+  #sidebar.open{transform:translateX(0);width:200px}
+  #main{margin-left:0;padding:12px 14px 100px}
+  #main.sidebar-open{margin-left:0}
+  .add-bar{flex-direction:column}
+  .ai-panel{width:calc(100vw - 32px);right:16px}
 }
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- Login -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
     <h2>鸭鸭的加油站</h2>
-    <div class="sub">愿你稳步向理想的自己靠近</div>
-    <div class="field"><label>用户名</label><input id="login-user" placeholder="admin" value="admin"></div>
-    <div class="field"><label>密码</label><input id="login-pass" type="password" placeholder="Admin123" value="Admin123"></div>
-    <div class="err" id="login-err"></div>
-    <button class="btn-full" onclick="doLogin()">进入工作台</button>
+    <div class="login-field"><label>用户名</label><input id="login-user" value="admin"></div>
+    <div class="login-field"><label>密码</label><input id="login-pass" type="password" value="Admin123"></div>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" onclick="doLogin()">进入</button>
   </div>
 </div>
 
-<!-- Top bar (iPhone) -->
-<div id="topbar"><button class="menu-btn" onclick="toggleSidebar()">三</button><h1>鸭鸭的加油站</h1><div style="min-width:44px"></div></div>
-
-<!-- Sidebar -->
 <nav id="sidebar">
-  <div class="sidebar-top"><h1>鸭鸭的加油站</h1><div class="sub">v5.0</div></div>
-  <div class="sidebar-nav" id="sidebar-nav"></div>
-  <div class="sidebar-footer">
-    <div class="status-row"><span class="dot off" id="cloud-dot"></span><span id="cloud-text">连接中...</span></div>
-    <div id="last-sync"></div>
-  </div>
+  <div class="side-toggle" onclick="toggleSidebar()">☰</div>
+  <div class="sub-nav" id="sub-nav"></div>
 </nav>
 
-<!-- Main -->
 <main id="main">
-<!-- Page: Home (今日概览) -->
-<div id="pg-home" class="page" style="display:none">
-  <div class="hero"><div class="hero-left" style="flex:1"><h2 id="hero-greet">你好呀</h2><div class="greeting-desc" id="hero-quote"></div></div><div class="hero-right" style="text-align:right"><div id="hero-time" style="font-size:.8rem;color:var(--text-soft);margin-bottom:2px">--:--</div><div id="hero-weather" style="font-size:.75rem;color:var(--peach);display:flex;align-items:center;gap:4px;justify-content:flex-end">加载中...</div></div></div>
-  <div class="card card-soft" id="assistant-card" style="border:1px solid var(--lavender);background:linear-gradient(135deg,#f8f0ff,#fff8f0)"><div style="display:flex;align-items:flex-start;gap:10px"><div style="font-size:1.5rem;line-height:1;flex-shrink:0;width:40px;height:40px;background:var(--lavender-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--lavender);font-weight:700">AI</div><div style="flex:1"><div id="assistant-msg" style="font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.4"></div><div id="assistant-actions" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"></div></div></div></div>
-  <div class="card"><div class="card-title"><div class="card-title-left">今日概览</div></div>
-    <div class="stats-row" id="home-stats"></div></div>
-  
-  <div class="card"><div class="card-title"><div class="card-title-left">今日事项</div><span class="badge-tag badge-soft" id="home-support-count">0 项</span></div><div id="home-support"></div></div>
-</div>
-
-<!-- Page: Tasks -->
-<div id="pg-tasks" class="page" style="display:none">
-  <div class="page-header"><h2>待办任务</h2><div class="desc">按分类管理你的待办事项</div></div>
-  <div class="add-bar"><input id="task-input" placeholder="想做什么？" onkeypress="if(event.key==='Enter')addTask()"><select id="task-cat"><option value="工作">工作</option><option value="生活">生活</option><option value="广告">广告</option><option value="理财">理财</option><option value="打卡">打卡</option></select><button class="btn btn-primary" onclick="addTask()">添加</button></div>
-  <div class="filter-tabs" id="task-tabs"></div>
-  <div id="task-list"></div>
-</div>
-
-<!-- Page: Finance -->
-<div id="pg-finance" class="page" style="display:none">
-  <div class="page-header"><h2>财经新闻</h2><div class="desc">关注你的投资领域</div></div>
-  <button class="btn btn-primary" style="margin-bottom:12px" onclick="openModal('finance')">+ 添加新闻</button>
-  <div class="filter-tabs" id="finance-tabs"></div>
-  <div id="finance-list"></div>
-</div>
-
-<!-- Page: Health -->
-<div id="pg-health" class="page" style="display:none">
-  <div class="page-header"><h2>健康减重</h2><div class="desc">记录身体变化，看见进步</div></div>
-  <button class="btn btn-primary btn-sm" style="margin-bottom:14px" onclick="openModal('health')">+ 添加记录</button>
-  <div class="stats-row" id="health-stats"></div>
-  <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
-  <div id="health-list" class="card" style="padding:0"></div>
-</div>
-
-<!-- Page: XHS -->
-<div id="pg-xhs" class="page" style="display:none">
-  <div class="page-header"><h2>小红书运营</h2><div class="desc">内容管理 + 热点追踪</div></div>
-  <div class="filter-tabs" style="margin-bottom:12px">
-    <button class="filter-tab active" onclick="xhsTab='content';renderXHS()">内容管理</button>
-    <button class="filter-tab" onclick="xhsTab='hot';renderXHS()">热点追踪</button>
-  </div>
-  <div id="xhs-content"></div>
-</div>
-
-<!-- Page: Study -->
-<div id="pg-study" class="page" style="display:none">
-  <div class="page-header"><h2>学习笔记</h2><div class="desc">读书 · 课程 · 感悟 · 技能</div></div>
-  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-    <button class="btn btn-primary btn-sm" onclick="openModal('study')">+ 新建笔记</button>
-    <button class="btn btn-yellow btn-sm" onclick="syncToObsidian()">同步 Obsidian</button>
-  </div>
-  <div class="filter-tabs" id="study-tabs"></div>
-  <div id="study-list"></div>
-</div>
-
-<!-- Page: Inspiration -->
-<div id="pg-insp" class="page" style="display:none">
-  <div class="page-header"><h2>灵感库</h2><div class="desc">一闪而过的想法，都值得留住</div></div>
-  <div class="insp-quick"><input id="insp-input" placeholder="记录灵感..." onkeypress="if(event.key==='Enter')addInsp()"><button class="btn btn-primary btn-sm" onclick="addInsp()">保存</button></div>
-  <div class="filter-tabs" id="insp-tabs"></div>
-  <div id="insp-list"></div>
-</div>
-
+  <div id="topbar"><h1 id="page-title">总览</h1><div class="breadcrumb" id="breadcrumb"></div></div>
+  <div id="content"></div>
 </main>
 
-<!-- AI Bar -->
-<div class="ai-bar" id="ai-bar"><input id="ai-input" placeholder="对我说点什么..." onkeypress="if(event.key==='Enter')runAI()"><button class="ai-send" onclick="runAI()">发送</button></div>
-<div class="ai-msg" id="ai-msg"></div>
-
-<!-- Modal -->
-<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal" id="modal-body"></div>
+<button class="ai-fab" onclick="toggleAI()" title="智能助手">AI</button>
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-panel-header">智能助手 <button onclick="toggleAI()">✕</button></div>
+  <div class="ai-panel-body" id="ai-body">你好，我是鸭鸭的小助手！</div>
+  <div class="ai-panel-input"><input id="ai-input" placeholder="描述你想做的事..." onkeypress="if(event.key==='Enter')runAI()"><button class="btn btn-primary btn-xs" onclick="runAI()">发送</button></div>
 </div>
 
-<!-- Toast -->
+<div class="bottom-nav" id="bottom-nav"></div>
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal-body"></div></div>
 <div id="toast"></div>
-
-<!-- Bottom nav (iPhone) -->
-<div id="bottom-nav"></div>
 
 </div>
 
 <script>
-// ============================================================
-// Data Store
-// ============================================================
-const Store = {
-  data: { tasks: [], study_notes: [], finance_news: [], health_records: [], xhs_content: [], hot_topics: [], inspirations: [] },
-  envId: 'yayaliu-d4g1i1dc2fdb04417',
-  app: null, auth: null, db: null, ready: false, cloudOk: false,
-  _hadSyncBefore: false, _syncTimer: null,
-  async initCloud() {
-    try {
-      if (typeof cloudbase === 'undefined') throw new Error('SDK未加载');
-      const app = cloudbase.init({ env: this.envId });
-      let ls; try { ls = await app.auth.getLoginState(); } catch(e){}
-      if (!ls) {
-        const { error } = await app.auth.signInWithPassword({ username: 'admin', password: 'Admin123' });
-        if (error) throw new Error(error.message || '登录失败');
-      }
-      this.auth = app.auth; this.app = app; this.db = app.database(); this.ready = true;
-      this.updateStatus('connecting');
-      await this.loadFromCloud();
-      this.cloudOk = true; this.updateStatus('cloud');
-      return true;
-    } catch(e) {
-      this.ready = false; this.cloudOk = false; this.updateStatus('offline');
-      toast('连接失败: ' + (e.message || ''));
-      return false;
-    }
+// ============ Store ============
+const Store={
+  envId:'yayaliu-d4g1i1dc2fdb04417',
+  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[]},
+  app:null,auth:null,db:null,ready:false,_hadSync:false,
+  async initCloud(){
+    if(typeof cloudbase==='undefined')throw new Error('SDK未加载');
+    const app=cloudbase.init({env:this.envId});
+    let ls;try{ls=await app.auth.getLoginState()}catch(e){}
+    if(!ls){const{error}=await app.auth.signInWithPassword({username:'admin',password:'Admin123'});if(error)throw new Error(error.message)}
+    this.auth=app.auth;this.app=app;this.db=app.database();this.ready=true;
+    await this.loadFromCloud();return true
   },
-  async loadFromCloud() {
-    if (!this.ready || !this.db) return;
-    const dedup = (arr, key='id') => { const s=new Set(); return arr.filter(x=>{ const v=x[key]||''; if(s.has(v)) return false; s.add(v); return true; }); };
-    const strip = (d) => { const {_id,_openid,createdAt,updatedAt,...r}=d; return r; };
-    const sg = async (col) => { try { const r=await this.db.collection(col).limit(1000).get(); return (r.data||[]).map(strip); } catch(e){ return []; } };
-    const ct = dedup(await sg('tasks'));
-    const sn = dedup(await sg('study_notes'));
-    const fn = await sg('finance_news');
-    const hr = dedup(await sg('health_records'));
-    const xc = dedup(await sg('xiaohongshu'));
-    const ht = dedup(await sg('hot_topics'));
-    const ins = dedup(await sg('inspirations'));
-    let hasCloud = false;
-    if (ct.length) { this.data.tasks = ct; hasCloud = true; }
-    if (sn.length) { this.data.study_notes = sn; hasCloud = true; }
-    if (fn.length) { this.data.finance_news = fn; hasCloud = true; }
-    if (hr.length) { this.data.health_records = hr; hasCloud = true; }
-    if (xc.length) { this.data.xhs_content = xc; hasCloud = true; }
-    if (ht.length) { this.data.hot_topics = ht; hasCloud = true; }
-    if (ins.length) { this.data.inspirations = ins; hasCloud = true; }
-    if (hasCloud) { this.saveLocal(); this.updateSyncTime(); }
-    else if (this._hadSyncBefore) { this.data.tasks=[]; this.data.finance_news=[]; this.data.health_records=[]; this.data.xhs_content=[]; this.data.hot_topics=[]; this.data.inspirations=[]; this.saveLocal(); }
-    else if (this.data.tasks.length||this.data.study_notes.length) { await this.saveToCloud(); }
+  async loadFromCloud(){
+    if(!this.db)return;
+    const dedup=(arr,k='id')=>{const s=new Set();return arr.filter(x=>{const v=x[k]||'';if(s.has(v))return false;s.add(v);return true})};
+    const strip=d=>{const{_id,_openid,...r}=d;return r};
+    const sg=async c=>{try{return(await this.db.collection(c).limit(1000).get()).data.map(strip)}catch(e){return[]}};
+    const t=dedup(await sg('tasks'));const h=dedup(await sg('health_records'));const x=dedup(await sg('xiaohongshu'));
+    const i=dedup(await sg('investments'));const st=dedup(await sg('stores'));const ins=dedup(await sg('inspirations'));
+    const sn=dedup(await sg('study_notes'));const ce=await sg('calendar_events');
+    let has=false;
+    if(t.length){this.data.tasks=t;has=true}if(h.length){this.data.health=h;has=true}if(x.length){this.data.xhs=x;has=true}
+    if(i.length){this.data.investments=i;has=true}if(st.length){this.data.stores=st;has=true}if(ins.length){this.data.inspirations=ins;has=true}
+    if(sn.length){this.data.study=sn;has=true}if(ce.length){this.data.calendar=ce;has=true}
+    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],calendar:[]};this.saveLocal()}
+    else if(this.data.tasks.length||this.data.study.length)await this.saveToCloud()
   },
-  async saveToCloud() {
-    if (!this.ready || !this.db) return;
-    const repl = async (col, items) => {
-      const ex = await col.limit(1000).get();
-      for (const d of ex.data||[]) try { await col.doc(d._id).remove(); } catch(e){}
-      for (const i of items) await col.add({...i});
-    };
-    try { await repl(this.db.collection('tasks'),this.data.tasks); } catch(e){}
-    try { await repl(this.db.collection('study_notes'),this.data.study_notes); } catch(e){}
-    try { await repl(this.db.collection('finance_news'),this.data.finance_news); } catch(e){}
-    try { await repl(this.db.collection('health_records'),this.data.health_records); } catch(e){}
-    try { await repl(this.db.collection('xiaohongshu'),this.data.xhs_content); } catch(e){}
-    try { await repl(this.db.collection('hot_topics'),this.data.hot_topics); } catch(e){}
-    try { await repl(this.db.collection('inspirations'),this.data.inspirations); } catch(e){}
-    this.updateSyncTime(); this.updateStatus('cloud');
+  async saveToCloud(){
+    if(!this.db)return;
+    const repl=async(col,it)=>{try{const e=await col.limit(1000).get();for(const d of e.data||[])try{await col.doc(d._id).remove()}catch(e){};for(const i of it)await col.add({...i})}catch(e){}}
+    await repl(this.db.collection('tasks'),this.data.tasks||[]);await repl(this.db.collection('health_records'),this.data.health||[]);
+    await repl(this.db.collection('xiaohongshu'),this.data.xhs||[]);await repl(this.db.collection('investments'),this.data.investments||[]);
+    await repl(this.db.collection('stores'),this.data.stores||[]);await repl(this.db.collection('inspirations'),this.data.inspirations||[]);
+    await repl(this.db.collection('study_notes'),this.data.study||[]);
+    this._hadSync=true;localStorage.setItem('ws_had','1')
   },
-  loadLocal() {
-    try {
-      const r = localStorage.getItem('ws_data');
-      if (r) { const p=JSON.parse(r); this.data = Object.assign(this.data, p); }
-      this._hadSyncBefore = localStorage.getItem('ws_hadsync')==='1';
-    } catch(e) {}
-  },
-  saveLocal() { localStorage.setItem('ws_data', JSON.stringify(this.data)); },
-  async save() { this.saveLocal(); clearTimeout(this._syncTimer); this._syncTimer = setTimeout(()=>this.saveToCloud(),500); },
-  updateStatus(s) {
-    const d=document.getElementById('cloud-dot'),t=document.getElementById('cloud-text');
-    if (s==='cloud') { d.classList.add('on'); d.classList.remove('off'); t.textContent='已连接'; }
-    else if (s==='connecting') { d.classList.add('on'); d.classList.remove('off'); t.textContent='连接中...'; }
-    else { d.classList.add('off'); d.classList.remove('on'); t.textContent='离线'; }
-  },
-  updateSyncTime() {
-    const n=new Date(),el=document.getElementById('last-sync');
-    if(el) el.textContent='同步 '+n.toLocaleString('zh-CN',{hour:'2-digit',minute:'2-digit'});
-    this._hadSyncBefore=true; localStorage.setItem('ws_hadsync','1');
-  }
+  loadLocal(){try{const r=localStorage.getItem('ws_data_v6');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
+  saveLocal(){localStorage.setItem('ws_data_v6',JSON.stringify(this.data))},
+  async save(){this.saveLocal();clearTimeout(this._st);this._st=setTimeout(()=>this.saveToCloud(),500)}
 };
 
-const genId = () => 'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today = () => new Date().toISOString().slice(0,10);
+const genId=()=>'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
 
-function toast(msg) { const e=document.getElementById('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'),2000); }
-
-let currentPage = 'home', currentModal = null, editId = null;
-let taskFilter = '全部', financeFilter = '全部', studyFilter = '全部', inspFilter = '全部', xhsTab = 'content';
-
-// ============================================================
-// Navigation
-// ============================================================
-const pages = [
-  {id:'home', icon:'居', label:'首页'},
-  {id:'tasks', icon:'办', label:'待办'},
-  {id:'finance', icon:'财', label:'财经'},
-  {id:'health', icon:'健', label:'健康'},
-  {id:'xhs', icon:'书', label:'小红书'},
-  {id:'study', icon:'学', label:'学习'},
-  {id:'insp', icon:'光', label:'灵感'},
+// ============ Navigation ============
+const modules=[
+  {id:'home',label:'总览',icon:'家'},
+  {id:'tasks',label:'待办',icon:'办'},
+  {id:'revenue',label:'赚钱',icon:'赚'},
+  {id:'study',label:'学习',icon:'学'}
 ];
+const subMenus={
+  home:[],
+  tasks:[{id:'work',label:'工作待办',icon:'工'},{id:'life',label:'生活待办',icon:'生'}],
+  revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'},{id:'insp',label:'灵感库',icon:'灵'}],
+  study:[{id:'japanese',label:'日语',icon:'日'},{id:'reading',label:'读书',icon:'读'}]
+};
 
-function navigate(id) {
-  currentPage = id;
-  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
-  document.getElementById('pg-'+id).style.display='block';
-  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
-  document.querySelector('.nav-item[data-page="'+id+'"]')?.classList.add('active');
-  document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('active'));
-  document.querySelector('.bn-item[data-page="'+id+'"]')?.classList.add('active');
-  if (id==='home') renderHome();
-  if (id==='tasks') renderTasks();
-  if (id==='finance') renderFinance();
-  if (id==='health') renderHealth();
-  if (id==='xhs') renderXHS();
-  if (id==='study') renderStudy();
-  if (id==='insp') renderInsp();
-  if (window.innerWidth<=768) document.getElementById('sidebar').classList.remove('open');
+let currentModule='home',currentSub='work',sidebarOpen=false,aiOpen=false;
+let taskTab='work',healthTab=false;
+
+function navigate(mod,sub){
+  currentModule=mod;currentSub=sub||(subMenus[mod][0]||{}).id||'';taskTab=mod==='tasks'?(sub||'work'):taskTab;
+  document.title='鸭鸭的加油站 · '+modules.find(m=>m.id===mod).label;
+  document.getElementById('page-title').textContent=modules.find(m=>m.id===mod).label;
+  const subName=subMenus[mod].find(s=>s.id===currentSub);
+  document.getElementById('breadcrumb').textContent=subName?subName.label:'';
+  document.getElementById('sub-nav').innerHTML=subMenus[mod].map(s=>`<button class="sub-item ${currentSub===s.id?'active':''}" onclick="navigate('${mod}','${s.id}')"><span class="sub-icon">${s.icon}</span>${s.label}</button>`).join('');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.nav-tab[data-mod="'+mod+'"]')?.classList.add('active');
+  renderContent();
+  if(window.innerWidth<=768&&sidebarOpen)toggleSidebar()
 }
 
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen);document.getElementById('main').classList.toggle('sidebar-open',sidebarOpen)}
 
-function buildNav() {
-  let h=''; let b='';
-  pages.slice(0,4).forEach(p=>{
-    h+=`<button class="nav-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
-    b+=`<button class="bn-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
-  });
-  // sidebar - rest of items
-  h+='<div style="height:8px;border-top:1px solid var(--border);margin:8px 0"></div>';
-  pages.slice(4).forEach(p=>{
-    h+=`<button class="nav-item" data-page="${p.id}" onclick="navigate('${p.id}')"><span class="icon">${p.icon}</span>${p.label}</button>`;
-  });
-  // bottom nav - center FAB
-  b+=`<button class="bn-fab" onclick="navigate('insp')">+</button>`;
-  b+=`<button class="bn-item" data-page="xhs" onclick="navigate('xhs')"><span class="icon">${pages[4].icon}</span>${pages[4].label}</button>`;
-  b+=`<button class="bn-item" data-page="study" onclick="navigate('study')"><span class="icon">${pages[5].icon}</span>${pages[5].label}</button>`;
-  b+=`<button class="bn-item" data-page="more" onclick="toggleSidebar()"><span class="icon">+</span>更多</button>`;
-  document.getElementById('sidebar-nav').innerHTML = h;
-  document.getElementById('bottom-nav').innerHTML = b;
-  navigate('home');
+function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
+
+function buildUI(){
+  document.getElementById('bottom-nav').innerHTML=modules.map(m=>`<button class="nav-tab" data-mod="${m.id}" onclick="navigate('${m.id}')"><span class="nav-icon">${m.icon}</span>${m.label}</button>`).join('');
+  navigate('home')
 }
 
-// ============================================================
-// Home Dashboard
-// ============================================================
-let homeChart = null;
-
-async function fetchWeather() {
-  try {
-    const resp = await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.26&longitude=108.94&current=temperature_2m,weather_code&timezone=Asia/Shanghai');
-    const data = await resp.json();
-    const t = data.current.temperature_2m;
-    const code = data.current.weather_code;
-    const icons = {0:'晴',1:'晴',2:'多云',3:'阴',45:'雾',51:'小雨',53:'中雨',61:'阵雨',71:'小雪',80:'雷雨'};
-    const w = icons[code] || '多云';
-    return Math.round(t)+' '+w;
-  } catch(e) { return '西安'; }
+// ============ Render ============
+function renderContent(){
+  const c=document.getElementById('content');
+  if(currentModule==='home')renderHome(c);
+  else if(currentModule==='tasks')renderTasks(c);
+  else if(currentModule==='revenue')renderRevenue(c);
+  else if(currentModule==='study')renderStudy(c);
 }
 
-async function renderHome() {
-  const h = new Date().getHours();
-  let greet = '早上好呀';
-  if (h >= 12 && h < 18) greet = '下午好';
-  else if (h >= 18) greet = '晚上好';
-  document.getElementById('hero-greet').textContent = greet;
-  document.getElementById('hero-time').textContent = new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',weekday:'short'});
-  const quotes=["今天也是闪闪发光的一天","你比想象中更强大","每一步都算数","慢慢来，比较快","阳光正好，继续前行","别怕，你正在变好的路上","今天也是值得的一天","保持热爱，奔赴山海","做自己的小太阳","认真生活的你最可爱","慢慢变好，是给自己最好的礼物","今天的努力是明天的底气"];
-  document.getElementById('hero-quote').textContent=quotes[Math.floor(Math.random()*quotes.length)];
-  fetchWeather().then(w=>{ document.getElementById('hero-weather').textContent = w; });
+function renderHome(c){
+  const h=new Date().getHours();let g='早上好呀';if(h>=12&&h<18)g='下午好';else if(h>=18)g='晚上好';
+  const tasks=Store.data.tasks||[],health=Store.data.health||[],insp=Store.data.inspirations||[],study=Store.data.study||[];
+  const pending=tasks.filter(t=>!t.completed);
+  const todayStr=today();
+  const todayHealth=health.filter(r=>r.date===todayStr);
+  const todayInsp=insp.filter(i=>i.createdAt===todayStr);
+  const todayStudy=study.filter(s=>s.updatedAt===todayStr||s.createdAt===todayStr);
 
-  const tasks=Store.data.tasks,recs=Store.data.health_records,inspirations=Store.data.inspirations;
-  const todayStr=(new Date()).toISOString().slice(0,10);
-  const todayHealth=recs.filter(r=>r.date===todayStr);
-  const todayWeight=todayHealth.find(r=>r.weight)?.weight||0;
-  const todayCals=todayHealth.reduce((s,r)=>s+(r.calories||0),0);
-  const todayTrain=todayHealth.filter(r=>r.training&&r.training!=='休息').length;
-  const todayInsp=inspirations.filter(i=>i.createdAt===todayStr).length;
+  c.innerHTML=`
+    <div class="card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">
+      <div style="font-size:1.2rem;font-weight:700;margin-bottom:4px">${g}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">今天也要加油鸭</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge badge-peach">待办 ${pending.length}</span>
+        <span class="badge badge-mint">健康 ${todayHealth.length}条</span>
+        <span class="badge badge-lavender">灵感 ${todayInsp.length}条</span>
+      </div>
+    </div>
 
-  const mk=(val,unit,color)=>'<div class="stat-circle" style="color:'+color+'"><div class="pct" style="font-size:1.2rem">'+(val||'--')+'</div><div class="stat-name">'+unit+'</div><div class="stat-val">今日</div></div>';
-  document.getElementById('home-stats').innerHTML = mk(todayWeight,'体重kg','var(--peach)') + mk(todayCals,'热量kcal','var(--coral)') + mk(todayTrain,'训练次','var(--mint)') + mk(todayInsp,'新灵感','var(--lavender)');
+    <div class="card"><div class="card-title"><div class="card-title-left">今日进度</div></div>
+    ${pending.length===0?'<div style="color:var(--muted);text-align:center;padding:20px">今天没有未完成的任务</div>':
+    pending.slice(0,5).map(t=>`<div class="task-row"><div class="task-cb" onclick="toggleTask('${t.id}')"></div><div class="task-title">${t.title}</div><span class="badge badge-soft">${t.module||'工作'}</span></div>`).join('')}
+    </div>
 
-  // Assistant
-  const hasHealth=todayHealth.length>0&&(todayHealth.some(r=>r.weight)||todayHealth.some(r=>r.training));
-  const pendingTasks=tasks.filter(t=>!t.completed);
-  const highTask=tasks.find(t=>!t.completed&&t.priority==='高');
-  let assistMsg='',assistHtml='';
-  if(!hasHealth&&pendingTasks.length===0) assistMsg='早上好，今天还没有安排，也没有记录身体数据呢';
-  else if(!hasHealth) assistMsg='你还没记录今天的身体数据，记得称个体重哦';
-  else if(pendingTasks.length===0) assistMsg='今天待办清空了，享受充实的一天吧';
-  else if(highTask) assistMsg='今日最重要的任务是「'+highTask.title+'」，加油';
-  else assistMsg='你今天有'+pendingTasks.length+'件待办，开始行动吧';
-  if(!hasHealth) assistHtml+='<button class="btn btn-primary btn-xs" onclick="navigate(\'health\');openModal(\'health\')">记录身体数据</button>';
-  document.getElementById('assistant-msg').textContent=assistMsg;
-  document.getElementById('assistant-actions').innerHTML=assistHtml;
-
-  // Main task
-  const mainT=tasks.find(t=>!t.completed&&t.priority==='高')||tasks.find(t=>!t.completed&&t.priority==='中')||tasks.find(t=>!t.completed);
-  document.getElementById('home-main-task').innerHTML = mainT
-    ? '<div style="padding:12px"><div style="font-weight:600;font-size:.9rem">'+mainT.title+'</div><div style="font-size:.75rem;margin-top:4px;color:var(--text-soft)">'+mainT.priority+' · '+mainT.category+(mainT.dueDate?' · '+mainT.dueDate:'')+'</div></div>'
-    : '<div style="text-align:center;color:var(--text-soft);padding:20px">今天没有待办任务，给自己放个假吧</div>';
-
-  // Check-in + support tasks
-  const checkin=tasks.filter(t=>!t.completed&&t.category==='打卡');
-  const normal=tasks.filter(t=>!t.completed&&t.category!=='打卡');
-  const cats=['工作','生活','广告','理财'];
-  let supportHTML='';
-  if(checkin.length>0){
-    supportHTML+='<div style="margin-bottom:14px"><div style="font-size:.75rem;font-weight:700;color:var(--peach);margin-bottom:6px">打卡项目 '+checkin.length+'</div>';
-    supportHTML+=checkin.map(t=>'<div class="task-card" style="margin-bottom:6px;border-left:3px solid var(--peach)"><div class="task-cb" onclick="toggleTask(\''+t.id+'\')"></div><div class="task-body"><div class="task-title">'+t.title+'</div><div class="task-meta">'+(t.dueDate?'<span style="color:var(--text-soft)">'+t.dueDate+'</span>':'')+(t.notes?'<span style="color:var(--text-soft)">'+t.notes+'</span>':'')+'</div></div><div class="task-actions"><button onclick="editTask(\''+t.id+'\')">编</button><button onclick="deleteTask(\''+t.id+'\')">删</button></div></div>').join('')+'</div>';
-  }
-  const grouped={};cats.forEach(c=>{grouped[c]=normal.filter(t=>t.category===c);});
-  const catsWithData=cats.filter(c=>grouped[c].length>0);
-  if(catsWithData.length>0){
-    supportHTML+=catsWithData.map(c=>'<div style="margin-bottom:10px"><div style="font-size:.75rem;font-weight:700;color:var(--text-soft);margin-bottom:6px">'+c+' '+grouped[c].length+'</div>'+grouped[c].map(t=>'<div class="task-card" style="margin-bottom:6px"><div class="task-cb" onclick="toggleTask(\''+t.id+'\')"></div><div class="task-body"><div class="task-title">'+t.title+'</div><div class="task-meta"><span class="badge-tag badge-'+(t.priority==='高'?'coral':t.priority==='中'?'butter':'mint')+'">'+t.priority+'</span>'+(t.dueDate?'<span style="color:var(--text-soft)">'+t.dueDate+'</span>':'')+'</div></div><div class="task-actions"><button onclick="editTask(\''+t.id+'\')">编</button><button onclick="deleteTask(\''+t.id+'\')">删</button></div></div>').join('')+'</div>').join('');
-  }
-  document.getElementById('home-support').innerHTML=supportHTML||'<div style="text-align:center;color:var(--text-soft);padding:20px">今天没事了</div>';
-  document.getElementById('home-support-count').textContent=pendingTasks.length+' 项';
+    <div class="card" style="background:var(--mint-bg)"><div class="card-title"><div class="card-title-left">健康今日</div></div>
+    ${todayHealth.length===0?'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>':
+    todayHealth.map(r=>`<div class="health-item"><span>${r.date}</span><span>${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'舞':''}</span></div>`).join('')}
+    </div>`;
 }
 
-// ============================================================
-// Tasks
-// ============================================================
-function addTask() {
-  const inp = document.getElementById('task-input'), title = inp.value.trim();
-  if (!title) return;
-  Store.data.tasks.unshift({ id:genId(), title, category:document.getElementById('task-cat').value, priority:'中', dueDate:'', notes:'', completed:false, createdAt:today() });
-  inp.value = ''; Store.save(); renderTasks(); renderHome();
-}
-function toggleTask(id) { const t=Store.data.tasks.find(x=>x.id===id); if(!t) return; t.completed=!t.completed; Store.save(); renderTasks(); if(currentPage==='home') renderHome(); }
-function deleteTask(id) { Store.data.tasks=Store.data.tasks.filter(x=>x.id!==id); Store.save(); renderTasks(); if(currentPage==='home') renderHome(); }
+function renderTasks(c){
+  const tasks=Store.data.tasks||[];
+  const filterModule=taskTab==='work'?'工作':'生活';
+  const moduleTasks=tasks.filter(t=>t.module===filterModule);
+  const healthTasks=taskTab==='life'?moduleTasks.filter(t=>t.healthTask):[];
+  const otherTasks=taskTab==='life'?moduleTasks.filter(t=>!t.healthTask):moduleTasks;
 
-function editTask(id) {
-  const t = Store.data.tasks.find(x=>x.id===id); if(!t) return;
-  editId=id; currentModal='task';
-  document.getElementById('modal-body').innerHTML = `<h3>编辑任务</h3>
-    <div class="modal-field"><label>标题</label><input id="me-title" value="${t.title||''}"></div>
-    <div class="modal-field"><label>分类</label><select id="me-cat">${['工作','生活','广告','理财','打卡'].map(c=>`<option ${t.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
-    <div class="modal-field"><label>优先级</label><select id="me-pri">${['高','中','低'].map(p=>`<option ${t.priority===p?'selected':''}>${p}</option>`).join('')}</select></div>
-    <div class="modal-field"><label>截止</label><input id="me-due" type="date" value="${t.dueDate||''}"></div>
-    <div class="modal-field"><label>备注</label><textarea id="me-notes">${t.notes||''}</textarea></div>
-    <div class="modal-actions"><button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}');closeModal()">删除</button><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveTaskEdit()">保存</button></div>`;
-  document.getElementById('modal-overlay').classList.add('show');
+  c.innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn ${taskTab==='work'?'btn-primary':'btn-outline'} btn-sm" onclick="taskTab='work';renderTasks(document.getElementById('content'))">工作待办</button>
+      <button class="btn ${taskTab==='life'?'btn-primary':'btn-outline'} btn-sm" onclick="taskTab='life';renderTasks(document.getElementById('content'))">生活待办</button>
+    </div>
+    <div class="add-bar">
+      <input id="task-title" placeholder="添加${taskTab==='work'?'工作':'生活'}待办..." onkeypress="if(event.key==='Enter')addTask()">
+      <button class="btn btn-primary" onclick="addTask()">添加</button>
+    </div>
+    ${taskTab==='life'?`<div class="card card-title" style="background:var(--peach-bg);margin-bottom:8px;padding:10px 14px"><div class="card-title-left">健康固定任务 <button class="btn btn-primary btn-xs" onclick="addHealthTask()">+</button></div></div>
+    ${healthTasks.length?healthTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:10px;font-size:.8rem">暂无健康任务</div>'}`:''}
+    <div class="card"><div class="card-title"><div class="card-title-left">${taskTab==='work'?'工作':'其他生活'}待办</div><span class="badge badge-soft">${otherTasks.filter(t=>!t.completed).length}项</span></div>
+    ${otherTasks.length?otherTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">暂无事项</div>'}
+    </div>`;
 }
 
-function saveTaskEdit() {
-  const t = Store.data.tasks.find(x=>x.id===editId); if(!t) return;
-  t.title=document.getElementById('me-title').value;
-  t.category=document.getElementById('me-cat').value;
-  t.priority=document.getElementById('me-pri').value;
-  t.dueDate=document.getElementById('me-due').value;
-  t.notes=document.getElementById('me-notes').value;
-  closeModal(); Store.save(); renderTasks(); if(currentPage==='home') renderHome();
+function taskHTML(t){
+  return `<div class="task-row"><div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div><div class="task-title ${t.completed?'task-done':''}">${t.title}</div>${t.priority==='高'?'<span class="badge badge-peach">高</span>':''}<button class="btn-outline btn-xs" onclick="deleteTask('${t.id}')">删</button></div>`;
 }
 
-function renderTasks() {
-  const cats = ['全部','工作','生活','广告','理财','打卡'];
-  const counts = {}; cats.forEach(c=>{ counts[c] = c==='全部'?Store.data.tasks.length:Store.data.tasks.filter(x=>x.category===c).length; });
-  document.getElementById('task-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${taskFilter===c?'active':''}" onclick="taskFilter='${c}';renderTasks()">${c}<span class="count">${counts[c]}</span></button>`).join('');
-  const filtered = taskFilter==='全部'?Store.data.tasks:Store.data.tasks.filter(x=>x.category===taskFilter);
-  document.getElementById('task-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无任务，添加一个开始吧</div>'
-    : filtered.map(t=>`<div class="task-card ${t.completed?'done':''}">
-      <div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div>
-      <div class="task-body"><div class="task-title">${t.title}</div>
-        <div class="task-meta"><span class="badge-tag badge-${t.priority==='高'?'coral':t.priority==='中'?'butter':'mint'}">${t.priority}</span><span class="badge-tag badge-soft">${t.category}</span>${t.dueDate?`<span style="color:var(--text-soft)">${t.dueDate}</span>`:''}</div>
-        ${t.notes ? `<div style="font-size:.75rem;color:var(--text-soft);margin-top:3px">${t.notes}</div>` : ''}</div>
-      <div class="task-actions"><button onclick="editTask('${t.id}')">编</button><button onclick="deleteTask('${t.id}')">删</button></div></div>`).join('');
+function renderRevenue(c){
+  if(currentSub==='invest')renderInvest(c);
+  else if(currentSub==='xhs')renderXHS(c);
+  else if(currentSub==='store')renderStore(c);
+  else if(currentSub==='insp')renderInsp(c);
 }
 
-// ============================================================
-// Finance
-// ============================================================
-const financeTags = ['金钼股份','恒生科技','半导体','通信ETF','有色','AI算力'];
-function renderFinance() {
-  const cats = ['全部',...financeTags];
-  const counts = {}; cats.forEach(c=>{ counts[c] = c==='全部'?Store.data.finance_news.length:Store.data.finance_news.filter(x=>(x.tags||[]).includes(c)).length; });
-  document.getElementById('finance-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${financeFilter===c?'active':''}" onclick="financeFilter='${c}';renderFinance()">${c}<span class="count">${counts[c]}</span></button>`).join('');
-  const filtered = financeFilter==='全部'?Store.data.finance_news:Store.data.finance_news.filter(x=>(x.tags||[]).includes(financeFilter));
-  document.getElementById('finance-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无新闻</div>'
-    : filtered.map(n=>`<div class="news-card">
-      <div class="news-title">${n.title||''}</div>
-      ${n.summary?`<div class="news-summary">${n.summary}</div>`:''}
-      <div class="news-tags">${(n.tags||[]).map(t=>`<span class="badge-tag badge-peach">${t}</span>`).join('')}</div>
-      <div class="news-footer"><div>${n.createdAt||''}${n.remark?` · ${n.remark}`:''}</div>
-        <div style="display:flex;gap:6px">${n.url?`<a href="${n.url}" target="_blank">链接</a>`:''}<button class="btn-ghost btn-xs" onclick="editFinance('${n.id}')">编</button><button class="btn-danger btn-xs" onclick="deleteFinance('${n.id}')">删</button></div></div></div>`).join('');
-}
-function deleteFinance(id) { Store.data.finance_news = Store.data.finance_news.filter(x=>x.id!==id); Store.save(); renderFinance(); }
-function editFinance(id) { editId=id; currentModal='finance'; const d=Store.data.finance_news.find(x=>x.id===id); if(d) openModal('finance', d); }
-
-// ============================================================
-// Health
-// ============================================================
-let weightChart=null;
-function renderHealth() {
-  const recs = Store.data.health_records.sort((a,b)=>b.date.localeCompare(a.date));
-  const now = new Date(); const d=now.getDay(); const mon = new Date(now); mon.setDate(now.getDate()-(d===0?6:d-1));
-  const ws = mon.toISOString().slice(0,10);
-  const wk = recs.filter(r=>r.date>=ws);
-  const avgW = wk.filter(r=>r.weight).length?((wk.filter(r=>r.weight).reduce((s,r)=>s+(r.weight||0),0)/wk.filter(r=>r.weight).length)||0).toFixed(1):0;
-  const totC = wk.reduce((s,r)=>s+(r.calories||0),0);
-  const trD = wk.filter(r=>r.training&&r.training!=='休息').length;
-  const daD = wk.filter(r=>r.dance).length;
-  document.getElementById('health-stats').innerHTML = `
-    <div class="stat-circle" style="color:var(--peach)"><div class="pct" style="font-size:1.3rem">${avgW||'--'}</div><div class="stat-name">平均kg</div><div class="stat-val">本周</div></div>
-    <div class="stat-circle" style="color:var(--coral)"><div class="pct" style="font-size:1.3rem">${totC}</div><div class="stat-name">总热量</div><div class="stat-val">本周</div></div>
-    <div class="stat-circle" style="color:var(--mint)"><div class="pct" style="font-size:1.3rem">${trD}</div><div class="stat-name">训练</div><div class="stat-val">本周次</div></div>
-    <div class="stat-circle" style="color:var(--lavender)"><div class="pct" style="font-size:1.3rem">${daD}</div><div class="stat-name">跳舞</div><div class="stat-val">本周天</div></div>`;
-  document.getElementById('health-list').innerHTML = recs.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无记录</div>'
-    : recs.map(r=>`<div class="health-row"><span class="hr-date">${r.date}</span><span class="hr-weight">${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'舞':''}</span><span style="font-size:.75rem;color:var(--text-soft);flex:1">${r.notes||''}</span><button class="btn-ghost btn-xs" onclick="editHealth('${r.id}')">编</button><button class="btn-danger btn-xs" onclick="deleteHealth('${r.id}')">删</button></div>`).join('');
-  const ctx=document.getElementById('weight-chart');
-  if (!ctx) return;
-  if (weightChart) weightChart.destroy();
-  const cd=[...recs].reverse();
-  weightChart = new Chart(ctx, { type:'line', data:{ labels:cd.map(r=>r.date.slice(5)), datasets:[{ data:cd.map(r=>r.weight||null), borderColor:'#F4A78B', backgroundColor:'rgba(244,167,139,.15)', fill:true, tension:.4, pointRadius:3, pointBackgroundColor:'#F4A78B', borderWidth:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{grid:{color:'#F5EBDC'}},x:{grid:{display:false}}} } });
-}
-function deleteHealth(id) { Store.data.health_records=Store.data.health_records.filter(x=>x.id!==id); Store.save(); renderHealth(); }
-function editHealth(id) { editId=id; currentModal='health'; const d=Store.data.health_records.find(x=>x.id===id); if(d) openModal('health', d); }
-
-// ============================================================
-// XHS
-// ============================================================
-function renderXHS() {
-  const tabs=document.querySelectorAll('#pg-xhs .filter-tab'); tabs.forEach(t=>t.classList.remove('active')); tabs[xhsTab==='content'?0:1].classList.add('active');
-  if (xhsTab==='content') {
-    const stages=['选题','拍摄','剪辑','已发布'];
-    document.getElementById('xhs-content').innerHTML = `<button class="btn btn-primary btn-sm" style="margin-bottom:10px" onclick="openModal('xhs')">+ 添加内容</button>
-      <div class="kanban">${stages.map(st=>{ const items=Store.data.xhs_content.filter(x=>x.stage===st);
-        return `<div class="kanban-col"><div class="col-hd">${st}<span class="col-count">${items.length}</span></div>
-        ${items.map(x=>`<div class="kanban-card" onclick="editXHS('${x.id}')"><div style="font-weight:500">${x.title}</div>${x.product?`<div style="font-size:.7rem;color:var(--text-soft);margin-top:2px">${x.product}</div>`:''}</div>`).join('')}
-        <div class="kanban-add" onclick="openModal('xhs')">+ 添加</div></div>`; }).join('')}</div>`;
-  } else {
-    document.getElementById('xhs-content').innerHTML = `<button class="btn btn-primary btn-sm" style="margin-bottom:10px" onclick="openModal('hot')">+ 添加热点</button>
-      <div class="filter-tabs">${['全部','小红书','抖音','微博','B站'].map(p=>`<button class="filter-tab ${financeFilter===p?'active':''}" onclick="financeFilter='${p}';renderXHS()">${p}</button>`).join('')}</div>
-      ${Store.data.hot_topics.filter(x=>financeFilter==='全部'||x.platform===financeFilter).map(h=>`<div class="card card-soft" style="margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="font-weight:600;font-size:.88rem">${h.title}</div><span class="badge-tag ${h.heat==='高'?'badge-coral':h.heat==='中'?'badge-butter':'badge-mint'}">${h.heat}</span></div>
-        ${h.description?`<div style="font-size:.78rem;color:var(--text-soft);margin:4px 0">${h.description}</div>`:''}
-        <div style="display:flex;gap:6px;font-size:.72rem;margin-top:4px;color:var(--text-soft)"><span>${h.platform}</span><span>${h.trend}</span></div></div>`).join('')||'<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无热点</div>'}`;
-  }
-}
-function editXHS(id) { editId=id; currentModal='xhs'; const d=Store.data.xhs_content.find(x=>x.id===id); if(d) showXHSModal(d); }
-function deleteXHS(id) { Store.data.xhs_content=Store.data.xhs_content.filter(x=>x.id!==id); Store.save(); renderXHS(); }
-function showXHSModal(d) {
-  document.getElementById('modal-body').innerHTML = `<h3>${d?'编辑内容':'添加内容'}</h3>
-    <div class="modal-field"><label>标题</label><input id="me-xhs-title" value="${d?.title||''}"></div>
-    <div class="modal-field"><label>阶段</label><select id="me-xhs-stage">${['选题','拍摄','剪辑','已发布'].map(s=>`<option ${d?.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
-    <div class="modal-field"><label>产品</label><input id="me-xhs-product" value="${d?.product||''}"></div>
-    <div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">${d?.notes||''}</textarea></div>
-    <div class="modal-actions">${d?`<button class="btn btn-danger btn-sm" onclick="deleteXHS('${d.id}');closeModal()">删除</button>`:''}<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>`;
-  document.getElementById('modal-overlay').classList.add('show');
-}
-function saveXHS() {
-  if (editId) { const x=Store.data.xhs_content.find(a=>a.id===editId); if(x){x.title=document.getElementById('me-xhs-title').value; x.stage=document.getElementById('me-xhs-stage').value; x.product=document.getElementById('me-xhs-product').value; x.notes=document.getElementById('me-xhs-notes').value;} }
-  else Store.data.xhs_content.unshift({id:genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:document.getElementById('me-xhs-notes').value,createdAt:today()});
-  closeModal(); Store.save(); renderXHS();
-}
-function saveHot() {
-  const d={id:editId||genId(),title:document.getElementById('me-hot-title').value,platform:document.getElementById('me-hot-plat').value,description:document.getElementById('me-hot-desc').value,heat:document.getElementById('me-hot-heat').value,trend:document.getElementById('me-hot-trend').value,link:document.getElementById('me-hot-link').value,createdAt:today()};
-  if (editId) { const idx=Store.data.hot_topics.findIndex(x=>x.id===editId); if(idx>=0) Store.data.hot_topics[idx]=d; }
-  else Store.data.hot_topics.unshift(d);
-  closeModal(); Store.save(); renderXHS();
+function renderInvest(c){
+  const inv=Store.data.investments||[];
+  c.innerHTML=`<div class="add-bar"><input id="inv-name" placeholder="添加投资标的..."><select id="inv-type"><option>股票</option><option>基金</option><option>ETF</option></select><button class="btn btn-primary" onclick="addInvest()">添加</button></div>
+    <div class="card">${inv.map(i=>`<div class="invest-item"><span style="font-weight:600">${i.name}</span><span class="badge badge-soft">${i.type}</span>${i.symbol?`<span style="font-size:.75rem;color:var(--muted)">${i.symbol}</span>`:''}<div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteInvest('${i.id}')">删</button></div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无投资标的</div>'}</div>`;
 }
 
-// ============================================================
-// Study
-// ============================================================
-function renderStudy() {
-  const cats = ['全部','读书','课程','感悟','技能'];
-  document.getElementById('study-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${studyFilter===c?'active':''}" onclick="studyFilter='${c}';renderStudy()">${c}<span class="count">${c==='全部'?Store.data.study_notes.length:Store.data.study_notes.filter(x=>x.category===c).length}</span></button>`).join('');
-  const filtered = studyFilter==='全部'?Store.data.study_notes:Store.data.study_notes.filter(x=>x.category===studyFilter);
-  document.getElementById('study-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无笔记</div>'
-    : filtered.map(n=>`<div class="note-card" onclick="editStudy('${n.id}')">
-      <div class="note-title">${n.title}</div>
-      <div class="note-meta"><span class="badge-tag badge-peach">${n.category||''}</span>${(n.tags||[]).map(t=>`<span class="badge-tag badge-lavender">${t}</span>`).join('')}<span style="font-size:.7rem;color:var(--text-soft);margin-left:auto">${n.updatedAt||n.createdAt||''}</span></div>
-      ${n.content?`<div class="note-preview">${n.content.replace(/[#*]/g,'').slice(0,100)}</div>`:''}</div>`).join('');
-}
-function deleteStudy(id) { Store.data.study_notes=Store.data.study_notes.filter(x=>x.id!==id); Store.save(); renderStudy(); }
-
-// ============================================================
-// Inspiration
-// ============================================================
-function addInsp() {
-  const inp=document.getElementById('insp-input'), title=inp.value.trim();
-  if (!title) return;
-  Store.data.inspirations.unshift({ id:genId(), title, category:'通用', status:'未整理', tags:[], createdAt:today() });
-  inp.value=''; Store.save(); renderInsp(); toast('已记录');
-}
-function updateInspStatus(id) { const i=Store.data.inspirations.find(x=>x.id===id); if(!i) return; i.status=i.status==='未整理'?'已记录':'已执行'; Store.save(); renderInsp(); }
-function deleteInsp(id) { Store.data.inspirations=Store.data.inspirations.filter(x=>x.id!==id); Store.save(); renderInsp(); }
-function renderInsp() {
-  const cats=['全部','未整理','已记录','已执行'];
-  document.getElementById('insp-tabs').innerHTML = cats.map(c=>`<button class="filter-tab ${inspFilter===c?'active':''}" onclick="inspFilter='${c}';renderInsp()">${c}<span class="count">${c==='全部'?Store.data.inspirations.length:Store.data.inspirations.filter(x=>x.status===c).length}</span></button>`).join('');
-  const filtered = inspFilter==='全部'?Store.data.inspirations:Store.data.inspirations.filter(x=>x.status===inspFilter);
-  document.getElementById('insp-list').innerHTML = filtered.length===0
-    ? '<div style="text-align:center;padding:40px;color:var(--text-soft)">暂无灵感</div>'
-    : filtered.map(i=>`<div class="insp-card">
-      <div class="insp-body"><div class="insp-title">${i.title}</div><div class="insp-meta"><span class="badge-tag ${i.status==='未整理'?'badge-coral':i.status==='已记录'?'badge-butter':'badge-mint'}">${i.status}</span><span>${i.category}</span>${(i.tags||[]).map(t=>`<span>#${t}</span>`).join('')}<span>${i.createdAt}</span></div></div>
-      <div style="display:flex;flex-direction:column;gap:4px">${i.status!=='已执行'?`<button class="btn btn-ghost btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记':'已执行'}</button>`:''}<button class="btn-danger btn-xs" onclick="deleteInsp('${i.id}')">删</button></div></div>`).join('');
+function renderXHS(c){
+  const items=Store.data.xhs||[];
+  const stages=['选题','拍摄','剪辑','已发布'];
+  c.innerHTML=`<button class="btn btn-primary btn-sm" style="margin-bottom:10px" onclick="openXHSModal()">+ 添加内容</button>
+    <div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+    ${stages.map(s=>`<div><div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:6px">${s} ${items.filter(x=>x.stage===s).length}</div>
+    ${items.filter(x=>x.stage===s).map(x=>`<div style="padding:6px 8px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.8rem">${x.title}${x.product?`<div style="font-size:.7rem;color:var(--muted)">${x.product}</div>`:''}</div>`).join('')||'<div style="color:var(--muted);font-size:.75rem;padding:4px">-</div>'}</div>`).join('')}
+    </div></div>`;
 }
 
-// ============================================================
-// Modal System
-// ============================================================
-function openModal(type, data) {
-  editId = (data||{}).id||null; currentModal=type;
-  if (type==='task') { editTask(data?.id); return; }
-  if (type==='finance') {
-    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑新闻':'添加新闻'}</h3>
-      <div class="modal-field"><label>标题</label><input id="me-fn-title" value="${data?.title||''}"></div>
-      <div class="modal-field"><label>摘要</label><textarea id="me-fn-sum">${data?.summary||''}</textarea></div>
-      <div class="modal-field"><label>链接</label><input id="me-fn-url" value="${data?.url||''}"></div>
-      <div class="modal-field"><label>标签</label><div style="display:flex;flex-wrap:wrap;gap:8px">${financeTags.map(t=>`<label style="font-size:.78rem"><input type="checkbox" value="${t}" ${(data?.tags||[]).includes(t)?'checked':''}> ${t}</label>`).join('')}</div></div>
-      <div class="modal-field"><label>备注</label><input id="me-fn-remark" value="${data?.remark||''}"></div>
-      <div class="modal-actions">${data?`<button class="btn btn-danger btn-sm" onclick="deleteFinance('${data.id}');closeModal()">删除</button>`:''}<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveFinance()">保存</button></div>`;
-    document.getElementById('modal-overlay').classList.add('show');
-  }
-  if (type==='health') {
-    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑记录':'添加记录'}</h3>
-      <div class="modal-field"><label>日期</label><input id="me-hr-date" type="date" value="${data?.date||today()}"></div>
-      <div class="modal-field"><label>体重kg</label><input id="me-hr-weight" type="number" step="0.1" value="${data?.weight||''}"></div>
-      <div class="modal-field"><label>热量kcal</label><input id="me-hr-cal" type="number" value="${data?.calories||''}"></div>
-      <div class="modal-field"><label>训练</label><select id="me-hr-train"><option value="">--</option>${['力量','有氧','瑜伽','跳舞','休息'].map(t=>`<option ${data?.training===t?'selected':''}>${t}</option>`).join('')}</select></div>
-      <div class="modal-field"><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="me-hr-dance" ${data?.dance?'checked':''}> 跳舞</label></div>
-      <div class="modal-field"><label>备注</label><input id="me-hr-notes" value="${data?.notes||''}"></div>
-      <div class="modal-actions">${data?`<button class="btn btn-danger btn-sm" onclick="deleteHealth('${data.id}');closeModal()">删除</button>`:''}<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveHealth()">保存</button></div>`;
-    document.getElementById('modal-overlay').classList.add('show');
-  }
-  if (type==='study') {
-    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑笔记':'新建笔记'}</h3>
-      <div class="modal-field"><label>标题</label><input id="me-sn-title" value="${data?.title||''}"></div>
-      <div class="modal-field"><label>分类</label><select id="me-sn-cat">${['读书','课程','感悟','技能'].map(c=>`<option ${data?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
-      <div class="modal-field"><label>标签（逗号分隔）</label><input id="me-sn-tags" value="${(data?.tags||[]).join(',')}"></div>
-      <div class="modal-field"><label>正文Markdown</label><textarea id="me-sn-content" style="min-height:140px">${data?.content||''}</textarea></div>
-      <div class="modal-actions">${data?`<button class="btn btn-danger btn-sm" onclick="deleteStudy('${data.id}');closeModal()">删除</button>`:''}<button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button></div>`;
-    document.getElementById('modal-overlay').classList.add('show');
-  }
-  if (type==='xhs') showXHSModal(data);
-  if (type==='hot') {
-    document.getElementById('modal-body').innerHTML = `<h3>${data?'编辑热点':'添加热点'}</h3>
-      <div class="modal-field"><label>标题</label><input id="me-hot-title" value="${data?.title||''}"></div>
-      <div class="modal-field"><label>平台</label><select id="me-hot-plat">${['小红书','抖音','微博','B站'].map(p=>`<option ${data?.platform===p?'selected':''}>${p}</option>`).join('')}</select></div>
-      <div class="modal-field"><label>描述</label><textarea id="me-hot-desc">${data?.description||''}</textarea></div>
-      <div class="modal-field"><label>热度</label><select id="me-hot-heat">${['高','中','低'].map(h=>`<option ${data?.heat===h?'selected':''}>${h}</option>`).join('')}</select></div>
-      <div class="modal-field"><label>趋势</label><select id="me-hot-trend">${['↑上升','→平稳','↓下降'].map(t=>`<option ${data?.trend===t?'selected':''}>${t}</option>`).join('')}</select></div>
-      <div class="modal-field"><label>链接</label><input id="me-hot-link" value="${data?.link||''}"></div>
-      <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveHot()">保存</button></div>`;
-    document.getElementById('modal-overlay').classList.add('show');
-  }
-}
-function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); currentModal=null; editId=null; }
-
-function saveFinance() {
-  const tags=[]; document.querySelectorAll('#modal-body input[type=checkbox]:checked').forEach(cb=>tags.push(cb.value));
-  const d={id:editId||genId(),title:document.getElementById('me-fn-title').value,summary:document.getElementById('me-fn-sum').value,url:document.getElementById('me-fn-url').value,tags,remark:document.getElementById('me-fn-remark').value,createdAt:today()};
-  if (editId) { const idx=Store.data.finance_news.findIndex(x=>x.id===editId); if(idx>=0) Store.data.finance_news[idx]=d; } else Store.data.finance_news.unshift(d);
-  closeModal(); Store.save(); renderFinance();
-}
-function saveHealth() {
-  const d={id:editId||genId(),date:document.getElementById('me-hr-date').value,weight:parseFloat(document.getElementById('me-hr-weight').value)||0,calories:parseInt(document.getElementById('me-hr-cal').value)||0,training:document.getElementById('me-hr-train').value,dance:document.getElementById('me-hr-dance').checked,notes:document.getElementById('me-hr-notes').value,createdAt:today()};
-  if (editId) { const idx=Store.data.health_records.findIndex(x=>x.id===editId); if(idx>=0) Store.data.health_records[idx]=d; } else Store.data.health_records.unshift(d);
-  closeModal(); Store.save(); renderHealth();
-}
-function saveStudy() {
-  const tags=(document.getElementById('me-sn-tags').value||'').split(',').map(t=>t.trim()).filter(Boolean);
-  const d={id:editId||genId(),title:document.getElementById('me-sn-title').value,category:document.getElementById('me-sn-cat').value,content:document.getElementById('me-sn-content').value,tags,createdAt:today(),updatedAt:today()};
-  if (editId) { const idx=Store.data.study_notes.findIndex(x=>x.id===editId); if(idx>=0){d.createdAt=Store.data.study_notes[idx].createdAt; Store.data.study_notes[idx]=d;} } else Store.data.study_notes.unshift(d);
-  closeModal(); Store.save(); renderStudy();
+function renderStore(c){
+  const st=Store.data.stores||[];
+  c.innerHTML=`<div class="add-bar"><input id="store-name" placeholder="网店/商品名称..."><button class="btn btn-primary" onclick="addStore()">添加</button></div>
+    <div class="card">${st.map(s=>`<div class="store-item"><span style="font-weight:600">${s.name}</span><span class="badge badge-soft">${s.platform||''}</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteStore('${s.id}')">删</button></div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无网店</div>'}</div>`;
 }
 
-// ============================================================
-// AI
-// ============================================================
-function runAI() {
-  const inp=document.getElementById('ai-input'), q=inp.value.trim();
-  if (!q) return; inp.value='';
-  const msg=document.getElementById('ai-msg'); msg.style.display='block';
-  if (q.includes('添加')||q.includes('记录')||q.includes('新建')) {
-    if (q.includes('体重')||q.includes('健身')||q.includes('健康')) { navigate('health'); openModal('health'); msg.textContent='已打开健康记录表单'; }
-    else if (q.includes('新闻')||q.includes('财报')||q.includes('股票')) { navigate('finance'); openModal('finance'); msg.textContent='已打开财经新闻表单'; }
-    else if (q.includes('笔记')||q.includes('学习')) { navigate('study'); openModal('study'); msg.textContent='已打开学习笔记表单'; }
-    else if (q.includes('灵感')) { navigate('insp'); msg.textContent='已打开灵感库'; }
-    else { document.getElementById('task-input').value=q.replace(/添加|帮我|一个|明天/g,'').trim(); document.getElementById('task-cat').value=q.includes('工作')?'工作':q.includes('生活')?'生活':q.includes('广告')?'广告':q.includes('理财')?'理财':q.includes('打卡')?'打卡':'工作'; addTask(); msg.textContent='已添加任务'; }
-  } else if (q.includes('体重')||q.includes('趋势')||q.includes('健康')||q.includes('减肥')) { navigate('home'); msg.textContent='已回到首页查看健康数据'; }
-  else if (q.includes('新闻')||q.includes('投资')||q.includes('钼')||q.includes('恒生')) { navigate('finance'); msg.textContent='已打开财经新闻'; }
-  else if (q.includes('热点')||q.includes('运营')||q.includes('小红书')) { navigate('xhs'); msg.textContent='已打开小红书运营'; }
-  else if (q.includes('笔记')||q.includes('学习')||q.includes('读书')) { navigate('study'); msg.textContent='已打开学习笔记'; }
-  else if (q.includes('灵感')||q.includes('想法')) { navigate('insp'); msg.textContent='已打开灵感库'; }
-  else msg.textContent='正在思考... 这类复杂分析交给 WorkBuddy 处理';
-  setTimeout(()=>msg.style.display='none',3000);
+function renderInsp(c){
+  const insp=Store.data.inspirations||[];
+  c.innerHTML=`<div class="add-bar"><input id="insp-title" placeholder="灵感一闪..." onkeypress="if(event.key==='Enter')addInsp()"><button class="btn btn-primary" onclick="addInsp()">保存</button></div>
+    <div class="card">${insp.map(i=>`<div class="task-row"><div class="task-title">${i.title}</div><span class="badge ${i.status==='未整理'?'badge-peach':i.status==='已记录'?'badge-mint':'badge-lavender'}">${i.status}</span><button class="btn-outline btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记':'已执行'}</button></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无灵感</div>'}</div>`;
 }
 
-// ============================================================
-// Login & Init
-// ============================================================
-function showLogin() { document.getElementById('login-overlay').style.display='flex'; }
-function hideLogin() { document.getElementById('login-overlay').style.display='none'; }
+function renderStudy(c){
+  if(currentSub==='japanese')renderJapanese(c);
+  else if(currentSub==='reading')renderReading(c);
+}
 
-async function doLogin() {
-  const u=document.getElementById('login-user').value.trim(), p=document.getElementById('login-pass').value, e=document.getElementById('login-err'), b=document.querySelector('.btn-full');
-  if(!u||!p){e.textContent='请输入用户名和密码';return;}
-  e.textContent='连接中...';b.disabled=true;
-  try {
-    // 匿名登录查询 users 集合
-    const app=cloudbase.init({env:Store.envId});
-    const{data:aData,error:aErr}=await app.auth.signInAnonymously();
-    if(aErr||!aData)throw new Error('连接失败');
-    const db=app.database();
+function renderJapanese(c){
+  const notes=Store.data.study.filter(s=>s.subject==='日语')||[];
+  c.innerHTML=`<div class="add-bar"><input id="study-title" placeholder="日语笔记标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy('日语')">添加</button></div>
+    <div class="card">${notes.map(n=>`<div class="note-item" onclick="openStudyModal('${n.id}')"><span style="font-weight:500">${n.title}</span><span class="badge badge-soft">${n.category||''}</span><div style="margin-left:auto;font-size:.7rem;color:var(--muted)">${n.updatedAt||n.createdAt||''}</div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无日语笔记</div>'}</div>`;
+}
+
+function renderReading(c){
+  const notes=Store.data.study.filter(s=>s.subject==='读书')||[];
+  c.innerHTML=`<div class="add-bar"><input id="study-title" placeholder="书名/笔记标题..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy('读书')">添加</button></div>
+    <div class="card">${notes.map(n=>`<div class="note-item" onclick="openStudyModal('${n.id}')"><span style="font-weight:500">${n.title}</span><span class="badge badge-soft">${n.category||''}</span><div style="margin-left:auto;font-size:.7rem;color:var(--muted)">${n.progress?n.progress+'%':''}</div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无读书笔记</div>'}</div>`;
+}
+
+// ============ Actions ============
+function addTask(){
+  const inp=document.getElementById('task-title');if(!inp)return;
+  const title=inp.value.trim();if(!title)return;
+  const module=taskTab==='work'?'工作':'生活';
+  Store.data.tasks.push({id:genId(),title,module,healthTask:false,priority:'中',dueDate:'',notes:'',completed:false,completedAt:'',createdAt:today()});
+  inp.value='';Store.save();renderContent();toast('已添加')
+}
+function addHealthTask(){
+  const title=prompt('健康任务名称:');if(!title)return;
+  Store.data.tasks.push({id:genId(),title,module:'生活',healthTask:true,priority:'中',dueDate:'',notes:'',completed:false,completedAt:'',createdAt:today()});
+  Store.save();renderContent();toast('已添加')
+}
+function toggleTask(id){
+  const t=Store.data.tasks.find(x=>x.id===id);if(!t)return;
+  t.completed=!t.completed;t.completedAt=t.completed?today():'';
+  Store.save();renderContent();
+}
+function deleteTask(id){Store.data.tasks=Store.data.tasks.filter(x=>x.id!==id);Store.save();renderContent()}
+
+function addInvest(){
+  const name=document.getElementById('inv-name')?.value.trim();if(!name)return;
+  const type=document.getElementById('inv-type')?.value||'股票';
+  Store.data.investments.push({id:genId(),name,type,symbol:'',notes:'',url:'',createdAt:today()});
+  document.getElementById('inv-name').value='';Store.save();renderContent()
+}
+function deleteInvest(id){Store.data.investments=Store.data.investments.filter(x=>x.id!==id);Store.save();renderContent()}
+
+function addStore(){
+  const name=document.getElementById('store-name')?.value.trim();if(!name)return;
+  Store.data.stores.push({id:genId(),name,platform:'',product:'',status:'',notes:'',url:'',createdAt:today()});
+  document.getElementById('store-name').value='';Store.save();renderContent()
+}
+function deleteStore(id){Store.data.stores=Store.data.stores.filter(x=>x.id!==id);Store.save();renderContent()}
+
+function addInsp(){
+  const title=document.getElementById('insp-title')?.value.trim();if(!title)return;
+  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',tags:[],createdAt:today()});
+  document.getElementById('insp-title').value='';Store.save();renderContent()
+}
+function updateInspStatus(id){const i=Store.data.inspirations.find(x=>x.id===id);if(!i)return;i.status=i.status==='未整理'?'已记录':'已执行';Store.save();renderContent()}
+
+function addStudy(subject){
+  const title=document.getElementById('study-title')?.value.trim();if(!title)return;
+  const cat=document.getElementById('study-cat')?.value||'词汇';
+  Store.data.study.push({id:genId(),title,subject,category:cat,content:'',tags:[],progress:0,createdAt:today(),updatedAt:today()});
+  document.getElementById('study-title').value='';Store.save();renderContent()
+}
+
+function openXHSModal(data){
+  currentModal='xhs';editId=(data||{}).id||null;
+  document.getElementById('modal-body').innerHTML=`<h3>${data?'编辑':'添加'}内容</h3>
+    <div class="modal-field"><label>标题</label><input id="me-xhs-title" value="${data?.title||''}"></div>
+    <div class="modal-field"><label>阶段</label><select id="me-xhs-stage">${['选题','拍摄','剪辑','已发布'].map(s=>`<option ${data?.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="modal-field"><label>产品</label><input id="me-xhs-product" value="${data?.product||''}"></div>
+    <div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">${data?.notes||''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>`;
+  document.getElementById('modal-overlay').classList.add('show')
+}
+function saveXHS(){
+  const d={id:editId||genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:document.getElementById('me-xhs-notes').value,createdAt:today()};
+  if(editId){const idx=Store.data.xhs.findIndex(x=>x.id===editId);if(idx>=0)Store.data.xhs[idx]=d}else Store.data.xhs.push(d);
+  closeModal();Store.save();renderContent()
+}
+function openStudyModal(id){
+  editId=id;currentModal='study';const d=Store.data.study.find(x=>x.id===id);if(!d)return;
+  document.getElementById('modal-body').innerHTML=`<h3>编辑笔记</h3>
+    <div class="modal-field"><label>标题</label><input id="me-sn-title" value="${d.title||''}"></div>
+    <div class="modal-field"><label>分类</label><select id="me-sn-cat"><option ${d.category==='词汇'?'selected':''}>词汇</option><option ${d.category==='语法'?'selected':''}>语法</option><option ${d.category==='日练'?'selected':''}>日练</option><option ${d.category==='书单'?'selected':''}>书单</option><option ${d.category==='笔记'?'selected':''}>笔记</option></select></div>
+    <div class="modal-field"><label>正文</label><textarea id="me-sn-content" style="min-height:120px">${d.content||''}</textarea></div>
+    <div class="modal-actions"><button class="btn btn-outline btn-sm" onclick="deleteStudy('${id}');closeModal()">删除</button><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button></div>`;
+  document.getElementById('modal-overlay').classList.add('show')
+}
+function saveStudy(){
+  const d=Store.data.study.find(x=>x.id===editId);if(!d)return;
+  d.title=document.getElementById('me-sn-title').value;d.category=document.getElementById('me-sn-cat').value;
+  d.content=document.getElementById('me-sn-content').value;d.updatedAt=today();
+  closeModal();Store.save();renderContent()
+}
+function deleteStudy(id){Store.data.study=Store.data.study.filter(x=>x.id!==id);Store.save();renderContent()}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');currentModal=null;editId=null}
+let currentModal=null,editId=null;
+
+// ============ AI ============
+function runAI(){
+  const inp=document.getElementById('ai-input'),q=inp.value.trim();
+  if(!q){toggleAI();return}inp.value='';
+  const body=document.getElementById('ai-body');
+  let resp='好的鸭，我试试...';
+  if(q.includes('添加')||q.includes('记录')){
+    if(q.includes('健康')||q.includes('体重')){navigate('tasks','life');resp='已打开生活待办，可以添加健康任务'}
+    else if(q.includes('投资')||q.includes('股票')){navigate('revenue','invest');resp='已打开投资管理'}
+    else if(q.includes('笔记')||q.includes('学习')||q.includes('读书')||q.includes('日语')){navigate('study',q.includes('日语')?'japanese':'reading');resp='已打开学习空间'}
+    else{navigate('tasks','work');addTask();resp='已添加待办'}
+  }else if(q.includes('看看')||q.includes('进度')||q.includes('今天')){navigate('home');resp='已切换到总览'}
+  else if(q.includes('待办')){navigate('tasks');resp='已打开待办'}
+  else if(q.includes('赚钱')||q.includes('投资')||q.includes('运营')){navigate('revenue');resp='已打开赚钱模块'}
+  else{resp='这个需要我的大模型朋友帮忙，记得给我配个API Key哦~ 格式：在设置里填入你的Key'}
+  body.innerHTML='<div style="padding:8px;background:var(--peach-bg);border-radius:8px;margin-bottom:6px">'+resp+'</div>'+body.innerHTML;
+}
+
+// ============ Login ============
+async function doLogin(){
+  const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,e=document.getElementById('login-err');
+  if(!u||!p){e.textContent='请输入';return}
+  e.textContent='验证中...';
+  try{
+    const app=cloudbase.init({env:Store.envId});const{data:d,error:er}=await app.auth.signInAnonymously();
+    if(er)throw new Error('连接失败');const db=app.database();
     const{data:res}=await db.collection('users').where({username:u,password:p}).get();
-    const valid=res&&res.length>0;
-    if(!valid){e.textContent='用户名或密码错误';b.disabled=false;return;}
-  } catch(ex){e.textContent='验证失败：'+ex.message;b.disabled=false;return;}
-  e.textContent='';hideLogin();b.disabled=false;localStorage.setItem('ws_logged','1');
-  Store.loadLocal();
-  try{await Store.initCloud();}catch(ex){console.error(ex);toast('连接失败');return;}
-  buildNav();
+    if(!res||res.length===0){e.textContent='用户名或密码错误';return}
+  }catch(ex){e.textContent='验证失败';return}
+  document.getElementById('login-overlay').style.display='none';localStorage.setItem('ws_logged','1');
+  Store.loadLocal();await Store.initCloud();buildUI()
 }
 
-(async function init() {
-  const loggedIn = localStorage.getItem('ws_logged')==='1';
-  if (!loggedIn) { showLogin(); return; }
-  try { buildNav(); } catch(e) { console.error(e); showLogin(); return; }
-  hideLogin(); Store.loadLocal();
-  await Store.initCloud();
-  buildNav();
+(async function init(){
+  buildUI();
+  const loggedIn=localStorage.getItem('ws_logged')==='1';
+  if(!loggedIn)return;
+  document.getElementById('login-overlay').style.display='none';
+  Store.loadLocal();await Store.initCloud();buildUI()
 })();
 </script>
 </body>
