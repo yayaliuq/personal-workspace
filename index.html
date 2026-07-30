@@ -364,10 +364,13 @@ async function renderHome(c){
     // Health checkin
     '<div class="card"><div class="card-title"><div class="card-title-left">健康打卡</div></div>'+
     // Water
-    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="addWater()" title="喝水">'+
-    '<div style="width:36px;text-align:center;font-size:1.2rem">💧</div><div style="flex:1;font-size:.85rem;font-weight:500">喝水</div><div style="display:flex;gap:3px">'+
-    Array(8).fill(0).map((_,i)=>'<span style="font-size:1rem">'+(i<Store.getWater()?'●':'○')+'</span>').join('')+'</div>'+
-    '<span class="badge" style="background:'+(Store.getWater()>=8?'var(--mint-bg)':'var(--bg)')+';color:var(--text)">'+Store.getWater()+'/8</span></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="addWater()">'+
+    '<div style="flex:1;font-size:.85rem;font-weight:500">喝水</div><div style="display:flex;gap:2px">'+
+    Array(8).fill(0).map((_,i)=>i<Store.getWater()
+      ?'<svg width="18" height="22" viewBox="0 0 24 28"><rect x="5" y="2" width="14" height="24" rx="2" fill="#A5D8FF" stroke="#5BA4E6" stroke-width="1.5"/><rect x="6" y="6" width="12" height="1.5" rx=".5" fill="#5BA4E6" opacity=".4"/><rect x="6" y="10" width="12" height="1.5" rx=".5" fill="#5BA4E6" opacity=".4"/></svg>'
+      :'<svg width="18" height="22" viewBox="0 0 24 28"><rect x="5" y="2" width="14" height="24" rx="2" fill="none" stroke="#ccc" stroke-width="1.5"/></svg>'
+    ).join('')+'</div>'+
+    '<span class="badge" style="background:'+(Store.getWater()>=8?'var(--mint-bg)':'var(--bg)')+'">'+Store.getWater()+'/8</span></div>'+
     // Sleep
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
     '<div style="width:36px;text-align:center;font-size:1.2rem">🌙</div><div style="flex:1;font-size:.85rem;font-weight:500">早睡早起</div>'+
