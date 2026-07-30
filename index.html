@@ -8,22 +8,20 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
 <style>
-:root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--radius:16px;--radius-sm:12px;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+:root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--sky:#88B8DD;--sky-bg:#D9E6F2;--radius:16px;--radius-sm:12px;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 html{font-size:16px}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;font-size:.9rem}
 input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--text);outline:none;border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card)}
 input:focus,textarea:focus,select:focus{border-color:var(--peach)}
-a{color:var(--peach)}
 
-/* ====== Desktop Layout ====== */
 #app{display:flex;min-height:100vh}
 #sidebar{width:200px;background:var(--card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;padding:16px 12px}
 .side-logo{padding:4px 8px 16px;font-size:1rem;font-weight:700;color:var(--peach)}
 .sub-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
 .sub-sec-title{font-size:.65rem;color:var(--muted);padding:10px 8px 4px;text-transform:uppercase;letter-spacing:.5px}
-.sub-item{padding:9px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;transition:all .15s;text-decoration:none}
+.sub-item{padding:9px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;transition:all .15s}
 .sub-item:hover{background:var(--peach-bg);color:var(--text)}
 .sub-item.active{background:var(--peach);color:#fff;font-weight:600}
 .sub-icon{width:18px;text-align:center;font-size:.75rem;flex-shrink:0}
@@ -41,46 +39,48 @@ a{color:var(--peach)}
 
 .btn{padding:9px 18px;border-radius:22px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
 .btn-primary{background:var(--peach);color:#fff}
-.btn-primary:hover{opacity:.9}
 .btn-outline{border:1.5px solid var(--border);color:var(--text)}
-.btn-sm{padding:6px 14px;font-size:.75rem}
-.btn-xs{padding:4px 10px;font-size:.7rem}
+.btn-sm{padding:6px 14px;font-size:.75rem}.btn-xs{padding:4px 10px;font-size:.7rem}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600}
-.badge-peach{background:var(--peach-bg);color:#A8604A}
-.badge-mint{background:var(--mint-bg);color:#3E8E66}
-.badge-lavender{background:var(--lavender-bg);color:#6B4F8C}
-.badge-soft{background:var(--bg);color:var(--muted)}
+.badge-peach{background:var(--peach-bg);color:#A8604A}.badge-mint{background:var(--mint-bg);color:#3E8E66}
+.badge-lavender{background:var(--lavender-bg);color:#6B4F8C}.badge-soft{background:var(--bg);color:var(--muted)}
 
 .task-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:.88rem}
 .task-row:last-child{border-bottom:none}
 .task-cb{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;transition:all .15s}
 .task-cb.checked{background:var(--mint);border-color:var(--mint);color:#fff}
-.task-title{flex:1;font-weight:500}
-.task-done{opacity:.5;text-decoration:line-through}
-.task-row:hover .task-actions{opacity:1}
+.task-title{flex:1;font-weight:500}.task-done{opacity:.5;text-decoration:line-through}
+.add-bar{display:flex;gap:8px;margin-bottom:12px}.add-bar input{flex:1}
 
-.add-bar{display:flex;gap:8px;margin-bottom:12px}
-.add-bar input{flex:1}
-.add-bar select{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card)}
+/* Checkin */
+.checkin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.checkin-item{padding:14px 10px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;border:2px solid transparent;transition:all .15s}
+.checkin-item:hover{border-color:var(--peach)}
+.checkin-item.done{background:var(--mint-bg);border-color:var(--mint)}
+.checkin-item .ci-icon{font-size:1.5rem;margin-bottom:4px;line-height:1}
+.checkin-item .ci-name{font-size:.78rem;font-weight:600}
+.checkin-item .ci-status{font-size:.65rem;color:var(--muted);margin-top:2px}
 
-.invest-item,.store-item,.note-item{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:.88rem}
-.invest-item:last-child,.store-item:last-child,.note-item:last-child{border-bottom:none}
-.note-item:hover{background:var(--peach-bg);cursor:pointer}
-.health-item{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem;display:flex;align-items:center;gap:12px}
-.health-item:last-child{border-bottom:none}
+/* Calendar */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-day-header{font-size:.65rem;color:var(--muted);padding:4px}
+.cal-day{padding:8px 4px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .15s}
+.cal-day:hover{background:var(--peach-bg)}
+.cal-day.today{background:var(--peach);color:#fff;font-weight:700}
+.cal-day.selected{background:var(--sky-bg);font-weight:600}
+.cal-day.has-done{border-bottom:2px solid var(--mint)}
+.cal-day.other{color:#ccc}
 
-/* Bottom Nav (mobile only) */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--card);border-top:1px solid var(--border);justify-content:space-around;padding:8px 0 env(safe-area-inset-bottom,8px)}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.7rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
 .nav-tab.active{color:var(--peach);font-weight:700}
 .nav-tab .nav-icon{font-size:1.2rem;font-weight:700}
 
-/* AI Fab */
 .ai-fab{position:fixed;bottom:24px;right:24px;z-index:85;width:52px;height:52px;border-radius:50%;background:var(--peach);color:#fff;box-shadow:0 4px 20px rgba(244,167,139,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;transition:all .2s}
-.ai-fab:hover{transform:scale(1.05)}
 .ai-panel{position:fixed;bottom:88px;right:24px;z-index:84;width:340px;max-height:420px;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;flex-direction:column;overflow:hidden}
 .ai-panel.show{display:flex}
-.ai-panel-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:.88rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ai-panel-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:.88rem;font-weight:700;display:flex;justify-content:space-between}
 .ai-panel-body{flex:1;overflow-y:auto;padding:10px;min-height:100px;font-size:.82rem}
 .ai-panel-input{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:6px}
 .ai-panel-input input{flex:1}
@@ -88,10 +88,9 @@ a{color:var(--peach)}
 .modal-overlay{position:fixed;inset:0;background:rgba(60,40,20,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
 .modal{background:var(--card);border-radius:var(--radius);padding:22px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto}
-.modal h3{font-size:1rem;margin-bottom:16px}
-.modal-field{margin-bottom:14px}
+.modal h3{font-size:1rem;margin-bottom:16px}.modal-field{margin-bottom:14px}
 .modal-field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;font-weight:600}
-.modal-field input,.modal-field select,.modal-field textarea{width:100%}
+.modal-field input,.modal-field textarea,.modal-field select{width:100%}
 .modal-field textarea{min-height:80px;resize:vertical}
 .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
@@ -101,38 +100,28 @@ a{color:var(--peach)}
 .login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#FCE8DC,#FBEFCF);z-index:9999;display:flex;align-items:center;justify-content:center}
 .login-card{background:#fff;border-radius:var(--radius);padding:32px 28px;width:340px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
 .login-card h2{text-align:center;margin-bottom:18px;font-size:1.2rem}
-.login-field{margin-bottom:14px}
-.login-field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px}
+.login-field{margin-bottom:14px}.login-field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px}
 .login-field input{width:100%;padding:12px 16px;border-radius:22px}
 .login-err{font-size:.72rem;color:#E84040;min-height:20px;margin-bottom:8px}
 .login-btn{width:100%;padding:13px;background:var(--peach);color:#fff;border-radius:22px;font-size:.95rem;font-weight:700}
 
-/* ====== Mobile ====== */
 @media(max-width:768px){
   html{font-size:17px}
-  #app{display:block}
-  #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s;box-shadow:none}
+  #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
   .menu-toggle{display:flex;width:40px;height:40px;border-radius:50%;background:var(--peach);color:#fff;align-items:center;justify-content:center;font-size:1.2rem}
   .side-toggle{display:block;text-align:center;padding:8px 0 14px;font-size:1.2rem;color:var(--muted)}
   #main{margin-left:0;padding:12px 14px 100px}
-  #topbar{padding:0 0 12px}
-  #topbar h1{font-size:1.2rem}
+  #topbar{padding:0 0 12px}#topbar h1{font-size:1.2rem}
   .bottom-nav{display:flex}
-  .ai-fab{bottom:80px;right:14px}
-  .ai-panel{bottom:144px;right:14px;width:calc(100vw - 28px)}
-  .add-bar{flex-direction:column}
-  .btn{padding:10px 20px;font-size:.85rem}
-  .btn-sm{padding:7px 16px;font-size:.78rem}
+  .ai-fab{bottom:80px;right:14px}.ai-panel{bottom:144px;right:14px;width:calc(100vw - 28px)}
+  .add-bar{flex-direction:column}.btn{padding:10px 20px;font-size:.85rem}
   .card{padding:16px 14px;margin-bottom:10px;border-radius:var(--radius-sm)}
-  .card-title{font-size:.9rem}
-  .task-row{padding:12px 14px;font-size:.92rem}
-  .task-cb{width:24px;height:24px}
+  .task-row{padding:12px 14px;font-size:.92rem}.task-cb{width:24px;height:24px}
   input,textarea,select{font-size:16px;padding:12px 14px}
-  .login-card{padding:28px 22px;width:100%;max-width:90vw}
+  .checkin-grid{grid-template-columns:repeat(2,1fr)}
   .modal{max-width:100%;border-radius:18px 18px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0))}
   .modal-overlay{align-items:flex-end}
-  #toast{bottom:140px}
 }
 </style>
 </head>
@@ -160,10 +149,10 @@ a{color:var(--peach)}
   <div id="content"></div>
 </main>
 
-<button class="ai-fab" onclick="toggleAI()" title="智能助手">AI</button>
+<button class="ai-fab" onclick="toggleAI()">AI</button>
 <div class="ai-panel" id="ai-panel">
   <div class="ai-panel-header">智能助手 <button onclick="toggleAI()">✕</button></div>
-  <div class="ai-panel-body" id="ai-body">你好，我是鸭鸭的小助手！</div>
+  <div class="ai-panel-body" id="ai-body">你好！</div>
   <div class="ai-panel-input"><input id="ai-input" placeholder="描述你想做的事..." onkeypress="if(event.key==='Enter')runAI()"><button class="btn btn-primary btn-xs" onclick="runAI()">发送</button></div>
 </div>
 
@@ -174,15 +163,17 @@ a{color:var(--peach)}
 </div>
 
 <script>
-// ============ Store ============
+const genId=()=>'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+
 const Store={
   envId:'yayaliu-d4g1i1dc2fdb04417',
-  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[]},
+  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],healthCheckins:[],checkinRecords:[]},
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
-    if(typeof cloudbase==='undefined')throw new Error('SDK未加载');
-    const app=cloudbase.init({env:this.envId});
-    let ls;try{ls=await app.auth.getLoginState()}catch(e){}
+    if(typeof cloudbase==='undefined')throw new Error('SDK');
+    const app=cloudbase.init({env:this.envId});let ls;try{ls=await app.auth.getLoginState()}catch(e){}
     if(!ls){const{error}=await app.auth.signInWithPassword({username:'admin',password:'Admin123'});if(error)throw new Error(error.message)}
     this.auth=app.auth;this.app=app;this.db=app.database();this.ready=true;
     await this.loadFromCloud();return true
@@ -192,35 +183,40 @@ const Store={
     const dedup=(arr,k='id')=>{const s=new Set();return arr.filter(x=>{const v=x[k]||'';if(s.has(v))return false;s.add(v);return true})};
     const strip=d=>{const{_id,_openid,...r}=d;return r};
     const sg=async c=>{try{return(await this.db.collection(c).limit(1000).get()).data.map(strip)}catch(e){return[]}};
-    const t=dedup(await sg('tasks'));const h=dedup(await sg('health_records'));const x=dedup(await sg('xiaohongshu'));
-    const i=dedup(await sg('investments'));const st=dedup(await sg('stores'));const ins=dedup(await sg('inspirations'));
-    const sn=dedup(await sg('study_notes'));
-    let has=false;
-    if(t.length){this.data.tasks=t;has=true}if(h.length){this.data.health=h;has=true}if(x.length){this.data.xhs=x;has=true}
-    if(i.length){this.data.investments=i;has=true}if(st.length){this.data.stores=st;has=true}if(ins.length){this.data.inspirations=ins;has=true}
-    if(sn.length){this.data.study=sn;has=true}
-    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[]};this.saveLocal()}
+    Object.assign(this.data,{
+      tasks:dedup(await sg('tasks')),health:dedup(await sg('health_records')),xhs:dedup(await sg('xiaohongshu')),
+      investments:dedup(await sg('investments')),stores:dedup(await sg('stores')),inspirations:dedup(await sg('inspirations')),
+      study:dedup(await sg('study_notes')),healthCheckins:await sg('health_checkins'),checkinRecords:await sg('checkin_records')
+    });
+    const has=Object.values(this.data).some(v=>Array.isArray(v)&&v.length>0);
+    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],healthCheckins:[],checkinRecords:[]};this.saveLocal()}
     else if(this.data.tasks.length||this.data.study.length)await this.saveToCloud()
   },
   async saveToCloud(){
     if(!this.db)return;
     const repl=async(col,it)=>{try{const e=await col.limit(1000).get();for(const d of e.data||[])try{await col.doc(d._id).remove()}catch(e){};for(const i of it)await col.add({...i})}catch(e){}}
-    await repl(this.db.collection('tasks'),this.data.tasks||[]);await repl(this.db.collection('health_records'),this.data.health||[]);
-    await repl(this.db.collection('xiaohongshu'),this.data.xhs||[]);await repl(this.db.collection('investments'),this.data.investments||[]);
-    await repl(this.db.collection('stores'),this.data.stores||[]);await repl(this.db.collection('inspirations'),this.data.inspirations||[]);
-    await repl(this.db.collection('study_notes'),this.data.study||[]);
-    this._hadSync=true;localStorage.setItem('ws_had','1')
+    const colls=['tasks','health_records','xiaohongshu','investments','stores','inspirations','study_notes'];
+    for(const c of colls)await repl(this.db.collection(c),this.data[c]||[]);
+    await repl(this.db.collection('checkin_records'),this.data.checkinRecords||[]);
+    this._hadSync=true;localStorage.setItem('ws_had','1');
   },
-  loadLocal(){try{const r=localStorage.getItem('ws_data_v6');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
-  saveLocal(){localStorage.setItem('ws_data_v6',JSON.stringify(this.data))},
-  async save(){this.saveLocal();clearTimeout(this._st);this._st=setTimeout(()=>this.saveToCloud(),500)}
+  loadLocal(){try{const r=localStorage.getItem('ws_data_v6a');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
+  saveLocal(){localStorage.setItem('ws_data_v6a',JSON.stringify(this.data))},
+  async save(){this.saveLocal();clearTimeout(this._st);this._st=setTimeout(()=>this.saveToCloud(),500)},
+  // Toggle checkin
+  toggleCheckin(checkinId,name){
+    const todayStr=today();
+    const idx=this.data.checkinRecords.findIndex(r=>r.checkinId===checkinId&&r.date===todayStr);
+    if(idx>=0)this.data.checkinRecords.splice(idx,1);
+    else this.data.checkinRecords.push({id:genId(),checkinId,name,date:todayStr});
+    this.saveLocal();
+    this.saveToCloud();
+  },
+  isCheckinDone(checkinId){
+    return this.data.checkinRecords.some(r=>r.checkinId===checkinId&&r.date===today());
+  }
 };
 
-const genId=()=>'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const today=()=>new Date().toISOString().slice(0,10);
-function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
-
-// ============ Navigation ============
 const modules=[
   {id:'home',label:'总览',icon:'家'},
   {id:'tasks',label:'待办',icon:'办'},
@@ -230,24 +226,22 @@ const modules=[
 const subMenus={
   home:[],
   tasks:[{id:'work',label:'工作待办',icon:'工'},{id:'life',label:'生活待办',icon:'生'},{id:'insp',label:'灵感',icon:'灵'}],
-  revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'},{id:'insp',label:'灵感库',icon:'灵'}],
+  revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'}],
   study:[{id:'japanese',label:'日语',icon:'日'},{id:'reading',label:'读书',icon:'读'}]
 };
 const moduleLabels={tasks:'待办',revenue:'赚钱',study:'学习'};
-
-let currentModule='home',currentSub='work',sidebarOpen=false,aiOpen=false;
-let taskTab='work';
+let currentModule='home',currentSub='work',sidebarOpen=false,aiOpen=false,taskTab='work',calDate=null;
 
 function navigate(mod,sub){
-  currentModule=mod;currentSub=sub||(subMenus[mod][0]||{}).id||'';taskTab=mod==='tasks'?(sub||'work'):taskTab;
+  currentModule=mod;currentSub=sub||(subMenus[mod][0]||{}).id||'';
+  if(mod==='tasks')taskTab=sub||'work';
   document.getElementById('page-title').textContent=modules.find(m=>m.id===mod).label;
-  const subName=subMenus[mod].find(s=>s.id===currentSub);
-  document.getElementById('breadcrumb').textContent=subName?subName.label:'';
-  // Build full sub-nav for desktop
-  let subHTML='<button class="sub-item"'+(!currentModule||currentModule==='home'?' active':'')+' onclick="navigate(\'home\')"><span class="sub-icon">家</span>总览</button>';Object.entries(subMenus).forEach(([key,items])=>{
-    if(items.length===0)return;
-    if(subHTML)subHTML+='<div class="sub-sec-title">'+moduleLabels[key]+'</div>';
-    items.forEach(s=>subHTML+=`<button class="sub-item ${currentSub===s.id&&currentModule===key?'active':''}" onclick="navigate('${key}','${s.id}')"><span class="sub-icon">${s.icon}</span>${s.label}</button>`);
+  document.getElementById('breadcrumb').textContent=(subMenus[mod].find(s=>s.id===currentSub)||{}).label||'';
+  let subHTML='<button class="sub-item"'+(!currentModule||currentModule==='home'?' active':'')+' onclick="navigate(\'home\')"><span class="sub-icon">家</span>总览</button>';
+  Object.entries(subMenus).forEach(([key,items])=>{
+    if(!items.length)return;
+    subHTML+='<div class="sub-sec-title">'+moduleLabels[key]+'</div>';
+    items.forEach(s=>subHTML+='<button class="sub-item'+(currentSub===s.id&&currentModule===key?' active':'')+'" onclick="navigate(\''+key+'\',\''+s.id+'\')"><span class="sub-icon">'+s.icon+'</span>'+s.label+'</button>');
   });
   document.getElementById('sub-nav').innerHTML=subHTML;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -256,52 +250,124 @@ function navigate(mod,sub){
 }
 function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen)}
 function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
-
 function buildUI(){
-  document.getElementById('bottom-nav').innerHTML=modules.map(m=>`<button class="nav-tab" data-mod="${m.id}" onclick="navigate('${m.id}')"><span class="nav-icon">${m.icon}</span>${m.label}</button>`).join('');
+  document.getElementById('bottom-nav').innerHTML=modules.map(m=>'<button class="nav-tab" data-mod="'+m.id+'" onclick="navigate(\''+m.id+'\')"><span class="nav-icon">'+m.icon+'</span>'+m.label+'</button>').join('');
   navigate('home')
 }
 
-// ============ Render ============
+// ====== Fetch weather ======
+async function fetchWeather(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.26&longitude=108.94&current=temperature_2m,weather_code&timezone=Asia/Shanghai');
+    const d=await r.json();const wc={0:'晴',1:'晴',2:'多云',3:'阴',45:'雾',51:'小雨',53:'中雨',61:'阵雨',71:'小雪',80:'雷雨'};
+    return Math.round(d.current.temperature_2m)+''+(wc[d.current.weather_code]||'多云');
+  }catch(e){return'--'}
+}
+
+// ====== Render ======
 function renderContent(){
   const c=document.getElementById('content');
-  if(currentModule==='home')renderHome(c);
+  if(currentModule==='home'&&currentSub==='calendar')renderCalendar(c);
+  else if(currentModule==='home')renderHome(c);
   else if(currentModule==='tasks')renderTasks(c);
   else if(currentModule==='revenue')renderRevenue(c);
   else if(currentModule==='study')renderStudy(c);
 }
 
-function renderHome(c){
-  const h=new Date().getHours();let g='早上好呀';if(h>=12&&h<18)g='下午好';else if(h>=18)g='晚上好';
-  const tasks=Store.data.tasks||[],health=Store.data.health||[],insp=Store.data.inspirations||[];
+// ====== Home ======
+async function renderHome(c){
+  const h=new Date().getHours(),g=h<12?'早上好呀':h<18?'下午好':'晚上好';
+  const tasks=Store.data.tasks||[],health=Store.data.health||[];
   const pending=tasks.filter(t=>!t.completed);
-  const healthTasks=tasks.filter(t=>t.healthTask);
-  const todayStr=today();
-  const todayHealth=health.filter(r=>r.date===todayStr);
-  const todayInsp=insp.filter(i=>i.createdAt===todayStr);
+  const todayHealth=health.filter(r=>r.date===today());
+  const todayWeight=todayHealth.find(r=>r.weight)?.weight||'--';
+  const doneCount=tasks.filter(t=>t.completed).length,total=tasks.length;
+  const taskPct=total?Math.round(doneCount/total*100):0;
 
-  // 健康今日: 健康任务 + 身体数据
-  const healthHTML=healthTasks.map(t=>'<div class="task-row" style="background:'+(t.completed?'var(--mint-bg)':'var(--peach-bg)')+'"><div class="task-cb '+(t.completed?'checked':'')+'" onclick="toggleTask(\''+t.id+'\')">'+(t.completed?'✓':'')+'</div><div class="task-title '+(t.completed?'task-done':'')+'">'+t.title+'</div></div>').join('')
-    +todayHealth.map(r=>'<div class="health-item"><span>'+r.date+'</span><span>'+(r.weight?r.weight+'kg':'')+'</span><span>'+(r.calories?r.calories+'kcal':'')+'</span><span>'+(r.training||'')+'</span><span>'+(r.dance?'舞':'')+'</span></div>').join('');
+  const weather=await fetchWeather();
+  const now=new Date();
+  const dateStr=now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',weekday:'short'});
+
+  // Task tabs
+  const workTasks=pending.filter(t=>t.module==='工作');
+  const lifeTasks=pending.filter(t=>t.module==='生活');
 
   c.innerHTML=
+    // Hero card
     '<div class="card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">'+
-    '<div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">'+g+'</div>'+
-    '<div style="font-size:.85rem;color:var(--muted);margin-bottom:10px">今天也要加油鸭</div>'+
-    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-    '<span class="badge badge-peach">待办 '+pending.length+'</span>'+
-    '<span class="badge badge-mint">健康 '+(healthTasks.length+todayHealth.length)+'条</span>'+
-    '<span class="badge badge-lavender">灵感 '+todayInsp.length+'条</span></div></div>'+
-    '<div class="card"><div class="card-title"><div class="card-title-left">今日进度</div></div>'+
-    (pending.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">今天没有未完成的任务</div>':
-    pending.slice(0,8).map(t=>'<div class="task-row"><div class="task-cb" onclick="toggleTask(\''+t.id+'\')"></div><div class="task-title">'+t.title+'</div><span class="badge badge-soft">'+t.module+'</span></div>').join(''))+'</div>'+
-    '<div class="card" style="background:var(--mint-bg)"><div class="card-title"><div class="card-title-left">健康今日</div></div>'+
-    (healthHTML||'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>')+'</div>';
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+    '<div><div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">'+g+'</div>'+
+    '<div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">'+dateStr+' · '+weather+' · '+todayWeight+'kg</div>'+
+    '<div style="display:flex;gap:10px">'+
+    '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--peach)">'+doneCount+'/'+total+'</div><div style="font-size:.65rem;color:var(--muted)">任务完成</div></div>'+
+    '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--mint)">'+todayHealth.length+'</div><div style="font-size:.65rem;color:var(--muted)">今日记录</div></div></div></div></div></div>'+
+
+    // Health checkin
+    '<div class="card"><div class="card-title"><div class="card-title-left">健康打卡</div></div>'+
+    '<div class="checkin-grid" id="checkin-grid">'+
+    (Store.data.healthCheckins||[]).sort((a,b)=>(a.order||0)-(b.order||0)).map(c=>{
+      const done=Store.isCheckinDone(c._id);
+      return '<div class="checkin-item'+(done?' done':'')+'" onclick="doCheckin(\''+c._id+'\',\''+c.name+'\')"><div class="ci-icon">'+(done?'✓':'○')+'</div><div class="ci-name">'+c.name+'</div><div class="ci-status">'+(done?'已完成':'点击打卡')+'</div></div>';
+    }).join('')+'</div></div>'+
+
+    // Task list with calendar icon
+    '<div class="card"><div class="card-title"><div class="card-title-left">待办清单 <span class="badge badge-soft">'+pending.length+'项</span></div><button class="btn-outline btn-xs" onclick="navigate(\'home\',\'calendar\')" title="日历">📅</button></div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:12px">'+
+    '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';renderHome(document.getElementById(\'content\'))">工作 ('+workTasks.length+')</button>'+
+    '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';renderHome(document.getElementById(\'content\'))">生活 ('+lifeTasks.length+')</button></div>'+
+    '<div class="add-bar"><input id="task-title" placeholder="快速添加'+(taskTab==='work'?'工作':'生活')+'待办..." onkeypress="if(event.key===\'Enter\')addTask()"><button class="btn btn-primary" onclick="addTask()">+</button></div>'+
+    ((taskTab==='work'?workTasks:lifeTasks).length?
+      (taskTab==='work'?workTasks:lifeTasks).slice(0,10).map(t=>taskHTML(t)).join(''):
+      '<div style="color:var(--muted);text-align:center;padding:16px">暂无待办</div>')+'</div>';
+
+  // Re-attach weather
+  document.getElementById('content').innerHTML=c.innerHTML;
 }
 
+function doCheckin(id,name){
+  Store.toggleCheckin(id,name);
+  renderContent();
+  toast(Store.isCheckinDone(id)?name+' 已完成':name+' 已取消');
+}
+
+// ====== Calendar ======
+function renderCalendar(c){
+  const now=calDate?new Date(calDate):new Date();
+  const year=now.getFullYear(),month=now.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const todayStr=today();
+
+  // Get dates with checkins or completed tasks
+  const doneDates=new Set();
+  Store.data.checkinRecords.forEach(r=>doneDates.add(r.date));
+  Store.data.tasks.filter(t=>t.completedAt).forEach(t=>doneDates.add(t.completedAt));
+
+  const selectDate=calDate||todayStr;
+  const selectedEvents=[];
+  Store.data.checkinRecords.filter(r=>r.date===selectDate).forEach(r=>selectedEvents.push({type:'checkin',title:r.name,date:r.date}));
+  Store.data.tasks.filter(t=>t.completedAt===selectDate).forEach(t=>selectedEvents.push({type:'task',title:t.title,date:t.completedAt,module:t.module}));
+
+  let calHTML='<div class="cal-header"><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month-1)+',1);renderContent()">◀</button><span style="font-weight:700">'+year+'年'+(month+1)+'月</span><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month+1)+',1);renderContent()">▶</button></div>';
+
+  calHTML+='<div class="cal-grid"><div class="cal-day-header">日</div><div class="cal-day-header">一</div><div class="cal-day-header">二</div><div class="cal-day-header">三</div><div class="cal-day-header">四</div><div class="cal-day-header">五</div><div class="cal-day-header">六</div>';
+
+  for(let i=0;i<firstDay;i++)calHTML+='<div class="cal-day other"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=ds===todayStr,isSelected=ds===selectDate,hasDone=doneDates.has(ds);
+    calHTML+='<div class="cal-day'+ (isToday?' today':'')+ (isSelected?' selected':'')+ (hasDone?' has-done':'')+'" onclick="calDate=\''+ds+'\';renderContent()">'+d+'</div>';
+  }
+  calHTML+='</div><div style="margin-top:16px"><div class="card-title" style="margin-bottom:8px">'+(calDate||todayStr)+' 完成记录</div>';
+  calHTML+=(selectedEvents.length?selectedEvents.map(e=>'<div class="task-row"><span class="badge '+(e.type==='checkin'?'badge-mint':'badge-peach')+'">'+(e.type==='checkin'?'打卡':'任务')+'</span><span>'+e.title+'</span></div>').join(''):'<div style="color:var(--muted);text-align:center;padding:16px">当天没有完成记录</div>');
+  calHTML+='</div>';
+
+  c.innerHTML='<div class="card">'+calHTML+'</div><div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="navigate(\'home\')">← 返回总览</button></div>';
+}
+
+// ====== Tasks ======
 function renderTasks(c){
   const tasks=Store.data.tasks||[],insp=Store.data.inspirations||[];
-  // 灵感tab
   if(currentSub==='insp'){
     c.innerHTML='<div style="display:flex;gap:8px;margin-bottom:14px">'+
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'work\')">工作待办</button>'+
@@ -312,186 +378,137 @@ function renderTasks(c){
       '<div style="max-height:300px;overflow-y:auto">'+(insp.length?insp.map(i=>{
         const linked=tasks.find(t=>t.id===i.linkedTaskId);
         return '<div class="task-row"><div class="task-title">'+i.title+'</div>'+(linked?'<span class="badge badge-soft">→'+linked.title+'</span>':'')+'<span class="badge '+(i.status==='未整理'?'badge-peach':'badge-mint')+'">'+i.status+'</span></div>';
-      }).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">还没有灵感，随时记下来吧</div>')+'</div></div>';
+      }).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">暂无灵感</div>')+'</div></div>';
     return;
   }
-
   const filterModule=taskTab==='work'?'工作':'生活';
   const moduleTasks=tasks.filter(t=>t.module===filterModule);
-  const healthTasks=taskTab==='life'?moduleTasks.filter(t=>t.healthTask):[];
-  const otherTasks=(taskTab==='life'?moduleTasks.filter(t=>!t.healthTask):moduleTasks);
-
-  let html='<div style="display:flex;gap:8px;margin-bottom:14px">'+
+  c.innerHTML='<div style="display:flex;gap:8px;margin-bottom:14px">'+
     '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';navigate(\'tasks\',\'work\')">工作待办</button>'+
     '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';navigate(\'tasks\',\'life\')">生活待办</button>'+
     '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'insp\')">灵感</button></div>'+
-    '<div class="add-bar"><input id="task-title" placeholder="添加'+(taskTab==='work'?'工作':'生活')+'待办..." onkeypress="if(event.key===\'Enter\')addTask()"><button class="btn btn-primary" onclick="addTask()">添加</button></div>';
-
-  if(taskTab==='life'){
-    html+='<div class="card" style="background:var(--peach-bg);margin-bottom:10px;padding:12px 16px"><div class="card-title" style="margin-bottom:4px"><div class="card-title-left">健康固定任务</div><button class="btn btn-primary btn-xs" onclick="addHealthTask()">+</button></div>'+
-    (healthTasks.length?healthTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:8px;font-size:.82rem">暂无健康任务</div>')+'</div>';
-  }
-  html+='<div class="card"><div class="card-title"><div class="card-title-left">'+(taskTab==='work'?'工作':'其他生活')+'待办</div><span class="badge badge-soft">'+otherTasks.filter(t=>!t.completed).length+'项</span></div>'+
-    (otherTasks.length?otherTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:24px">暂无事项</div>')+'</div>';
-  c.innerHTML=html;
+    '<div class="add-bar"><input id="task-title" placeholder="添加'+(taskTab==='work'?'工作':'生活')+'待办..." onkeypress="if(event.key===\'Enter\')addTask()"><button class="btn btn-primary" onclick="addTask()">添加</button></div>'+
+    '<div class="card"><div class="card-title"><div class="card-title-left">'+(taskTab==='work'?'工作':'生活')+'待办</div><span class="badge badge-soft">'+moduleTasks.filter(t=>!t.completed).length+'项</span></div>'+
+    (moduleTasks.length?moduleTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:24px">暂无事项</div>')+'</div>';
 }
 
 function taskHTML(t){
   return '<div class="task-row"><div class="task-cb '+(t.completed?'checked':'')+'" onclick="toggleTask(\''+t.id+'\')">'+(t.completed?'✓':'')+'</div><div class="task-title '+(t.completed?'task-done':'')+'">'+t.title+'</div>'+(t.priority==='高'?'<span class="badge badge-peach">高</span>':'')+'<button class="btn-outline btn-xs" onclick="deleteTask(\''+t.id+'\')">删</button></div>';
 }
 
+// ====== Revenue ======
 function renderRevenue(c){
   if(currentSub==='invest')renderInvest(c);
   else if(currentSub==='xhs')renderXHS(c);
   else if(currentSub==='store')renderStore(c);
-  else if(currentSub==='insp')renderInsp(c);
 }
-
 function renderInvest(c){
   const inv=Store.data.investments||[];
   c.innerHTML='<div class="add-bar"><input id="inv-name" placeholder="添加投资标的..."><select id="inv-type"><option>股票</option><option>基金</option><option>ETF</option></select><button class="btn btn-primary" onclick="addInvest()">添加</button></div>'+
-    '<div class="card">'+(inv.length?inv.map(i=>'<div class="invest-item"><span style="font-weight:600">'+i.name+'</span><span class="badge badge-soft">'+i.type+'</span>'+(i.symbol?'<span style="font-size:.8rem;color:var(--muted)">'+i.symbol+'</span>':'')+'<div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteInvest(\''+i.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无投资标的</div>')+'</div>';
+    '<div class="card">'+(inv.length?inv.map(i=>'<div class="invest-item" style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:.88rem"><span style="font-weight:600">'+i.name+'</span><span class="badge badge-soft">'+i.type+'</span>'+(i.symbol?'<span style="font-size:.8rem;color:var(--muted)">'+i.symbol+'</span>':'')+'<div style="margin-left:auto"><button class="btn-outline btn-xs" onclick="deleteInvest(\''+i.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
 }
-
 function renderXHS(c){
-  const items=Store.data.xhs||[];
-  const stages=['选题','拍摄','剪辑','已发布'];
-  c.innerHTML='<button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openXHSModal()">+ 添加内容</button>'+
-    '<div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">'+
-    stages.map(s=>'<div><div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px">'+s+' '+items.filter(x=>x.stage===s).length+'</div>'+
-    (items.filter(x=>x.stage===s).length?items.filter(x=>x.stage===s).map(x=>'<div style="padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.82rem">'+x.title+(x.product?'<div style="font-size:.72rem;color:var(--muted)">'+x.product+'</div>':'')+'</div>').join(''):'<div style="color:var(--muted);font-size:.78rem;padding:6px">-</div>')+'</div>').join('')+'</div></div>';
+  const items=Store.data.xhs||[],stages=['选题','拍摄','剪辑','已发布'];
+  c.innerHTML='<button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openXHSModal()">+ 添加</button>'+
+    '<div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">'+stages.map(s=>'<div><div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px">'+s+' '+items.filter(x=>x.stage===s).length+'</div>'+
+    (items.filter(x=>x.stage===s).map(x=>'<div style="padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.82rem">'+x.title+'</div>').join('')||'<div style="color:var(--muted);font-size:.78rem;padding:6px">-</div>')+'</div>').join('')+'</div></div>';
 }
-
 function renderStore(c){
   const st=Store.data.stores||[];
   c.innerHTML='<div class="add-bar"><input id="store-name" placeholder="网店/商品名称..."><button class="btn btn-primary" onclick="addStore()">添加</button></div>'+
-    '<div class="card">'+(st.length?st.map(s=>'<div class="store-item"><span style="font-weight:600">'+s.name+'</span><span class="badge badge-soft">'+(s.platform||'')+'</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteStore(\''+s.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无网店</div>')+'</div>';
+    '<div class="card">'+(st.length?st.map(s=>'<div class="task-row"><span style="font-weight:600">'+s.name+'</span><span class="badge badge-soft">'+(s.platform||'')+'</span><button class="btn-outline btn-xs" onclick="deleteStore(\''+s.id+'\')">删</button></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
 }
 
-function renderInsp(c){
-  const insp=Store.data.inspirations||[];
-  c.innerHTML='<div class="add-bar"><input id="insp-title" placeholder="灵感一闪..." onkeypress="if(event.key===\'Enter\')addInsp()"><button class="btn btn-primary" onclick="addInsp()">保存</button></div>'+
-    '<div class="card">'+(insp.length?insp.map(i=>'<div class="task-row"><div class="task-title">'+i.title+'</div><span class="badge '+(i.status==='未整理'?'badge-peach':i.status==='已记录'?'badge-mint':'badge-lavender')+'">'+i.status+'</span>'+(i.status!=='已执行'?'<button class="btn-outline btn-xs" onclick="updateInspStatus(\''+i.id+'\')">→'+(i.status==='未整理'?'已记':'已执行')+'</button>':'')+'<button class="btn-outline btn-xs" onclick="deleteInsp(\''+i.id+'\')">删</button></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无灵感</div>')+'</div>';
-}
-
-function renderStudy(c){
-  if(currentSub==='japanese')renderJapanese(c);
-  else if(currentSub==='reading')renderReading(c);
-}
-
+// ====== Study ======
+function renderStudy(c){currentSub==='japanese'?renderJapanese(c):renderReading(c)}
 function renderJapanese(c){
   const notes=(Store.data.study||[]).filter(s=>s.subject==='日语');
-  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="日语笔记标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy(\'日语\')">添加</button></div>'+
-    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.updatedAt||n.createdAt||'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无日语笔记</div>')+'</div>';
+  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy(\'日语\')">添加</button></div>'+
+    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.updatedAt||n.createdAt||'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
 }
-
 function renderReading(c){
   const notes=(Store.data.study||[]).filter(s=>s.subject==='读书');
-  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="书名/笔记标题..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy(\'读书\')">添加</button></div>'+
-    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.progress?n.progress+'%':'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无读书笔记</div>')+'</div>';
+  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="书名..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy(\'读书\')">添加</button></div>'+
+    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.progress?n.progress+'%':'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
 }
 
-// ============ Actions ============
+// ====== Actions ======
 function addTask(){
   const inp=document.getElementById('task-title');if(!inp)return;
   const title=inp.value.trim();if(!title)return;
   const module=taskTab==='work'?'工作':'生活';
-  Store.data.tasks.push({id:genId(),title,module,healthTask:false,priority:'中',dueDate:'',notes:'',completed:false,completedAt:'',createdAt:today()});
-  inp.value='';Store.save();renderContent();toast('已添加')
-}
-function addHealthTask(){
-  const title=prompt('健康任务名称:');if(!title)return;
-  Store.data.tasks.push({id:genId(),title,module:'生活',healthTask:true,priority:'中',dueDate:'',notes:'',completed:false,completedAt:'',createdAt:today()});
-  Store.save();renderContent();toast('已添加')
+  Store.data.tasks.push({id:genId(),title,module,priority:'中',dueDate:'',notes:'',completed:false,completedAt:'',createdAt:today()});
+  inp.value='';Store.save();renderContent();toast('已添加');
 }
 function toggleTask(id){
   const t=Store.data.tasks.find(x=>x.id===id);if(!t)return;
   t.completed=!t.completed;t.completedAt=t.completed?today():'';
-  Store.save();renderContent()
+  Store.save();renderContent();
 }
 function deleteTask(id){Store.data.tasks=Store.data.tasks.filter(x=>x.id!==id);Store.save();renderContent()}
 function addInvest(){
   const name=document.getElementById('inv-name')?.value.trim();if(!name)return;
-  const type=document.getElementById('inv-type')?.value||'股票';
-  Store.data.investments.push({id:genId(),name,type,symbol:'',notes:'',url:'',createdAt:today()});
-  document.getElementById('inv-name').value='';Store.save();renderContent()
+  Store.data.investments.push({id:genId(),name,type:document.getElementById('inv-type')?.value||'股票',symbol:'',notes:'',url:'',createdAt:today()});
+  document.getElementById('inv-name').value='';Store.save();renderContent();
 }
 function deleteInvest(id){Store.data.investments=Store.data.investments.filter(x=>x.id!==id);Store.save();renderContent()}
 function addStore(){
   const name=document.getElementById('store-name')?.value.trim();if(!name)return;
   Store.data.stores.push({id:genId(),name,platform:'',product:'',status:'',notes:'',url:'',createdAt:today()});
-  document.getElementById('store-name').value='';Store.save();renderContent()
+  document.getElementById('store-name').value='';Store.save();renderContent();
 }
 function deleteStore(id){Store.data.stores=Store.data.stores.filter(x=>x.id!==id);Store.save();renderContent()}
 function addInsp(){
   const title=document.getElementById('insp-title')?.value.trim();if(!title)return;
-  const linked=document.getElementById('insp-link')?.value||'';
-  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',linkedTaskId:linked,tags:[],createdAt:today()});
-  document.getElementById('insp-title').value='';Store.save();renderContent();toast('灵感已记录')
+  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',linkedTaskId:document.getElementById('insp-link')?.value||'',tags:[],createdAt:today()});
+  document.getElementById('insp-title').value='';Store.save();renderContent();toast('灵感已记录');
 }
-function updateInspStatus(id){const i=Store.data.inspirations.find(x=>x.id===id);if(!i)return;i.status=i.status==='未整理'?'已记录':'已执行';Store.save();renderContent()}
-function deleteInsp(id){Store.data.inspirations=Store.data.inspirations.filter(x=>x.id!==id);Store.save();renderContent()}
 function addStudy(subject){
   const title=document.getElementById('study-title')?.value.trim();if(!title)return;
-  const cat=document.getElementById('study-cat')?.value||'词汇';
-  Store.data.study.push({id:genId(),title,subject,category:cat,content:'',tags:[],progress:0,createdAt:today(),updatedAt:today()});
-  document.getElementById('study-title').value='';Store.save();renderContent()
+  Store.data.study.push({id:genId(),title,subject,category:document.getElementById('study-cat')?.value||'词汇',content:'',tags:[],progress:0,createdAt:today(),updatedAt:today()});
+  document.getElementById('study-title').value='';Store.save();renderContent();
 }
-
 function openXHSModal(data){
   currentModal='xhs';editId=(data||{}).id||null;
   document.getElementById('modal-body').innerHTML='<h3>'+(data?'编辑':'添加')+'内容</h3>'+
     '<div class="modal-field"><label>标题</label><input id="me-xhs-title" value="'+(data?.title||'')+'"></div>'+
     '<div class="modal-field"><label>阶段</label><select id="me-xhs-stage">'+['选题','拍摄','剪辑','已发布'].map(s=>'<option '+(data?.stage===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
     '<div class="modal-field"><label>产品</label><input id="me-xhs-product" value="'+(data?.product||'')+'"></div>'+
-    '<div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">'+(data?.notes||'')+'</textarea></div>'+
     '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>';
-  document.getElementById('modal-overlay').classList.add('show')
+  document.getElementById('modal-overlay').classList.add('show');
 }
 function saveXHS(){
-  const d={id:editId||genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:document.getElementById('me-xhs-notes').value,createdAt:today()};
+  const d={id:editId||genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:'',createdAt:today()};
   if(editId){const idx=Store.data.xhs.findIndex(x=>x.id===editId);if(idx>=0)Store.data.xhs[idx]=d}else Store.data.xhs.push(d);
-  closeModal();Store.save();renderContent()
+  closeModal();Store.save();renderContent();
 }
 function openStudyModal(id){
   editId=id;currentModal='study';const d=Store.data.study.find(x=>x.id===id);if(!d)return;
-  document.getElementById('modal-body').innerHTML='<h3>编辑笔记</h3>'+
+  document.getElementById('modal-body').innerHTML='<h3>编辑</h3>'+
     '<div class="modal-field"><label>标题</label><input id="me-sn-title" value="'+(d.title||'')+'"></div>'+
-    '<div class="modal-field"><label>分类</label><select id="me-sn-cat"><option '+(d.category==='词汇'?'selected':'')+'>词汇</option><option '+(d.category==='语法'?'selected':'')+'>语法</option><option '+(d.category==='日练'?'selected':'')+'>日练</option><option '+(d.category==='书单'?'selected':'')+'>书单</option><option '+(d.category==='笔记'?'selected':'')+'>笔记</option></select></div>'+
     '<div class="modal-field"><label>正文</label><textarea id="me-sn-content" style="min-height:140px">'+(d.content||'')+'</textarea></div>'+
     '<div class="modal-actions"><button class="btn btn-outline btn-sm" onclick="deleteStudy(\''+id+'\');closeModal()">删除</button><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button></div>';
-  document.getElementById('modal-overlay').classList.add('show')
+  document.getElementById('modal-overlay').classList.add('show');
 }
-function saveStudy(){
-  const d=Store.data.study.find(x=>x.id===editId);if(!d)return;
-  d.title=document.getElementById('me-sn-title').value;d.category=document.getElementById('me-sn-cat').value;
-  d.content=document.getElementById('me-sn-content').value;d.updatedAt=today();
-  closeModal();Store.save();renderContent()
-}
+function saveStudy(){const d=Store.data.study.find(x=>x.id===editId);if(!d)return;d.title=document.getElementById('me-sn-title').value;d.content=document.getElementById('me-sn-content').value;d.updatedAt=today();closeModal();Store.save();renderContent()}
 function deleteStudy(id){Store.data.study=Store.data.study.filter(x=>x.id!==id);Store.save();renderContent()}
-
 function closeModal(){document.getElementById('modal-overlay').classList.remove('show');currentModal=null;editId=null}
 let currentModal=null,editId=null;
 
-// ============ AI ============
+// ====== AI ======
 function runAI(){
-  const inp=document.getElementById('ai-input'),q=inp.value.trim();
-  if(!q){toggleAI();return}inp.value='';
-  const body=document.getElementById('ai-body');
-  let resp='好的鸭，我试试...';
-  if(q.includes('添加')||q.includes('记录')){
-    if(q.includes('健康')||q.includes('体重')){navigate('tasks','life');resp='已打开生活待办，可以添加健康任务'}
-    else if(q.includes('投资')||q.includes('股票')){navigate('revenue','invest');resp='已打开投资管理'}
-    else if(q.includes('笔记')||q.includes('学习')||q.includes('读书')||q.includes('日语')){navigate('study',q.includes('日语')?'japanese':'reading');resp='已打开学习空间'}
-    else{addTask();resp='已添加待办'}
-  }else if(q.includes('看看')||q.includes('进度')||q.includes('今天')){navigate('home');resp='已切换到总览'}
-  else if(q.includes('待办')){navigate('tasks');resp='已打开待办'}
-  else if(q.includes('赚钱')||q.includes('投资')||q.includes('运营')){navigate('revenue');resp='已打开赚钱模块'}
-  else{resp='这个需要我的大模型朋友帮忙，记得给我配个API Key哦~ 在设置里填入你的Key'}
+  const inp=document.getElementById('ai-input'),q=inp.value.trim();if(!q){toggleAI();return}inp.value='';
+  const body=document.getElementById('ai-body');let resp='好的鸭~';
+  if(q.includes('添加')){addTask();resp='已添加待办'}
+  else if(q.includes('打卡')||q.includes('健康')){navigate('home');resp='已打开总览'}
+  else if(q.includes('日历')||q.includes('历史')){navigate('home','calendar');resp='已打开日历'}
+  else if(q.includes('看看')||q.includes('进度')){navigate('home');resp='已打开总览'}
+  else if(q.includes('投资')){navigate('revenue','invest');resp='已打开投资'}
+  else resp='需要大模型协助，配个API Key哦~';
   body.innerHTML='<div style="padding:8px;background:var(--peach-bg);border-radius:8px;margin-bottom:6px">'+resp+'</div>'+body.innerHTML;
 }
 
-// ============ Login ============
+// ====== Login ======
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,e=document.getElementById('login-err');
   if(!u||!p){e.textContent='请输入';return}
@@ -503,15 +520,13 @@ async function doLogin(){
     if(!res||res.length===0){e.textContent='用户名或密码错误';return}
   }catch(ex){e.textContent='验证失败';return}
   document.getElementById('login-overlay').style.display='none';localStorage.setItem('ws_logged','1');
-  Store.loadLocal();await Store.initCloud();buildUI()
+  Store.loadLocal();await Store.initCloud();buildUI();
 }
-
 (async function init(){
-  buildUI();
-  const loggedIn=localStorage.getItem('ws_logged')==='1';
+  buildUI();const loggedIn=localStorage.getItem('ws_logged')==='1';
   if(!loggedIn)return;
   document.getElementById('login-overlay').style.display='none';
-  Store.loadLocal();await Store.initCloud();buildUI()
+  Store.loadLocal();await Store.initCloud();buildUI();
 })();
 </script>
 </body>
