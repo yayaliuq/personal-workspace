@@ -18,7 +18,9 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 
 #app{display:flex;min-height:100vh}
 #sidebar{width:200px;background:var(--card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;padding:16px 12px}
-.side-logo{padding:4px 8px 16px;font-size:1rem;font-weight:700;color:var(--peach)}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.side-logo{font-size:1rem;font-weight:700;color:var(--peach);padding:4px 8px 0 8px}
+.side-close{display:none;width:32px;height:32px;border-radius:50%;background:var(--peach-bg);color:var(--peach);font-size:1rem;font-weight:700;align-items:center;justify-content:center}
 .sub-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
 .sub-sec-title{font-size:.65rem;color:var(--muted);padding:10px 8px 4px;text-transform:uppercase;letter-spacing:.5px}
 .sub-item{padding:9px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;transition:all .15s}
@@ -118,7 +120,9 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
   #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
   .menu-toggle{display:flex;width:40px;height:40px;border-radius:50%;background:var(--peach);color:#fff;align-items:center;justify-content:center;font-size:1.2rem}
-  .side-toggle{display:block;text-align:center;padding:8px 0 14px;font-size:1.2rem;color:var(--muted)}
+  .side-close{display:flex}
+  .sidebar-header{padding:env(safe-area-inset-top,0) 4px 12px 0}
+  .side-toggle{display:none}
   #main{margin-left:0;padding:12px 14px 100px}
   #topbar{padding:0 0 12px}#topbar h1{font-size:1.2rem}
   .bottom-nav{display:flex}
@@ -151,11 +155,13 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 </div>
 
 <nav id="sidebar">
-  <div class="side-toggle" onclick="toggleSidebar()">✕</div>
-  <div class="side-logo">鸭鸭的加油站</div>
+  <div class="sidebar-header">
+    <div class="side-logo">鸭鸭的加油站</div>
+    <button class="side-close" onclick="toggleSidebar()" title="关闭">✕</button>
+  </div>
   <div class="sub-nav" id="sub-nav"></div>
 </nav>
-<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.25)"></div>
+<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.4)"></div>
 
 <main id="main">
   <div id="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><h1 id="page-title">总览</h1></div><div class="breadcrumb" id="breadcrumb"></div></div>
