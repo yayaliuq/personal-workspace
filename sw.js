@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pw-v3';
+const CACHE_NAME = 'duck-v6';
 
 // 需要缓存的静态资源
 const PRECACHE = [
@@ -35,7 +35,7 @@ self.addEventListener('activate', (e) => {
 // 网络优先策略：在线时始终拉最新版本，离线时用缓存兜底
 self.addEventListener('fetch', (e) => {
   // 跳过 GitHub API 和本地 API 请求（不缓存数据）
-  if (e.request.url.includes('api.github.com') || e.request.url.includes('/api/')) {
+  if (e.request.url.includes('api.github.com') || e.request.url.includes('/api/') || e.request.url.includes('cloudbase.net') || e.request.url.includes('open-meteo.com')) {
     return;
   }
 
