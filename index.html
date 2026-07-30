@@ -229,7 +229,7 @@ const modules=[
 ];
 const subMenus={
   home:[],
-  tasks:[{id:'work',label:'工作待办',icon:'工'},{id:'life',label:'生活待办',icon:'生'}],
+  tasks:[{id:'work',label:'工作待办',icon:'工'},{id:'life',label:'生活待办',icon:'生'},{id:'insp',label:'灵感',icon:'灵'}],
   revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'},{id:'insp',label:'灵感库',icon:'灵'}],
   study:[{id:'japanese',label:'日语',icon:'日'},{id:'reading',label:'读书',icon:'读'}]
 };
@@ -300,15 +300,31 @@ function renderHome(c){
 }
 
 function renderTasks(c){
-  const tasks=Store.data.tasks||[];
+  const tasks=Store.data.tasks||[],insp=Store.data.inspirations||[];
+  // 灵感tab
+  if(currentSub==='insp'){
+    c.innerHTML='<div style="display:flex;gap:8px;margin-bottom:14px">'+
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'work\')">工作待办</button>'+
+      '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'life\')">生活待办</button>'+
+      '<button class="btn btn-primary btn-sm">灵感</button></div>'+
+      '<div class="card" style="background:linear-gradient(135deg,var(--lavender-bg),var(--peach-bg))"><div class="card-title"><div class="card-title-left">一闪而过的想法</div></div>'+
+      '<div class="add-bar"><input id="insp-title" placeholder="记下灵感..." onkeypress="if(event.key===\'Enter\')addInsp()"><select id="insp-link"><option value="">关联待办(可选)</option>'+tasks.filter(t=>!t.completed).map(t=>'<option value="'+t.id+'">'+t.title+'</option>').join('')+'</select><button class="btn btn-primary btn-sm" onclick="addInsp()">保存</button></div>'+
+      '<div style="max-height:300px;overflow-y:auto">'+(insp.length?insp.map(i=>{
+        const linked=tasks.find(t=>t.id===i.linkedTaskId);
+        return '<div class="task-row"><div class="task-title">'+i.title+'</div>'+(linked?'<span class="badge badge-soft">→'+linked.title+'</span>':'')+'<span class="badge '+(i.status==='未整理'?'badge-peach':'badge-mint')+'">'+i.status+'</span></div>';
+      }).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">还没有灵感，随时记下来吧</div>')+'</div></div>';
+    return;
+  }
+
   const filterModule=taskTab==='work'?'工作':'生活';
   const moduleTasks=tasks.filter(t=>t.module===filterModule);
   const healthTasks=taskTab==='life'?moduleTasks.filter(t=>t.healthTask):[];
   const otherTasks=(taskTab==='life'?moduleTasks.filter(t=>!t.healthTask):moduleTasks);
 
   let html='<div style="display:flex;gap:8px;margin-bottom:14px">'+
-    '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';renderTasks(document.getElementById(\'content\'))">工作待办</button>'+
-    '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';renderTasks(document.getElementById(\'content\'))">生活待办</button></div>'+
+    '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';navigate(\'tasks\',\'work\')">工作待办</button>'+
+    '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';navigate(\'tasks\',\'life\')">生活待办</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'insp\')">灵感</button></div>'+
     '<div class="add-bar"><input id="task-title" placeholder="添加'+(taskTab==='work'?'工作':'生活')+'待办..." onkeypress="if(event.key===\'Enter\')addTask()"><button class="btn btn-primary" onclick="addTask()">添加</button></div>';
 
   if(taskTab==='life'){
@@ -409,8 +425,9 @@ function addStore(){
 function deleteStore(id){Store.data.stores=Store.data.stores.filter(x=>x.id!==id);Store.save();renderContent()}
 function addInsp(){
   const title=document.getElementById('insp-title')?.value.trim();if(!title)return;
-  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',tags:[],createdAt:today()});
-  document.getElementById('insp-title').value='';Store.save();renderContent()
+  const linked=document.getElementById('insp-link')?.value||'';
+  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',linkedTaskId:linked,tags:[],createdAt:today()});
+  document.getElementById('insp-title').value='';Store.save();renderContent();toast('灵感已记录')
 }
 function updateInspStatus(id){const i=Store.data.inspirations.find(x=>x.id===id);if(!i)return;i.status=i.status==='未整理'?'已记录':'已执行';Store.save();renderContent()}
 function deleteInsp(id){Store.data.inspirations=Store.data.inspirations.filter(x=>x.id!==id);Store.save();renderContent()}
