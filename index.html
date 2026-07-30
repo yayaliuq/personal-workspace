@@ -182,12 +182,13 @@ function toast(m){const e=document.getElementById('toast');e.textContent=m;e.cla
 
 const Store={
   envId:'yayaliu-d4g1i1dc2fdb04417',
+  credentials:{username:'admin',password:'Admin123'},
   data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]},
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
     if(typeof cloudbase==='undefined')throw new Error('SDK');
     const app=cloudbase.init({env:this.envId});
-    const{error}=await app.auth.signInWithPassword({username:'admin',password:'Admin123'});
+    const{error}=await app.auth.signInWithPassword({username:this.credentials.username,password:this.credentials.password});
     if(error)throw new Error(error.message);
     this.auth=app.auth;this.app=app;this.db=app.database();this.ready=true;
     await this.loadFromCloud();return true
@@ -611,12 +612,21 @@ async function doLogin(){
     const{data:res}=await db.collection('users').where({username:u,password:p}).get();
     if(!res||res.length===0){e.textContent='用户名或密码错误';return}
   }catch(ex){e.textContent='验证失败: '+ex.message;return}
-  document.getElementById('login-overlay').style.display='none';localStorage.setItem('ws_logged','1');
+  localStorage.setItem('ws_logged','1');
+  localStorage.setItem('ws_user',u);
+  localStorage.setItem('ws_pass',p);
+  Store.credentials={username:u,password:p};
+  document.getElementById('login-overlay').style.display='none';
   Store.loadLocal();await Store.initCloud();buildUI();
 }
 (async function init(){
-  buildUI();const loggedIn=localStorage.getItem('ws_logged')==='1';
+  let loggedIn=false;
+  try{loggedIn=localStorage.getItem('ws_logged')==='1'}catch(e){}
   if(!loggedIn)return;
+  Store.credentials={
+    username:localStorage.getItem('ws_user')||'admin',
+    password:localStorage.getItem('ws_pass')||'Admin123'
+  };
   document.getElementById('login-overlay').style.display='none';
   Store.loadLocal();await Store.initCloud();buildUI();
 })();
