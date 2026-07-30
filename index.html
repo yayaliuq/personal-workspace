@@ -82,6 +82,21 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.7rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
 .nav-tab.active{color:var(--peach);font-weight:700}
 .nav-tab .nav-icon{font-size:1.2rem;font-weight:700}
+.nav-tab.has-sub{position:relative}
+.nav-tab .nav-arrow{font-size:.5rem;opacity:.6;margin-top:-2px}
+
+/* 子菜单弹出面板（手机端） */
+.sub-sheet-overlay{display:none;position:fixed;inset:0;z-index:88;background:rgba(60,40,20,.3)}
+.sub-sheet-overlay.show{display:block}
+.sub-sheet{position:fixed;bottom:0;left:0;right:0;z-index:89;background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0));box-shadow:0 -4px 20px rgba(0,0,0,.1);display:none;flex-direction:column;gap:6px;transform:translateY(100%);transition:transform .25s}
+.sub-sheet.show{display:flex;animation:sheetUp .25s forwards}
+@keyframes sheetUp{to{transform:translateY(0)}}
+.sub-sheet-title{font-size:.78rem;color:var(--muted);font-weight:600;padding:4px 8px 8px}
+.sub-sheet-item{display:flex;align-items:center;gap:10px;padding:14px 16px;border-radius:12px;font-size:.92rem;font-weight:500;cursor:pointer;transition:background .15s}
+.sub-sheet-item:active{background:var(--peach-bg)}
+.sub-sheet-item.active{background:var(--peach-bg);color:var(--peach);font-weight:700}
+.sub-sheet-item .ssi-icon{width:28px;height:28px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:var(--muted);flex-shrink:0}
+.sub-sheet-item.active .ssi-icon{background:var(--peach);color:#fff}
 
 .ai-fab{position:fixed;bottom:24px;right:24px;z-index:85;width:52px;height:52px;border-radius:50%;background:var(--peach);color:#fff;box-shadow:0 4px 20px rgba(244,167,139,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;transition:all .2s}
 .ai-panel{position:fixed;bottom:88px;right:24px;z-index:84;width:340px;max-height:420px;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;flex-direction:column;overflow:hidden}
@@ -168,6 +183,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 </div>
 
 <div class="bottom-nav" id="bottom-nav"></div>
+<div class="sub-sheet-overlay" id="sub-sheet-overlay" onclick="closeSubSheet()"></div>
+<div class="sub-sheet" id="sub-sheet"></div>
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal-body"></div></div>
 <div id="toast"></div>
 
@@ -328,8 +345,41 @@ function navigate(mod,sub){
 }
 function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen)}
 function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
+
+// ====== 手机端子菜单弹出面板 ======
+function openSubSheet(mod){
+  const items=subMenus[mod]||[];
+  if(!items.length){navigate(mod);return}
+  const label=modules.find(m=>m.id===mod)?.label||'';
+  const sheet=document.getElementById('sub-sheet');
+  sheet.innerHTML='<div class="sub-sheet-title">'+label+'</div>'+
+    items.map(s=>'<div class="sub-sheet-item'+(currentSub===s.id&&currentModule===mod?' active':'')+'" onclick="navigate(\''+mod+'\',\''+s.id+'\');closeSubSheet()"><div class="ssi-icon">'+s.icon+'</div>'+s.label+'</div>').join('');
+  sheet.classList.add('show');
+  document.getElementById('sub-sheet-overlay').classList.add('show');
+}
+function closeSubSheet(){
+  document.getElementById('sub-sheet').classList.remove('show');
+  document.getElementById('sub-sheet-overlay').classList.remove('show');
+}
+
+// 手机端导航标签点击逻辑：已在当前模块→弹子菜单；不在→先切换模块
+function onNavTab(mod){
+  if(currentModule===mod){
+    openSubSheet(mod);
+  }else{
+    navigate(mod);
+  }
+}
+
 function buildUI(){
-  document.getElementById('bottom-nav').innerHTML=modules.map(m=>'<button class="nav-tab" data-mod="'+m.id+'" onclick="navigate(\''+m.id+'\')"><span class="nav-icon">'+m.icon+'</span>'+m.label+'</button>').join('');
+  document.getElementById('bottom-nav').innerHTML=modules.map(m=>{
+    const hasSub=(subMenus[m.id]||[]).length>0;
+    // 手机端：有子菜单的模块点击弹出面板，无子菜单的直接导航
+    const clickHandler=hasSub
+      ?'onNavTab(\''+m.id+'\')'
+      :'navigate(\''+m.id+'\')';
+    return '<button class="nav-tab'+(hasSub?' has-sub':'')+'" data-mod="'+m.id+'" onclick="'+clickHandler+'"><span class="nav-icon">'+m.icon+'</span>'+m.label+(hasSub?'<span class="nav-arrow">●</span>':'')+'</button>';
+  }).join('');
   navigate('home')
 }
 
