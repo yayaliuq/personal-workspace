@@ -1,4 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#F4A78B"/>
-  <text x="32" y="44" text-anchor="middle" font-size="36" font-family="sans-serif" fill="#fff">鸭</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F9B8B8"/>
+      <stop offset="100%" stop-color="#F4A78B"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <!-- 小星星 -->
+  <circle cx="12" cy="14" r="2.5" fill="#fff" opacity="0.6"/>
+  <circle cx="52" cy="10" r="2" fill="#fff" opacity="0.5"/>
+  <circle cx="10" cy="50" r="1.8" fill="#fff" opacity="0.4"/>
+  <circle cx="55" cy="48" r="2.2" fill="#fff" opacity="0.5"/>
+  <!-- 爱心 -->
+  <path d="M48 22c-2-2-5 0-5 2s2 4 5 6c3-2 5-4 5-6s-3-4-5-2z" fill="#fff" opacity="0.7"/>
+  <!-- 鸭 -->
+  <text x="32" y="43" text-anchor="middle" font-size="32" font-family="sans-serif" font-weight="bold" fill="#fff">鸭</text>
 </svg>
