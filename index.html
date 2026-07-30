@@ -186,8 +186,9 @@ const Store={
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
     if(typeof cloudbase==='undefined')throw new Error('SDK');
-    const app=cloudbase.init({env:this.envId});let ls;try{ls=await app.auth.getLoginState()}catch(e){}
-    if(!ls){const{error}=await app.auth.signInWithPassword({username:'admin',password:'Admin123'});if(error)throw new Error(error.message)}
+    const app=cloudbase.init({env:this.envId});
+    const{error}=await app.auth.signInWithPassword({username:'admin',password:'Admin123'});
+    if(error)throw new Error(error.message);
     this.auth=app.auth;this.app=app;this.db=app.database();this.ready=true;
     await this.loadFromCloud();return true
   },
