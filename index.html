@@ -27,7 +27,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .sub-icon{width:18px;text-align:center;font-size:.75rem;flex-shrink:0}
 .side-toggle{display:none}
 
-#main{flex:1;margin-left:200px;padding:20px 28px 40px;max-width:1080px}
+#main{flex:1;margin-left:200px;padding:20px 28px 40px;max-width:1200px}
+#content{display:grid;grid-template-columns:1fr;gap:14px}
 #topbar{padding:0 0 16px;display:flex;align-items:center;justify-content:space-between}
 #topbar h1{font-size:1.3rem;font-weight:700}
 .breadcrumb{font-size:.8rem;color:var(--muted)}
@@ -104,6 +105,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .login-field input{width:100%;padding:12px 16px;border-radius:22px}
 .login-err{font-size:.72rem;color:#E84040;min-height:20px;margin-bottom:8px}
 .login-btn{width:100%;padding:13px;background:var(--peach);color:#fff;border-radius:22px;font-size:.95rem;font-weight:700}
+
+/* 桌面端更宽的布局 */
+@media(min-width:1024px){
+  #content{grid-template-columns:1fr 1fr}
+  #content>.hero-card{grid-column:span 2}
+}
 
 @media(max-width:768px){
   html{font-size:17px}
