@@ -244,8 +244,7 @@ function navigate(mod,sub){
   const subName=subMenus[mod].find(s=>s.id===currentSub);
   document.getElementById('breadcrumb').textContent=subName?subName.label:'';
   // Build full sub-nav for desktop
-  let subHTML='';
-  Object.entries(subMenus).forEach(([key,items])=>{
+  let subHTML='<button class="sub-item"'+(!currentModule||currentModule==='home'?' active':'')+' onclick="navigate(\'home\')"><span class="sub-icon">家</span>总览</button>';Object.entries(subMenus).forEach(([key,items])=>{
     if(items.length===0)return;
     if(subHTML)subHTML+='<div class="sub-sec-title">'+moduleLabels[key]+'</div>';
     items.forEach(s=>subHTML+=`<button class="sub-item ${currentSub===s.id&&currentModule===key?'active':''}" onclick="navigate('${key}','${s.id}')"><span class="sub-icon">${s.icon}</span>${s.label}</button>`);
