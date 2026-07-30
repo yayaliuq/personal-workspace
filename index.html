@@ -175,7 +175,7 @@ function toast(m){const e=document.getElementById('toast');e.textContent=m;e.cla
 
 const Store={
   envId:'yayaliu-d4g1i1dc2fdb04417',
-  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],healthCheckins:[],checkinRecords:[]},
+  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]},
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
     if(typeof cloudbase==='undefined')throw new Error('SDK');
@@ -192,10 +192,10 @@ const Store={
     Object.assign(this.data,{
       tasks:dedup(await sg('tasks')),health:dedup(await sg('health_records')),xhs:dedup(await sg('xiaohongshu')),
       investments:dedup(await sg('investments')),stores:dedup(await sg('stores')),inspirations:dedup(await sg('inspirations')),
-      study:dedup(await sg('study_notes')),healthCheckins:await sg('health_checkins'),checkinRecords:await sg('checkin_records')
+      study:dedup(await sg('study_notes')),checkinRecords:await sg('checkin_records')
     });
     const has=Object.values(this.data).some(v=>Array.isArray(v)&&v.length>0);
-    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],healthCheckins:[],checkinRecords:[]};this.saveLocal()}
+    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]};this.saveLocal()}
     else if(this.data.tasks.length||this.data.study.length)await this.saveToCloud()
   },
   async saveToCloud(){
@@ -209,17 +209,60 @@ const Store={
   loadLocal(){try{const r=localStorage.getItem('ws_data_v6a');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
   saveLocal(){localStorage.setItem('ws_data_v6a',JSON.stringify(this.data))},
   async save(){this.saveLocal();clearTimeout(this._st);this._st=setTimeout(()=>this.saveToCloud(),500)},
-  // Toggle checkin
-  toggleCheckin(checkinId,name){
-    const todayStr=today();
-    const idx=this.data.checkinRecords.findIndex(r=>r.checkinId===checkinId&&r.date===todayStr);
-    if(idx>=0)this.data.checkinRecords.splice(idx,1);
-    else this.data.checkinRecords.push({id:genId(),checkinId,name,date:todayStr});
-    this.saveLocal();
-    this.saveToCloud();
+  // Checkin helpers
+  getRecord(type,dateStr){
+    return this.data.checkinRecords.find(r=>r.type===type&&r.date===dateStr);
   },
-  isCheckinDone(checkinId){
-    return this.data.checkinRecords.some(r=>r.checkinId===checkinId&&r.date===today());
+  getWater(){
+    const r=this.getRecord('water',today());return r?r.count:0;
+  },
+  addWater(){
+    const d=today();let r=this.getRecord('water',d);
+    if(r){if(r.count<8)r.count++}else this.data.checkinRecords.push({id:genId(),type:'water',date:d,count:1});
+    this.saveLocal();this.saveToCloud();return this.getWater();
+  },
+  isSleepEarly(){
+    const y=new Date();y.setDate(y.getDate()-1);return !!this.getRecord('sleep_early',y.toISOString().slice(0,10));
+  },
+  toggleSleep(){
+    const d=new Date();d.setDate(d.getDate()-1);const ds=d.toISOString().slice(0,10);
+    const idx=this.data.checkinRecords.findIndex(r=>r.type==='sleep_early'&&r.date===ds);
+    if(idx>=0)this.data.checkinRecords.splice(idx,1);
+    else this.data.checkinRecords.push({id:genId(),type:'sleep_early',date:ds,value:true});
+    this.saveLocal();this.saveToCloud();
+  },
+  isWakeEarly(){return !!this.getRecord('wake_early',today());},
+  toggleWake(){
+    const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='wake_early'&&r.date===d);
+    if(idx>=0)this.data.checkinRecords.splice(idx,1);
+    else this.data.checkinRecords.push({id:genId(),type:'wake_early',date:d,value:true});
+    this.saveLocal();this.saveToCloud();
+  },
+  getMealLevel(meal){
+    const r=this.data.checkinRecords.find(r=>r.type==='meal'&&r.date===today()&&r.meal===meal);
+    return r?r.level:null;
+  },
+  setMeal(meal,level){
+    const d=today();
+    const idx=this.data.checkinRecords.findIndex(r=>r.type==='meal'&&r.date===d&&r.meal===meal);
+    if(level===null&&idx>=0){this.data.checkinRecords.splice(idx,1)}
+    else if(idx>=0){this.data.checkinRecords[idx].level=level}
+    else this.data.checkinRecords.push({id:genId(),type:'meal',date:d,meal,level});
+    this.saveLocal();this.saveToCloud();
+  },
+  getWeekExercises(){
+    const now=new Date(),dow=now.getDay();const mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
+    const ws=mon.toISOString().slice(0,10);
+    return this.data.checkinRecords.filter(r=>r.type==='exercise'&&r.date>=ws).length;
+  },
+  addExercise(){
+    this.data.checkinRecords.push({id:genId(),type:'exercise',date:today(),value:true});
+    this.saveLocal();this.saveToCloud();return this.getWeekExercises();
+  },
+  undoExercise(){
+    const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='exercise'&&r.date===d);
+    if(idx>=0)this.data.checkinRecords.splice(idx,1);
+    this.saveLocal();this.saveToCloud();
   }
 };
 
@@ -311,11 +354,31 @@ async function renderHome(c){
 
     // Health checkin
     '<div class="card"><div class="card-title"><div class="card-title-left">健康打卡</div></div>'+
-    '<div class="checkin-grid" id="checkin-grid">'+
-    (Store.data.healthCheckins||[]).sort((a,b)=>(a.order||0)-(b.order||0)).map(c=>{
-      const done=Store.isCheckinDone(c._id);
-      return '<div class="checkin-item'+(done?' done':'')+'" onclick="doCheckin(\''+c._id+'\',\''+c.name+'\')"><div class="ci-icon">'+(done?'✓':'○')+'</div><div class="ci-name">'+c.name+'</div><div class="ci-status">'+(done?'已完成':'点击打卡')+'</div></div>';
+    // Water
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="addWater()" title="喝水">'+
+    '<div style="width:36px;text-align:center;font-size:1.2rem">💧</div><div style="flex:1;font-size:.85rem;font-weight:500">喝水</div><div style="display:flex;gap:3px">'+
+    Array(8).fill(0).map((_,i)=>'<span style="font-size:1rem">'+(i<Store.getWater()?'●':'○')+'</span>').join('')+'</div>'+
+    '<span class="badge" style="background:'+(Store.getWater()>=8?'var(--mint-bg)':'var(--bg)')+';color:var(--text)">'+Store.getWater()+'/8</span></div>'+
+    // Sleep
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
+    '<div style="width:36px;text-align:center;font-size:1.2rem">🌙</div><div style="flex:1;font-size:.85rem;font-weight:500">早睡早起</div>'+
+    '<div style="display:flex;gap:6px">'+
+    '<span onclick="Store.toggleSleep();renderContent()" style="font-size:1.3rem;cursor:pointer;opacity:'+(Store.isSleepEarly()?'1':'.3')+'" title="早睡">🌙</span>'+
+    '<span onclick="Store.toggleWake();renderContent()" style="font-size:1.3rem;cursor:pointer;opacity:'+(Store.isWakeEarly()?'1':'.3')+'" title="早起">☀</span>'+
+    '</div></div>'+
+    // Meals
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
+    '<div style="width:36px;text-align:center;font-size:1.2rem">🍽</div><div style="flex:1;font-size:.85rem;font-weight:500">饮食控制</div>'+
+    '<div style="display:flex;flex-direction:column;gap:4px;font-size:.7rem">'+
+    ['早','午','晚'].map(meal=>{
+      const lvl=Store.getMealLevel(meal);
+      const mkBtn=(level,color,icon)=>'<span onclick="Store.setMeal(\''+meal+'\',\''+level+'\');renderContent()" style="width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;background:'+(lvl===level?color:'var(--bg)')+'">'+icon+'</span>';
+      return '<div style="display:flex;align-items:center;gap:4px"><span style="min-width:16px">'+meal+'</span>'+mkBtn('red','#FCA5A5','')+mkBtn('yellow','#FDE68A','')+mkBtn('green','#86EFAC','')+'</div>';
     }).join('')+'</div></div>'+
+    // Exercise
+    '<div style="display:flex;align-items:center;gap:10px;padding:10px 0">'+
+    '<div style="width:36px;text-align:center;font-size:1.2rem">🏃</div><div style="flex:1;font-size:.85rem;font-weight:500">每周运动</div>'+
+    '<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-xs btn-primary" onclick="addExercise()">+1</button><span class="badge">'+Store.getWeekExercises()+'/5次</span></div></div></div>'+
 
     // Task list with calendar icon
     '<div class="card"><div class="card-title"><div class="card-title-left">待办清单 <span class="badge badge-soft">'+pending.length+'项</span></div><button class="btn-outline btn-xs" onclick="navigate(\'home\',\'calendar\')" title="日历">📅</button></div>'+
@@ -331,11 +394,8 @@ async function renderHome(c){
   document.getElementById('content').innerHTML=c.innerHTML;
 }
 
-function doCheckin(id,name){
-  Store.toggleCheckin(id,name);
-  renderContent();
-  toast(Store.isCheckinDone(id)?name+' 已完成':name+' 已取消');
-}
+function addWater(){Store.addWater();renderContent();toast(Store.getWater()+'/8杯水')}
+function addExercise(){Store.addExercise();renderContent();toast(Store.getWeekExercises()+'/5次运动')}
 
 // ====== Calendar ======
 function renderCalendar(c){
@@ -352,7 +412,14 @@ function renderCalendar(c){
 
   const selectDate=calDate||todayStr;
   const selectedEvents=[];
-  Store.data.checkinRecords.filter(r=>r.date===selectDate).forEach(r=>selectedEvents.push({type:'checkin',title:r.name,date:r.date}));
+  Store.data.checkinRecords.filter(r=>r.date===selectDate).forEach(r=>{
+    let title='';if(r.type==='water')title='喝水 '+r.count+'杯';
+    else if(r.type==='sleep_early')title='早睡';
+    else if(r.type==='wake_early')title='早起';
+    else if(r.type==='meal')title=r.meal+'餐('+(r.level==='green'?'绿灯':r.level==='yellow'?'黄灯':'红灯')+')';
+    else if(r.type==='exercise')title='运动';
+    if(title)selectedEvents.push({type:'checkin',title,date:r.date});
+  });
   Store.data.tasks.filter(t=>t.completedAt===selectDate).forEach(t=>selectedEvents.push({type:'task',title:t.title,date:t.completedAt,module:t.module}));
 
   let calHTML='<div class="cal-header"><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month-1)+',1);renderContent()">◀</button><span style="font-weight:700">'+year+'年'+(month+1)+'月</span><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month+1)+',1);renderContent()">▶</button></div>';
