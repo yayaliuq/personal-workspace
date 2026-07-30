@@ -112,6 +112,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 }
 
 @media(max-width:768px){
+  #sidebar-backdrop{display:none!important;background:rgba(0,0,0,.2)}
+  #sidebar-backdrop.show,#sidebar.open~#sidebar-backdrop{display:block!important}
   html{font-size:17px}
   #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
   #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
@@ -148,6 +150,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
   </div>
 </div>
 
+<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99"></div>
 <nav id="sidebar">
   <div class="side-toggle" onclick="toggleSidebar()">✕</div>
   <div class="side-logo">鸭鸭的加油站</div>
@@ -301,7 +304,7 @@ function navigate(mod,sub){
   document.querySelector('.nav-tab[data-mod="'+mod+'"]')?.classList.add('active');
   renderContent();
 }
-function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen)}
+function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen);var bd=document.getElementById('sidebar-backdrop');bd.style.display=sidebarOpen?'block':'none'}
 function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
 function buildUI(){
   document.getElementById('bottom-nav').innerHTML=modules.map(m=>'<button class="nav-tab" data-mod="'+m.id+'" onclick="navigate(\''+m.id+'\')"><span class="nav-icon">'+m.icon+'</span>'+m.label+'</button>').join('');
@@ -593,12 +596,17 @@ async function doLogin(){
   const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,e=document.getElementById('login-err');
   if(!u||!p){e.textContent='请输入';return}
   e.textContent='验证中...';
+  if(typeof cloudbase==='undefined'){
+    let waited=0;
+    while(typeof cloudbase==='undefined'&&waited<20){await new Promise(r=>setTimeout(r,500));waited++}
+    if(typeof cloudbase==='undefined'){e.textContent='SDK未加载，请刷新';return}
+  }
   try{
     const app=cloudbase.init({env:Store.envId});const{data:d,error:er}=await app.auth.signInAnonymously();
     if(er)throw new Error('连接失败');const db=app.database();
     const{data:res}=await db.collection('users').where({username:u,password:p}).get();
     if(!res||res.length===0){e.textContent='用户名或密码错误';return}
-  }catch(ex){e.textContent='验证失败';return}
+  }catch(ex){e.textContent='验证失败: '+ex.message;return}
   document.getElementById('login-overlay').style.display='none';localStorage.setItem('ws_logged','1');
   Store.loadLocal();await Store.initCloud();buildUI();
 }
