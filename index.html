@@ -114,15 +114,10 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 }
 
 @media(max-width:768px){
-  #sidebar-backdrop{display:none!important;background:rgba(0,0,0,.2)}
-  #sidebar-backdrop.show{display:block!important}
   html{font-size:17px}
   #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
-  #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
+  /* sidebar disabled on mobile */
   .menu-toggle{display:flex;width:40px;height:40px;border-radius:50%;background:var(--peach);color:#fff;align-items:center;justify-content:center;font-size:1.2rem}
-  .side-close{display:flex}
-  .sidebar-header{padding:env(safe-area-inset-top,0) 4px 12px 0}
-  .sub-sec-title{display:none}
   .side-toggle{display:none}
   #main{margin-left:0;padding:12px 14px 100px}
   #topbar{padding:0 0 12px}#topbar h1{font-size:1.2rem}
@@ -158,14 +153,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 <nav id="sidebar">
   <div class="sidebar-header">
     <div class="side-logo">鸭鸭的加油站</div>
-    <button class="side-close" onclick="toggleSidebar()" title="关闭">✕</button>
   </div>
   <div class="sub-nav" id="sub-nav"></div>
 </nav>
-<div id="sidebar-backdrop" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.4)"></div>
 
 <main id="main">
-  <div id="topbar"><div style="display:flex;align-items:center;gap:10px"><button class="menu-toggle" onclick="toggleSidebar()">☰</button><h1 id="page-title">总览</h1></div><div class="breadcrumb" id="breadcrumb"></div></div>
+  <div id="topbar"><h1 id="page-title">总览</h1><div class="breadcrumb" id="breadcrumb"></div></div>
   <div id="content"></div>
 </main>
 
