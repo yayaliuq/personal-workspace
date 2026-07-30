@@ -8,120 +8,131 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
 <style>
-:root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--radius:16px;--radius-sm:12px;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;--nav-h:56px}
+:root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--radius:16px;--radius-sm:12px;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
-html{font-size:15px}
+html{font-size:16px}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;font-size:.85rem}
-input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--text);outline:none;border:1px solid var(--border);border-radius:10px;padding:9px 12px;background:var(--card)}
+button{font-family:inherit;border:none;background:none;cursor:pointer;color:inherit;font-size:.9rem}
+input,textarea,select{font-family:inherit;font-size:.9rem;color:var(--text);outline:none;border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card)}
 input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 a{color:var(--peach)}
 
+/* ====== Desktop Layout ====== */
 #app{display:flex;min-height:100vh}
-#sidebar{width:48px;background:var(--card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width .25s;overflow:hidden;padding:12px 8px}
-#sidebar.open{width:180px}
-.side-toggle{text-align:center;padding:4px 0 12px;font-size:1.1rem;color:var(--muted);cursor:pointer}
-.sub-nav{display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .2s}
-#sidebar.open .sub-nav{opacity:1}
-.sub-item{padding:8px 10px;border-radius:8px;font-size:.75rem;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:8px;transition:all .15s}
+#sidebar{width:200px;background:var(--card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;padding:16px 12px}
+.side-logo{padding:4px 8px 16px;font-size:1rem;font-weight:700;color:var(--peach)}
+.sub-nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.sub-sec-title{font-size:.65rem;color:var(--muted);padding:10px 8px 4px;text-transform:uppercase;letter-spacing:.5px}
+.sub-item{padding:9px 12px;border-radius:8px;font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:8px;transition:all .15s;text-decoration:none}
 .sub-item:hover{background:var(--peach-bg);color:var(--text)}
 .sub-item.active{background:var(--peach);color:#fff;font-weight:600}
-.sub-icon{width:16px;text-align:center;font-size:.75rem;flex-shrink:0}
+.sub-icon{width:18px;text-align:center;font-size:.75rem;flex-shrink:0}
+.side-toggle{display:none}
 
-#main{flex:1;margin-left:48px;padding:16px 20px 80px;max-width:960px}
-#main.sidebar-open{margin-left:180px}
+#main{flex:1;margin-left:200px;padding:20px 28px 40px;max-width:1080px}
+#topbar{padding:0 0 16px;display:flex;align-items:center;justify-content:space-between}
+#topbar h1{font-size:1.3rem;font-weight:700}
+.breadcrumb{font-size:.8rem;color:var(--muted)}
+.menu-toggle{display:none}
 
-#topbar{position:sticky;top:0;z-index:50;background:var(--bg);padding:0 0 12px;display:flex;align-items:center;justify-content:space-between}
-#topbar h1{font-size:1.1rem;font-weight:700}
-.breadcrumb{font-size:.75rem;color:var(--muted)}
-
-.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border)}
-.card-title{font-size:.85rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+.card{background:var(--card);border-radius:var(--radius);padding:18px;margin-bottom:14px;border:1px solid var(--border)}
+.card-title{font-size:.88rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
 .card-title-left{display:flex;align-items:center;gap:6px}
 
-.btn{padding:8px 16px;border-radius:20px;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.btn{padding:9px 18px;border-radius:22px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
 .btn-primary{background:var(--peach);color:#fff}
 .btn-primary:hover{opacity:.9}
 .btn-outline{border:1.5px solid var(--border);color:var(--text)}
-.btn-sm{padding:5px 12px;font-size:.72rem}
-.btn-xs{padding:3px 10px;font-size:.68rem}
-.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.65rem;font-weight:600}
+.btn-sm{padding:6px 14px;font-size:.75rem}
+.btn-xs{padding:4px 10px;font-size:.7rem}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600}
 .badge-peach{background:var(--peach-bg);color:#A8604A}
 .badge-mint{background:var(--mint-bg);color:#3E8E66}
 .badge-lavender{background:var(--lavender-bg);color:#6B4F8C}
 .badge-soft{background:var(--bg);color:var(--muted)}
 
-.task-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.85rem}
+.task-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:.88rem}
 .task-row:last-child{border-bottom:none}
-.task-cb{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:transparent;transition:all .15s}
+.task-cb{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;transition:all .15s}
 .task-cb.checked{background:var(--mint);border-color:var(--mint);color:#fff}
 .task-title{flex:1;font-weight:500}
 .task-done{opacity:.5;text-decoration:line-through}
-.task-actions{display:flex;gap:2px;opacity:.5}
 .task-row:hover .task-actions{opacity:1}
 
-.add-bar{display:flex;gap:6px;margin-bottom:10px}
+.add-bar{display:flex;gap:8px;margin-bottom:12px}
 .add-bar input{flex:1}
-.add-bar select{border:1px solid var(--border);border-radius:10px;padding:9px;background:var(--card)}
+.add-bar select{border:1px solid var(--border);border-radius:10px;padding:10px 14px;background:var(--card)}
 
-.invest-item,.store-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:.85rem}
-.invest-item:last-child,.store-item:last-child{border-bottom:none}
-
-.note-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:.85rem;cursor:pointer}
-.note-item:hover{background:var(--peach-bg)}
-.note-item:last-child{border-bottom:none}
-
-.health-item{padding:8px 12px;border-bottom:1px solid var(--border);font-size:.82rem;display:flex;align-items:center;gap:10px}
+.invest-item,.store-item,.note-item{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:.88rem}
+.invest-item:last-child,.store-item:last-child,.note-item:last-child{border-bottom:none}
+.note-item:hover{background:var(--peach-bg);cursor:pointer}
+.health-item{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.85rem;display:flex;align-items:center;gap:12px}
 .health-item:last-child{border-bottom:none}
 
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--card);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:6px 0 env(safe-area-inset-bottom,6px)}
-.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.62rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
+/* Bottom Nav (mobile only) */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--card);border-top:1px solid var(--border);justify-content:space-around;padding:8px 0 env(safe-area-inset-bottom,8px)}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.7rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
 .nav-tab.active{color:var(--peach);font-weight:700}
-.nav-tab .nav-icon{font-size:1.1rem;font-weight:700}
+.nav-tab .nav-icon{font-size:1.2rem;font-weight:700}
 
-.ai-fab{position:fixed;bottom:80px;right:16px;z-index:85;width:48px;height:48px;border-radius:50%;background:var(--peach);color:#fff;box-shadow:0 4px 16px rgba(244,167,139,.4);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;transition:all .2s}
+/* AI Fab */
+.ai-fab{position:fixed;bottom:24px;right:24px;z-index:85;width:52px;height:52px;border-radius:50%;background:var(--peach);color:#fff;box-shadow:0 4px 20px rgba(244,167,139,.4);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700;transition:all .2s}
 .ai-fab:hover{transform:scale(1.05)}
-.ai-panel{position:fixed;bottom:140px;right:16px;z-index:84;width:300px;max-height:400px;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;flex-direction:column;overflow:hidden}
+.ai-panel{position:fixed;bottom:88px;right:24px;z-index:84;width:340px;max-height:420px;background:var(--card);border-radius:var(--radius);box-shadow:0 8px 30px rgba(0,0,0,.12);display:none;flex-direction:column;overflow:hidden}
 .ai-panel.show{display:flex}
-.ai-panel-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
-.ai-panel-body{flex:1;overflow-y:auto;padding:8px;min-height:100px;font-size:.8rem}
-.ai-panel-input{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px}
+.ai-panel-header{padding:14px 18px;border-bottom:1px solid var(--border);font-size:.88rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ai-panel-body{flex:1;overflow-y:auto;padding:10px;min-height:100px;font-size:.82rem}
+.ai-panel-input{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:6px}
 .ai-panel-input input{flex:1}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(60,40,20,.4);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);padding:20px;width:100%;max-width:400px;max-height:80vh;overflow-y:auto}
-.modal h3{font-size:.95rem;margin-bottom:14px}
-.modal-field{margin-bottom:12px}
-.modal-field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px;font-weight:600}
+.modal{background:var(--card);border-radius:var(--radius);padding:22px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:1rem;margin-bottom:16px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px;font-weight:600}
 .modal-field input,.modal-field select,.modal-field textarea{width:100%}
-.modal-field textarea{min-height:70px;resize:vertical}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.modal-field textarea{min-height:80px;resize:vertical}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 
-#toast{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(80,60,40,.9);color:#fff;padding:8px 20px;border-radius:20px;font-size:.75rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(80,60,40,.9);color:#fff;padding:10px 24px;border-radius:22px;font-size:.8rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
 
-.menu-toggle{width:36px;height:36px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--text);cursor:pointer;flex-shrink:0}
-
 .login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#FCE8DC,#FBEFCF);z-index:9999;display:flex;align-items:center;justify-content:center}
-.login-card{background:#fff;border-radius:var(--radius);padding:28px 24px;width:320px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
-.login-card h2{text-align:center;margin-bottom:16px;font-size:1.1rem}
-.login-field{margin-bottom:12px}
-.login-field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:4px}
-.login-field input{width:100%;padding:10px 14px;border-radius:20px}
-.login-err{font-size:.7rem;color:#E84040;min-height:18px;margin-bottom:8px}
-.login-btn{width:100%;padding:11px;background:var(--peach);color:#fff;border-radius:20px;font-size:.9rem;font-weight:700}
+.login-card{background:#fff;border-radius:var(--radius);padding:32px 28px;width:340px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
+.login-card h2{text-align:center;margin-bottom:18px;font-size:1.2rem}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:5px}
+.login-field input{width:100%;padding:12px 16px;border-radius:22px}
+.login-err{font-size:.72rem;color:#E84040;min-height:20px;margin-bottom:8px}
+.login-btn{width:100%;padding:13px;background:var(--peach);color:#fff;border-radius:22px;font-size:.95rem;font-weight:700}
 
+/* ====== Mobile ====== */
 @media(max-width:768px){
-  .menu-toggle{background:var(--peach);color:#fff;border:none}
-  #sidebar{transform:translateX(-100%);width:200px;padding-top:env(safe-area-inset-top,0);transition:transform .25s}
-  #sidebar.open{transform:translateX(0);width:200px;box-shadow:4px 0 20px rgba(0,0,0,.1)}
-  #sidebar{transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0);width:200px}
+  html{font-size:17px}
+  #app{display:block}
+  #sidebar{transform:translateX(-100%);width:220px;padding-top:env(safe-area-inset-top,0);transition:transform .25s;box-shadow:none}
+  #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.15)}
+  .menu-toggle{display:flex;width:40px;height:40px;border-radius:50%;background:var(--peach);color:#fff;align-items:center;justify-content:center;font-size:1.2rem}
+  .side-toggle{display:block;text-align:center;padding:8px 0 14px;font-size:1.2rem;color:var(--muted)}
   #main{margin-left:0;padding:12px 14px 100px}
-  #main.sidebar-open{margin-left:0}
+  #topbar{padding:0 0 12px}
+  #topbar h1{font-size:1.2rem}
+  .bottom-nav{display:flex}
+  .ai-fab{bottom:80px;right:14px}
+  .ai-panel{bottom:144px;right:14px;width:calc(100vw - 28px)}
   .add-bar{flex-direction:column}
-  .ai-panel{width:calc(100vw - 32px);right:16px}
+  .btn{padding:10px 20px;font-size:.85rem}
+  .btn-sm{padding:7px 16px;font-size:.78rem}
+  .card{padding:16px 14px;margin-bottom:10px;border-radius:var(--radius-sm)}
+  .card-title{font-size:.9rem}
+  .task-row{padding:12px 14px;font-size:.92rem}
+  .task-cb{width:24px;height:24px}
+  input,textarea,select{font-size:16px;padding:12px 14px}
+  .login-card{padding:28px 22px;width:100%;max-width:90vw}
+  .modal{max-width:100%;border-radius:18px 18px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0))}
+  .modal-overlay{align-items:flex-end}
+  #toast{bottom:140px}
 }
 </style>
 </head>
@@ -139,7 +150,8 @@ a{color:var(--peach)}
 </div>
 
 <nav id="sidebar">
-  <div class="side-toggle" onclick="toggleSidebar()">☰</div>
+  <div class="side-toggle" onclick="toggleSidebar()">✕</div>
+  <div class="side-logo">鸭鸭的加油站</div>
   <div class="sub-nav" id="sub-nav"></div>
 </nav>
 
@@ -182,12 +194,12 @@ const Store={
     const sg=async c=>{try{return(await this.db.collection(c).limit(1000).get()).data.map(strip)}catch(e){return[]}};
     const t=dedup(await sg('tasks'));const h=dedup(await sg('health_records'));const x=dedup(await sg('xiaohongshu'));
     const i=dedup(await sg('investments'));const st=dedup(await sg('stores'));const ins=dedup(await sg('inspirations'));
-    const sn=dedup(await sg('study_notes'));const ce=await sg('calendar_events');
+    const sn=dedup(await sg('study_notes'));
     let has=false;
     if(t.length){this.data.tasks=t;has=true}if(h.length){this.data.health=h;has=true}if(x.length){this.data.xhs=x;has=true}
     if(i.length){this.data.investments=i;has=true}if(st.length){this.data.stores=st;has=true}if(ins.length){this.data.inspirations=ins;has=true}
-    if(sn.length){this.data.study=sn;has=true}if(ce.length){this.data.calendar=ce;has=true}
-    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],calendar:[]};this.saveLocal()}
+    if(sn.length){this.data.study=sn;has=true}
+    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[]};this.saveLocal()}
     else if(this.data.tasks.length||this.data.study.length)await this.saveToCloud()
   },
   async saveToCloud(){
@@ -221,25 +233,29 @@ const subMenus={
   revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'},{id:'insp',label:'灵感库',icon:'灵'}],
   study:[{id:'japanese',label:'日语',icon:'日'},{id:'reading',label:'读书',icon:'读'}]
 };
+const moduleLabels={tasks:'待办',revenue:'赚钱',study:'学习'};
 
 let currentModule='home',currentSub='work',sidebarOpen=false,aiOpen=false;
-let taskTab='work',healthTab=false;
+let taskTab='work';
 
 function navigate(mod,sub){
   currentModule=mod;currentSub=sub||(subMenus[mod][0]||{}).id||'';taskTab=mod==='tasks'?(sub||'work'):taskTab;
-  document.title='鸭鸭的加油站 · '+modules.find(m=>m.id===mod).label;
   document.getElementById('page-title').textContent=modules.find(m=>m.id===mod).label;
   const subName=subMenus[mod].find(s=>s.id===currentSub);
   document.getElementById('breadcrumb').textContent=subName?subName.label:'';
-  document.getElementById('sub-nav').innerHTML=subMenus[mod].map(s=>`<button class="sub-item ${currentSub===s.id?'active':''}" onclick="navigate('${mod}','${s.id}')"><span class="sub-icon">${s.icon}</span>${s.label}</button>`).join('');
+  // Build full sub-nav for desktop
+  let subHTML='';
+  Object.entries(subMenus).forEach(([key,items])=>{
+    if(items.length===0)return;
+    if(subHTML)subHTML+='<div class="sub-sec-title">'+moduleLabels[key]+'</div>';
+    items.forEach(s=>subHTML+=`<button class="sub-item ${currentSub===s.id&&currentModule===key?'active':''}" onclick="navigate('${key}','${s.id}')"><span class="sub-icon">${s.icon}</span>${s.label}</button>`);
+  });
+  document.getElementById('sub-nav').innerHTML=subHTML;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelector('.nav-tab[data-mod="'+mod+'"]')?.classList.add('active');
   renderContent();
-  if(window.innerWidth<=768&&sidebarOpen)toggleSidebar()
 }
-
-function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen);document.getElementById('main').classList.toggle('sidebar-open',sidebarOpen)}
-
+function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen)}
 function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
 
 function buildUI(){
@@ -263,28 +279,20 @@ function renderHome(c){
   const todayStr=today();
   const todayHealth=health.filter(r=>r.date===todayStr);
   const todayInsp=insp.filter(i=>i.createdAt===todayStr);
-  const todayStudy=study.filter(s=>s.updatedAt===todayStr||s.createdAt===todayStr);
-
-  c.innerHTML=`
-    <div class="card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">
-      <div style="font-size:1.2rem;font-weight:700;margin-bottom:4px">${g}</div>
-      <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px">今天也要加油鸭</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <span class="badge badge-peach">待办 ${pending.length}</span>
-        <span class="badge badge-mint">健康 ${todayHealth.length}条</span>
-        <span class="badge badge-lavender">灵感 ${todayInsp.length}条</span>
-      </div>
-    </div>
-
-    <div class="card"><div class="card-title"><div class="card-title-left">今日进度</div></div>
-    ${pending.length===0?'<div style="color:var(--muted);text-align:center;padding:20px">今天没有未完成的任务</div>':
-    pending.slice(0,5).map(t=>`<div class="task-row"><div class="task-cb" onclick="toggleTask('${t.id}')"></div><div class="task-title">${t.title}</div><span class="badge badge-soft">${t.module||'工作'}</span></div>`).join('')}
-    </div>
-
-    <div class="card" style="background:var(--mint-bg)"><div class="card-title"><div class="card-title-left">健康今日</div></div>
-    ${todayHealth.length===0?'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>':
-    todayHealth.map(r=>`<div class="health-item"><span>${r.date}</span><span>${r.weight?r.weight+'kg':''}</span><span>${r.calories?r.calories+'kcal':''}</span><span>${r.training||''}</span><span>${r.dance?'舞':''}</span></div>`).join('')}
-    </div>`;
+  c.innerHTML=
+    '<div class="card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">'+
+    '<div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">'+g+'</div>'+
+    '<div style="font-size:.85rem;color:var(--muted);margin-bottom:10px">今天也要加油鸭</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+    '<span class="badge badge-peach">待办 '+pending.length+'</span>'+
+    '<span class="badge badge-mint">健康 '+todayHealth.length+'条</span>'+
+    '<span class="badge badge-lavender">灵感 '+todayInsp.length+'条</span></div></div>'+
+    '<div class="card"><div class="card-title"><div class="card-title-left">今日进度</div></div>'+
+    (pending.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">今天没有未完成的任务</div>':
+    pending.slice(0,8).map(t=>'<div class="task-row"><div class="task-cb" onclick="toggleTask(\''+t.id+'\')"></div><div class="task-title">'+t.title+'</div><span class="badge badge-soft">'+t.module+'</span></div>').join(''))+'</div>'+
+    '<div class="card" style="background:var(--mint-bg)"><div class="card-title"><div class="card-title-left">健康今日</div></div>'+
+    (todayHealth.length===0?'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>':
+    todayHealth.map(r=>'<div class="health-item"><span>'+r.date+'</span><span>'+(r.weight?r.weight+'kg':'')+'</span><span>'+(r.calories?r.calories+'kcal':'')+'</span><span>'+(r.training||'')+'</span><span>'+(r.dance?'舞':'')+'</span></div>').join(''))+'</div>';
 }
 
 function renderTasks(c){
@@ -292,26 +300,24 @@ function renderTasks(c){
   const filterModule=taskTab==='work'?'工作':'生活';
   const moduleTasks=tasks.filter(t=>t.module===filterModule);
   const healthTasks=taskTab==='life'?moduleTasks.filter(t=>t.healthTask):[];
-  const otherTasks=taskTab==='life'?moduleTasks.filter(t=>!t.healthTask):moduleTasks;
+  const otherTasks=(taskTab==='life'?moduleTasks.filter(t=>!t.healthTask):moduleTasks);
 
-  c.innerHTML=`
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button class="btn ${taskTab==='work'?'btn-primary':'btn-outline'} btn-sm" onclick="taskTab='work';renderTasks(document.getElementById('content'))">工作待办</button>
-      <button class="btn ${taskTab==='life'?'btn-primary':'btn-outline'} btn-sm" onclick="taskTab='life';renderTasks(document.getElementById('content'))">生活待办</button>
-    </div>
-    <div class="add-bar">
-      <input id="task-title" placeholder="添加${taskTab==='work'?'工作':'生活'}待办..." onkeypress="if(event.key==='Enter')addTask()">
-      <button class="btn btn-primary" onclick="addTask()">添加</button>
-    </div>
-    ${taskTab==='life'?`<div class="card card-title" style="background:var(--peach-bg);margin-bottom:8px;padding:10px 14px"><div class="card-title-left">健康固定任务 <button class="btn btn-primary btn-xs" onclick="addHealthTask()">+</button></div></div>
-    ${healthTasks.length?healthTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:10px;font-size:.8rem">暂无健康任务</div>'}`:''}
-    <div class="card"><div class="card-title"><div class="card-title-left">${taskTab==='work'?'工作':'其他生活'}待办</div><span class="badge badge-soft">${otherTasks.filter(t=>!t.completed).length}项</span></div>
-    ${otherTasks.length?otherTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">暂无事项</div>'}
-    </div>`;
+  let html='<div style="display:flex;gap:8px;margin-bottom:14px">'+
+    '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';renderTasks(document.getElementById(\'content\'))">工作待办</button>'+
+    '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';renderTasks(document.getElementById(\'content\'))">生活待办</button></div>'+
+    '<div class="add-bar"><input id="task-title" placeholder="添加'+(taskTab==='work'?'工作':'生活')+'待办..." onkeypress="if(event.key===\'Enter\')addTask()"><button class="btn btn-primary" onclick="addTask()">添加</button></div>';
+
+  if(taskTab==='life'){
+    html+='<div class="card" style="background:var(--peach-bg);margin-bottom:10px;padding:12px 16px"><div class="card-title" style="margin-bottom:4px"><div class="card-title-left">健康固定任务</div><button class="btn btn-primary btn-xs" onclick="addHealthTask()">+</button></div>'+
+    (healthTasks.length?healthTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:8px;font-size:.82rem">暂无健康任务</div>')+'</div>';
+  }
+  html+='<div class="card"><div class="card-title"><div class="card-title-left">'+(taskTab==='work'?'工作':'其他生活')+'待办</div><span class="badge badge-soft">'+otherTasks.filter(t=>!t.completed).length+'项</span></div>'+
+    (otherTasks.length?otherTasks.map(t=>taskHTML(t)).join(''):'<div style="color:var(--muted);text-align:center;padding:24px">暂无事项</div>')+'</div>';
+  c.innerHTML=html;
 }
 
 function taskHTML(t){
-  return `<div class="task-row"><div class="task-cb ${t.completed?'checked':''}" onclick="toggleTask('${t.id}')">${t.completed?'✓':''}</div><div class="task-title ${t.completed?'task-done':''}">${t.title}</div>${t.priority==='高'?'<span class="badge badge-peach">高</span>':''}<button class="btn-outline btn-xs" onclick="deleteTask('${t.id}')">删</button></div>`;
+  return '<div class="task-row"><div class="task-cb '+(t.completed?'checked':'')+'" onclick="toggleTask(\''+t.id+'\')">'+(t.completed?'✓':'')+'</div><div class="task-title '+(t.completed?'task-done':'')+'">'+t.title+'</div>'+(t.priority==='高'?'<span class="badge badge-peach">高</span>':'')+'<button class="btn-outline btn-xs" onclick="deleteTask(\''+t.id+'\')">删</button></div>';
 }
 
 function renderRevenue(c){
@@ -323,30 +329,29 @@ function renderRevenue(c){
 
 function renderInvest(c){
   const inv=Store.data.investments||[];
-  c.innerHTML=`<div class="add-bar"><input id="inv-name" placeholder="添加投资标的..."><select id="inv-type"><option>股票</option><option>基金</option><option>ETF</option></select><button class="btn btn-primary" onclick="addInvest()">添加</button></div>
-    <div class="card">${inv.map(i=>`<div class="invest-item"><span style="font-weight:600">${i.name}</span><span class="badge badge-soft">${i.type}</span>${i.symbol?`<span style="font-size:.75rem;color:var(--muted)">${i.symbol}</span>`:''}<div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteInvest('${i.id}')">删</button></div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无投资标的</div>'}</div>`;
+  c.innerHTML='<div class="add-bar"><input id="inv-name" placeholder="添加投资标的..."><select id="inv-type"><option>股票</option><option>基金</option><option>ETF</option></select><button class="btn btn-primary" onclick="addInvest()">添加</button></div>'+
+    '<div class="card">'+(inv.length?inv.map(i=>'<div class="invest-item"><span style="font-weight:600">'+i.name+'</span><span class="badge badge-soft">'+i.type+'</span>'+(i.symbol?'<span style="font-size:.8rem;color:var(--muted)">'+i.symbol+'</span>':'')+'<div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteInvest(\''+i.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无投资标的</div>')+'</div>';
 }
 
 function renderXHS(c){
   const items=Store.data.xhs||[];
   const stages=['选题','拍摄','剪辑','已发布'];
-  c.innerHTML=`<button class="btn btn-primary btn-sm" style="margin-bottom:10px" onclick="openXHSModal()">+ 添加内容</button>
-    <div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
-    ${stages.map(s=>`<div><div style="font-size:.75rem;font-weight:700;color:var(--muted);margin-bottom:6px">${s} ${items.filter(x=>x.stage===s).length}</div>
-    ${items.filter(x=>x.stage===s).map(x=>`<div style="padding:6px 8px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.8rem">${x.title}${x.product?`<div style="font-size:.7rem;color:var(--muted)">${x.product}</div>`:''}</div>`).join('')||'<div style="color:var(--muted);font-size:.75rem;padding:4px">-</div>'}</div>`).join('')}
-    </div></div>`;
+  c.innerHTML='<button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openXHSModal()">+ 添加内容</button>'+
+    '<div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">'+
+    stages.map(s=>'<div><div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px">'+s+' '+items.filter(x=>x.stage===s).length+'</div>'+
+    (items.filter(x=>x.stage===s).length?items.filter(x=>x.stage===s).map(x=>'<div style="padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.82rem">'+x.title+(x.product?'<div style="font-size:.72rem;color:var(--muted)">'+x.product+'</div>':'')+'</div>').join(''):'<div style="color:var(--muted);font-size:.78rem;padding:6px">-</div>')+'</div>').join('')+'</div></div>';
 }
 
 function renderStore(c){
   const st=Store.data.stores||[];
-  c.innerHTML=`<div class="add-bar"><input id="store-name" placeholder="网店/商品名称..."><button class="btn btn-primary" onclick="addStore()">添加</button></div>
-    <div class="card">${st.map(s=>`<div class="store-item"><span style="font-weight:600">${s.name}</span><span class="badge badge-soft">${s.platform||''}</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteStore('${s.id}')">删</button></div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无网店</div>'}</div>`;
+  c.innerHTML='<div class="add-bar"><input id="store-name" placeholder="网店/商品名称..."><button class="btn btn-primary" onclick="addStore()">添加</button></div>'+
+    '<div class="card">'+(st.length?st.map(s=>'<div class="store-item"><span style="font-weight:600">'+s.name+'</span><span class="badge badge-soft">'+(s.platform||'')+'</span><div style="margin-left:auto;display:flex;gap:4px"><button class="btn-outline btn-xs" onclick="deleteStore(\''+s.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无网店</div>')+'</div>';
 }
 
 function renderInsp(c){
   const insp=Store.data.inspirations||[];
-  c.innerHTML=`<div class="add-bar"><input id="insp-title" placeholder="灵感一闪..." onkeypress="if(event.key==='Enter')addInsp()"><button class="btn btn-primary" onclick="addInsp()">保存</button></div>
-    <div class="card">${insp.map(i=>`<div class="task-row"><div class="task-title">${i.title}</div><span class="badge ${i.status==='未整理'?'badge-peach':i.status==='已记录'?'badge-mint':'badge-lavender'}">${i.status}</span><button class="btn-outline btn-xs" onclick="updateInspStatus('${i.id}')">→${i.status==='未整理'?'已记':'已执行'}</button></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无灵感</div>'}</div>`;
+  c.innerHTML='<div class="add-bar"><input id="insp-title" placeholder="灵感一闪..." onkeypress="if(event.key===\'Enter\')addInsp()"><button class="btn btn-primary" onclick="addInsp()">保存</button></div>'+
+    '<div class="card">'+(insp.length?insp.map(i=>'<div class="task-row"><div class="task-title">'+i.title+'</div><span class="badge '+(i.status==='未整理'?'badge-peach':i.status==='已记录'?'badge-mint':'badge-lavender')+'">'+i.status+'</span>'+(i.status!=='已执行'?'<button class="btn-outline btn-xs" onclick="updateInspStatus(\''+i.id+'\')">→'+(i.status==='未整理'?'已记':'已执行')+'</button>':'')+'<button class="btn-outline btn-xs" onclick="deleteInsp(\''+i.id+'\')">删</button></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无灵感</div>')+'</div>';
 }
 
 function renderStudy(c){
@@ -355,15 +360,15 @@ function renderStudy(c){
 }
 
 function renderJapanese(c){
-  const notes=Store.data.study.filter(s=>s.subject==='日语')||[];
-  c.innerHTML=`<div class="add-bar"><input id="study-title" placeholder="日语笔记标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy('日语')">添加</button></div>
-    <div class="card">${notes.map(n=>`<div class="note-item" onclick="openStudyModal('${n.id}')"><span style="font-weight:500">${n.title}</span><span class="badge badge-soft">${n.category||''}</span><div style="margin-left:auto;font-size:.7rem;color:var(--muted)">${n.updatedAt||n.createdAt||''}</div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无日语笔记</div>'}</div>`;
+  const notes=(Store.data.study||[]).filter(s=>s.subject==='日语');
+  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="日语笔记标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy(\'日语\')">添加</button></div>'+
+    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.updatedAt||n.createdAt||'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无日语笔记</div>')+'</div>';
 }
 
 function renderReading(c){
-  const notes=Store.data.study.filter(s=>s.subject==='读书')||[];
-  c.innerHTML=`<div class="add-bar"><input id="study-title" placeholder="书名/笔记标题..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy('读书')">添加</button></div>
-    <div class="card">${notes.map(n=>`<div class="note-item" onclick="openStudyModal('${n.id}')"><span style="font-weight:500">${n.title}</span><span class="badge badge-soft">${n.category||''}</span><div style="margin-left:auto;font-size:.7rem;color:var(--muted)">${n.progress?n.progress+'%':''}</div></div>`).join('')||'<div style="text-align:center;padding:20px;color:var(--muted)">暂无读书笔记</div>'}</div>`;
+  const notes=(Store.data.study||[]).filter(s=>s.subject==='读书');
+  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="书名/笔记标题..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy(\'读书\')">添加</button></div>'+
+    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.progress?n.progress+'%':'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无读书笔记</div>')+'</div>';
 }
 
 // ============ Actions ============
@@ -382,10 +387,9 @@ function addHealthTask(){
 function toggleTask(id){
   const t=Store.data.tasks.find(x=>x.id===id);if(!t)return;
   t.completed=!t.completed;t.completedAt=t.completed?today():'';
-  Store.save();renderContent();
+  Store.save();renderContent()
 }
 function deleteTask(id){Store.data.tasks=Store.data.tasks.filter(x=>x.id!==id);Store.save();renderContent()}
-
 function addInvest(){
   const name=document.getElementById('inv-name')?.value.trim();if(!name)return;
   const type=document.getElementById('inv-type')?.value||'股票';
@@ -393,21 +397,19 @@ function addInvest(){
   document.getElementById('inv-name').value='';Store.save();renderContent()
 }
 function deleteInvest(id){Store.data.investments=Store.data.investments.filter(x=>x.id!==id);Store.save();renderContent()}
-
 function addStore(){
   const name=document.getElementById('store-name')?.value.trim();if(!name)return;
   Store.data.stores.push({id:genId(),name,platform:'',product:'',status:'',notes:'',url:'',createdAt:today()});
   document.getElementById('store-name').value='';Store.save();renderContent()
 }
 function deleteStore(id){Store.data.stores=Store.data.stores.filter(x=>x.id!==id);Store.save();renderContent()}
-
 function addInsp(){
   const title=document.getElementById('insp-title')?.value.trim();if(!title)return;
   Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',tags:[],createdAt:today()});
   document.getElementById('insp-title').value='';Store.save();renderContent()
 }
 function updateInspStatus(id){const i=Store.data.inspirations.find(x=>x.id===id);if(!i)return;i.status=i.status==='未整理'?'已记录':'已执行';Store.save();renderContent()}
-
+function deleteInsp(id){Store.data.inspirations=Store.data.inspirations.filter(x=>x.id!==id);Store.save();renderContent()}
 function addStudy(subject){
   const title=document.getElementById('study-title')?.value.trim();if(!title)return;
   const cat=document.getElementById('study-cat')?.value||'词汇';
@@ -417,12 +419,12 @@ function addStudy(subject){
 
 function openXHSModal(data){
   currentModal='xhs';editId=(data||{}).id||null;
-  document.getElementById('modal-body').innerHTML=`<h3>${data?'编辑':'添加'}内容</h3>
-    <div class="modal-field"><label>标题</label><input id="me-xhs-title" value="${data?.title||''}"></div>
-    <div class="modal-field"><label>阶段</label><select id="me-xhs-stage">${['选题','拍摄','剪辑','已发布'].map(s=>`<option ${data?.stage===s?'selected':''}>${s}</option>`).join('')}</select></div>
-    <div class="modal-field"><label>产品</label><input id="me-xhs-product" value="${data?.product||''}"></div>
-    <div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">${data?.notes||''}</textarea></div>
-    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>`;
+  document.getElementById('modal-body').innerHTML='<h3>'+(data?'编辑':'添加')+'内容</h3>'+
+    '<div class="modal-field"><label>标题</label><input id="me-xhs-title" value="'+(data?.title||'')+'"></div>'+
+    '<div class="modal-field"><label>阶段</label><select id="me-xhs-stage">'+['选题','拍摄','剪辑','已发布'].map(s=>'<option '+(data?.stage===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div class="modal-field"><label>产品</label><input id="me-xhs-product" value="'+(data?.product||'')+'"></div>'+
+    '<div class="modal-field"><label>备注</label><textarea id="me-xhs-notes">'+(data?.notes||'')+'</textarea></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>';
   document.getElementById('modal-overlay').classList.add('show')
 }
 function saveXHS(){
@@ -432,11 +434,11 @@ function saveXHS(){
 }
 function openStudyModal(id){
   editId=id;currentModal='study';const d=Store.data.study.find(x=>x.id===id);if(!d)return;
-  document.getElementById('modal-body').innerHTML=`<h3>编辑笔记</h3>
-    <div class="modal-field"><label>标题</label><input id="me-sn-title" value="${d.title||''}"></div>
-    <div class="modal-field"><label>分类</label><select id="me-sn-cat"><option ${d.category==='词汇'?'selected':''}>词汇</option><option ${d.category==='语法'?'selected':''}>语法</option><option ${d.category==='日练'?'selected':''}>日练</option><option ${d.category==='书单'?'selected':''}>书单</option><option ${d.category==='笔记'?'selected':''}>笔记</option></select></div>
-    <div class="modal-field"><label>正文</label><textarea id="me-sn-content" style="min-height:120px">${d.content||''}</textarea></div>
-    <div class="modal-actions"><button class="btn btn-outline btn-sm" onclick="deleteStudy('${id}');closeModal()">删除</button><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button></div>`;
+  document.getElementById('modal-body').innerHTML='<h3>编辑笔记</h3>'+
+    '<div class="modal-field"><label>标题</label><input id="me-sn-title" value="'+(d.title||'')+'"></div>'+
+    '<div class="modal-field"><label>分类</label><select id="me-sn-cat"><option '+(d.category==='词汇'?'selected':'')+'>词汇</option><option '+(d.category==='语法'?'selected':'')+'>语法</option><option '+(d.category==='日练'?'selected':'')+'>日练</option><option '+(d.category==='书单'?'selected':'')+'>书单</option><option '+(d.category==='笔记'?'selected':'')+'>笔记</option></select></div>'+
+    '<div class="modal-field"><label>正文</label><textarea id="me-sn-content" style="min-height:140px">'+(d.content||'')+'</textarea></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline btn-sm" onclick="deleteStudy(\''+id+'\');closeModal()">删除</button><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveStudy()">保存</button></div>';
   document.getElementById('modal-overlay').classList.add('show')
 }
 function saveStudy(){
@@ -460,11 +462,11 @@ function runAI(){
     if(q.includes('健康')||q.includes('体重')){navigate('tasks','life');resp='已打开生活待办，可以添加健康任务'}
     else if(q.includes('投资')||q.includes('股票')){navigate('revenue','invest');resp='已打开投资管理'}
     else if(q.includes('笔记')||q.includes('学习')||q.includes('读书')||q.includes('日语')){navigate('study',q.includes('日语')?'japanese':'reading');resp='已打开学习空间'}
-    else{navigate('tasks','work');addTask();resp='已添加待办'}
+    else{addTask();resp='已添加待办'}
   }else if(q.includes('看看')||q.includes('进度')||q.includes('今天')){navigate('home');resp='已切换到总览'}
   else if(q.includes('待办')){navigate('tasks');resp='已打开待办'}
   else if(q.includes('赚钱')||q.includes('投资')||q.includes('运营')){navigate('revenue');resp='已打开赚钱模块'}
-  else{resp='这个需要我的大模型朋友帮忙，记得给我配个API Key哦~ 格式：在设置里填入你的Key'}
+  else{resp='这个需要我的大模型朋友帮忙，记得给我配个API Key哦~ 在设置里填入你的Key'}
   body.innerHTML='<div style="padding:8px;background:var(--peach-bg);border-radius:8px;margin-bottom:6px">'+resp+'</div>'+body.innerHTML;
 }
 
