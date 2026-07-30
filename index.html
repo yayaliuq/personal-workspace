@@ -129,10 +129,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
   .modal{max-width:100%;border-radius:18px 18px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0))}
   .modal-overlay{align-items:flex-end}
   /* 英雄卡移动端优化 */
-  .hero-card{padding:20px 16px}
-  .hero-card>div{flex-direction:column;gap:4px;justify-content:center;text-align:center}
-  .hero-card .hero-stats{width:100%;justify-content:space-around;padding-top:10px;border-top:1px solid rgba(244,167,139,.2);margin-top:4px}
-  .hero-card .hero-stats>div{flex:1}
+  .hero-card>div{flex-direction:column;align-items:flex-start;gap:8px}
+  .hero-card>div>div:last-child{text-align:left}
   #toast{bottom:140px}
 }
 </style>
@@ -350,13 +348,15 @@ async function renderHome(c){
   c.innerHTML=
     // Hero card
     '<div class="card hero-card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">'+
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
-    '<div style="flex:1"><div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">'+g+'</div>'+
-    '<div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">'+dateStr+' · '+weather+' · '+todayWeight+'kg</div></div></div>'+
-    '<div class="hero-stats" style="display:flex;gap:10px;margin-top:8px">'+
-    '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--peach)">'+doneCount+'/'+total+'</div><div style="font-size:.7rem;color:var(--muted)">任务完成</div></div>'+
-    '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--mint)">'+todayHealth.length+'</div><div style="font-size:.7rem;color:var(--muted)">今日记录</div></div>'+
-    '<div style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:var(--lavender)">'+pending.length+'</div><div style="font-size:.7rem;color:var(--muted)">待办</div></div></div></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:center">'+
+    '<div>'+
+    '<div style="font-size:1.3rem;font-weight:700;margin-bottom:6px">'+g+'</div>'+
+    '<div style="display:flex;gap:14px;font-size:.82rem">'+
+    '<span><span style="color:var(--peach);font-weight:700">'+doneCount+'/'+total+'</span> 任务完成</span>'+
+    '<span><span style="color:var(--mint);font-weight:700">'+todayWeight+'kg</span></span></div></div>'+
+    '<div style="text-align:right">'+
+    '<div style="font-weight:600;color:var(--text)">'+dateStr+'</div>'+
+    '<div style="font-size:.82rem;color:var(--muted)">'+weather+'</div></div></div></div>'+
 
     // Health checkin
     '<div class="card"><div class="card-title"><div class="card-title-left">健康打卡</div></div>'+
