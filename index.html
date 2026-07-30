@@ -273,25 +273,30 @@ function renderContent(){
 
 function renderHome(c){
   const h=new Date().getHours();let g='早上好呀';if(h>=12&&h<18)g='下午好';else if(h>=18)g='晚上好';
-  const tasks=Store.data.tasks||[],health=Store.data.health||[],insp=Store.data.inspirations||[],study=Store.data.study||[];
+  const tasks=Store.data.tasks||[],health=Store.data.health||[],insp=Store.data.inspirations||[];
   const pending=tasks.filter(t=>!t.completed);
+  const healthTasks=tasks.filter(t=>t.healthTask);
   const todayStr=today();
   const todayHealth=health.filter(r=>r.date===todayStr);
   const todayInsp=insp.filter(i=>i.createdAt===todayStr);
+
+  // 健康今日: 健康任务 + 身体数据
+  const healthHTML=healthTasks.map(t=>'<div class="task-row" style="background:'+(t.completed?'var(--mint-bg)':'var(--peach-bg)')+'"><div class="task-cb '+(t.completed?'checked':'')+'" onclick="toggleTask(\''+t.id+'\')">'+(t.completed?'✓':'')+'</div><div class="task-title '+(t.completed?'task-done':'')+'">'+t.title+'</div></div>').join('')
+    +todayHealth.map(r=>'<div class="health-item"><span>'+r.date+'</span><span>'+(r.weight?r.weight+'kg':'')+'</span><span>'+(r.calories?r.calories+'kcal':'')+'</span><span>'+(r.training||'')+'</span><span>'+(r.dance?'舞':'')+'</span></div>').join('');
+
   c.innerHTML=
     '<div class="card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">'+
     '<div style="font-size:1.3rem;font-weight:700;margin-bottom:4px">'+g+'</div>'+
     '<div style="font-size:.85rem;color:var(--muted);margin-bottom:10px">今天也要加油鸭</div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
     '<span class="badge badge-peach">待办 '+pending.length+'</span>'+
-    '<span class="badge badge-mint">健康 '+todayHealth.length+'条</span>'+
+    '<span class="badge badge-mint">健康 '+(healthTasks.length+todayHealth.length)+'条</span>'+
     '<span class="badge badge-lavender">灵感 '+todayInsp.length+'条</span></div></div>'+
     '<div class="card"><div class="card-title"><div class="card-title-left">今日进度</div></div>'+
     (pending.length===0?'<div style="color:var(--muted);text-align:center;padding:24px">今天没有未完成的任务</div>':
     pending.slice(0,8).map(t=>'<div class="task-row"><div class="task-cb" onclick="toggleTask(\''+t.id+'\')"></div><div class="task-title">'+t.title+'</div><span class="badge badge-soft">'+t.module+'</span></div>').join(''))+'</div>'+
     '<div class="card" style="background:var(--mint-bg)"><div class="card-title"><div class="card-title-left">健康今日</div></div>'+
-    (todayHealth.length===0?'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>':
-    todayHealth.map(r=>'<div class="health-item"><span>'+r.date+'</span><span>'+(r.weight?r.weight+'kg':'')+'</span><span>'+(r.calories?r.calories+'kcal':'')+'</span><span>'+(r.training||'')+'</span><span>'+(r.dance?'舞':'')+'</span></div>').join(''))+'</div>';
+    (healthHTML||'<div style="color:var(--muted);text-align:center;padding:16px">今天还没记录</div>')+'</div>';
 }
 
 function renderTasks(c){
