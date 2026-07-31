@@ -628,7 +628,13 @@ async function doLogin(){
     password:localStorage.getItem('ws_pass')||'Admin123'
   };
   document.getElementById('login-overlay').style.display='none';
-  Store.loadLocal();await Store.initCloud();buildUI();
+  Store.loadLocal();
+  try{await Store.initCloud()}catch(ex){
+    document.getElementById('login-overlay').style.display='flex';
+    document.getElementById('login-err').textContent='SDK未加载，请刷新';
+    return;
+  }
+  buildUI();
 })();
 </script>
 </body>
