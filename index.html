@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F4A78B">
 <title>鸭鸭的加油站</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<script async src="https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js"></script>
+<link rel="dns-prefetch" href="https://static.cloudbase.net">
 <style>
 :root{--bg:#FBF6EE;--card:#fff;--text:#5C4D3A;--muted:#97876E;--border:#F0E5D2;--peach:#F4A78B;--peach-bg:#FCE8DC;--mint:#88C9A1;--mint-bg:#DDF1E5;--lavender:#B8A0D9;--lavender-bg:#EBE3F4;--sky:#88B8DD;--sky-bg:#D9E6F2;--radius:16px;--radius-sm:12px;--font:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -191,6 +191,17 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 </div>
 
 <script>
+let _sdkLoaded=false,_sdkLoading=false;
+function loadSDK(){return new Promise((resolve)=>{
+  if(typeof cloudbase!=='undefined'){_sdkLoaded=true;resolve();return}
+  if(_sdkLoading){var t=setInterval(()=>{if(_sdkLoaded){clearInterval(t);resolve()}},100);return}
+  _sdkLoading=true;
+  var s=document.createElement('script');
+  s.src='https://static.cloudbase.net/cloudbase-js-sdk/2.32.0/cloudbase.full.js';
+  s.onload=()=>{_sdkLoaded=true;resolve()};
+  s.onerror=()=>{_sdkLoading=false;resolve()};
+  document.head.appendChild(s);
+})}
 const genId=()=>'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const today=()=>new Date().toISOString().slice(0,10);
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
@@ -201,7 +212,8 @@ const Store={
   data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]},
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
-    if(typeof cloudbase==='undefined')throw new Error('SDK');
+    await loadSDK();
+    if(typeof cloudbase==='undefined')throw new Error('SDK未加载');
     const app=cloudbase.init({env:this.envId});
     const{error}=await app.auth.signInWithPassword({username:this.credentials.username,password:this.credentials.password});
     if(error)throw new Error(error.message);
@@ -682,12 +694,9 @@ function runAI(){
 async function doLogin(){
   const u=document.getElementById('login-user').value.trim(),p=document.getElementById('login-pass').value,e=document.getElementById('login-err');
   if(!u||!p){e.textContent='请输入用户名和密码';return}
-  e.textContent='验证中...';
-  if(typeof cloudbase==='undefined'){
-    let waited=0;
-    while(typeof cloudbase==='undefined'&&waited<20){await new Promise(r=>setTimeout(r,500));waited++}
-    if(typeof cloudbase==='undefined'){e.textContent='SDK未加载，请刷新重试';return}
-  }
+  e.textContent='加载中...';
+  await loadSDK();
+  if(typeof cloudbase==='undefined'){e.textContent='SDK加载失败，请刷新';return}
   try{
     Store.credentials={username:u,password:p};
     await Store.initCloud();
@@ -710,7 +719,11 @@ async function doLogin(){
   };
   document.getElementById('login-overlay').style.display='none';
   Store.loadLocal();
-  try{await Store.initCloud()}catch(e){console.warn('Cloud init failed:',e.message)}
+  try{await Store.initCloud()}catch(ex){
+    document.getElementById('login-overlay').style.display='flex';
+    document.getElementById('login-err').textContent='连接失败: '+(ex.message||'请刷新重试');
+    return;
+  }
   buildUI();
 })();
 </script>
