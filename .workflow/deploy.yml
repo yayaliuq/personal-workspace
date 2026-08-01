@@ -1,0 +1,28 @@
+name: 部署到腾讯云CloudBase
+displayName: 部署到腾讯云
+on:
+  push:
+    branches:
+      - main
+stages:
+  - name: deploy
+    displayName: 部署
+    tasks:
+      - task: shell@1
+        displayName: 安装CloudBase CLI并部署
+        inputs:
+          commands:
+            - |
+              # 安装 CloudBase CLI
+              npm install -g @cloudbase/cli
+
+              # 登录腾讯云CloudBase
+              tcb login --secretId ${TENCENT_SECRET_ID} --secretKey ${TENCENT_SECRET_KEY}
+
+              # 部署所有文件到静态托管
+              tcb hosting deploy ./ --envId yayaliu-d4g1i1dc2fdb04417 -e
+
+              # 刷新CDN缓存
+              tcb hosting:refresh --envId yayaliu-d4g1i1dc2fdb04417
+
+              echo "部署完成！"
