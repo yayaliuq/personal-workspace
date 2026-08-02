@@ -38,7 +38,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .breadcrumb{font-size:.8rem;color:var(--muted)}
 .menu-toggle{display:none}
 
-/* 手机端侧边栏遮罩层 */
 .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(60,40,20,.4);z-index:99;opacity:0;transition:opacity .25s}
 .sidebar-backdrop.show{display:block;opacity:1}
 
@@ -46,7 +45,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .card-title{font-size:.88rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
 .card-title-left{display:flex;align-items:center;gap:6px}
 
-/* SVG 水杯（桌面端） */
 .water-cup{width:18px;height:22px;display:inline-block;vertical-align:middle}
 
 .btn{padding:9px 18px;border-radius:22px;font-size:.82rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
@@ -56,6 +54,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:600}
 .badge-peach{background:var(--peach-bg);color:#A8604A}.badge-mint{background:var(--mint-bg);color:#3E8E66}
 .badge-lavender{background:var(--lavender-bg);color:#6B4F8C}.badge-soft{background:var(--bg);color:var(--muted)}
+.badge-sky{background:var(--sky-bg);color:#3A6B9E}
 
 .task-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:.88rem}
 .task-row:last-child{border-bottom:none}
@@ -64,7 +63,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .task-title{flex:1;font-weight:500}.task-done{opacity:.5;text-decoration:line-through}
 .add-bar{display:flex;gap:8px;margin-bottom:12px}.add-bar input{flex:1}
 
-/* Checkin */
 .checkin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .checkin-item{padding:14px 10px;text-align:center;border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;border:2px solid transparent;transition:all .15s}
 .checkin-item:hover{border-color:var(--peach)}
@@ -73,16 +71,45 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .checkin-item .ci-name{font-size:.78rem;font-weight:600}
 .checkin-item .ci-status{font-size:.65rem;color:var(--muted);margin-top:2px}
 
-/* Calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
 .cal-day-header{font-size:.65rem;color:var(--muted);padding:4px}
-.cal-day{padding:8px 4px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .15s}
+.cal-day{padding:8px 4px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:all .15s;position:relative}
 .cal-day:hover{background:var(--peach-bg)}
 .cal-day.today{background:var(--peach);color:#fff;font-weight:700}
 .cal-day.selected{background:var(--sky-bg);font-weight:600}
 .cal-day.has-done{border-bottom:2px solid var(--mint)}
+.cal-day.has-sched{background:var(--lavender-bg);font-weight:600}
+.cal-day .sched-count{font-size:.55rem;color:var(--lavender);position:absolute;bottom:1px;right:2px;font-weight:700}
+.cal-day.today .sched-count{color:#fff}
 .cal-day.other{color:#ccc}
+
+/* Flashcard */
+.flashcard-container{perspective:1000px;width:100%;max-width:360px;height:240px;margin:0 auto}
+.flashcard{width:100%;height:100%;cursor:pointer;position:relative}
+.flashcard-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.flashcard-front,.flashcard-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.flashcard-front{background:linear-gradient(135deg,var(--sky-bg),var(--lavender-bg))}
+.flashcard-back{background:linear-gradient(135deg,var(--mint-bg),var(--peach-bg));transform:rotateY(180deg)}
+.flashcard-front .fc-word{font-size:1.8rem;font-weight:700;margin-bottom:8px}
+.flashcard-front .fc-scene{font-size:.75rem;color:var(--muted)}
+.flashcard-back .fc-meaning{font-size:1.2rem;font-weight:600;margin-bottom:6px;color:var(--text)}
+.flashcard-back .fc-kana{font-size:1rem;color:var(--lavender);font-weight:600}
+.flashcard-nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.flashcard-progress{font-size:.8rem;color:var(--muted);text-align:center;margin-bottom:10px}
+
+/* Timeline */
+.timeline{padding:8px 0}
+.timeline-item{display:flex;gap:12px;padding:6px 0;position:relative}
+.timeline-item:before{content:'';position:absolute;left:7px;top:20px;bottom:-6px;width:2px;background:var(--border)}
+.timeline-item:last-child:before{display:none}
+.timeline-dot{width:16px;height:16px;border-radius:50%;border:3px solid var(--border);background:var(--card);flex-shrink:0;margin-top:2px;z-index:1}
+.timeline-dot.done{border-color:var(--mint);background:var(--mint)}
+.timeline-dot.current{border-color:var(--peach);background:var(--peach)}
+.timeline-content{flex:1;font-size:.82rem}
+.timeline-label{font-weight:600;margin-bottom:2px}
+.timeline-date{font-size:.7rem;color:var(--muted)}
 
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--card);border-top:1px solid var(--border);justify-content:space-around;padding:8px 0 env(safe-area-inset-bottom,8px)}
 .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:.7rem;color:var(--muted);min-height:52px;justify-content:center;font-weight:500}
@@ -91,7 +118,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 .nav-tab.has-sub{position:relative}
 .nav-tab .nav-arrow{font-size:.5rem;opacity:.6;margin-top:-2px}
 
-/* 子菜单弹出面板（手机端） */
 .sub-sheet-overlay{display:none;position:fixed;inset:0;z-index:88;background:rgba(60,40,20,.3)}
 .sub-sheet-overlay.show{display:block}
 .sub-sheet{position:fixed;bottom:0;left:0;right:0;z-index:89;background:var(--card);border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0));box-shadow:0 -4px 20px rgba(0,0,0,.1);display:none;flex-direction:column;gap:6px;transform:translateY(100%);transition:transform .25s}
@@ -134,17 +160,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
 
 @media(max-width:768px){
   html{font-size:17px}
-  /* 手机端：侧边栏默认隐藏，点击汉堡按钮滑出 */
   #sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:200;box-shadow:2px 0 12px rgba(0,0,0,.1)}
   #sidebar.open{transform:translateX(0);display:flex!important}
-  /* 侧边栏关闭按钮 */
   .side-close{display:flex}
-  /* 汉堡菜单按钮 */
   .menu-toggle{display:flex;width:36px;height:36px;border-radius:10px;background:var(--peach-bg);color:var(--peach);align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
   .menu-toggle:active{background:var(--peach);color:#fff}
-  /* 主内容区占满全宽 */
   #main{margin-left:0!important;padding:12px 14px 100px;width:100%}
-  /* 内容卡片单列布局 */
   #content{flex-direction:column}
   #content>.card{flex:1 1 100%;max-width:100%}
   #topbar{padding:0 0 12px;gap:10px}#topbar h1{font-size:1.2rem}
@@ -157,12 +178,11 @@ input:focus,textarea:focus,select:focus{border-color:var(--peach)}
   .checkin-grid{grid-template-columns:repeat(2,1fr)}
   .modal{max-width:100%;border-radius:18px 18px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0))}
   .modal-overlay{align-items:flex-end}
-  /* 英雄卡移动端优化 */
   .hero-card>div{flex-direction:row;align-items:center;justify-content:space-between;gap:8px}
   .hero-card>div>div:last-child{text-align:right}
   #toast{bottom:140px}
-  /* 手机端喝水SVG水杯放大到24px宽 */
   .water-cup{width:24px;height:30px}
+  .flashcard-container{height:200px}
 }
 </style>
 </head>
@@ -229,12 +249,121 @@ function loadSDK(){return new Promise((resolve)=>{
 })}
 const genId=()=>'ms'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const today=()=>new Date().toISOString().slice(0,10);
+const addDays=(n)=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
 function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2000)}
+
+// ====== Japanese Word Bank ======
+const japaneseWordBank={
+  words:[
+    {word:'こんにちは',kana:'konnichiwa',meaning:'你好',scene:'问候'},
+    {word:'ありがとう',kana:'arigatou',meaning:'谢谢',scene:'问候'},
+    {word:'すみません',kana:'sumimasen',meaning:'对不起/不好意思',scene:'问候'},
+    {word:'おはよう',kana:'ohayou',meaning:'早上好',scene:'问候'},
+    {word:'こんばんは',kana:'konbanwa',meaning:'晚上好',scene:'问候'},
+    {word:'さようなら',kana:'sayounara',meaning:'再见',scene:'问候'},
+    {word:'はい',kana:'hai',meaning:'是/好的',scene:'问候'},
+    {word:'いいえ',kana:'iie',meaning:'不/不是',scene:'问候'},
+    {word:'お願いします',kana:'onegaishimasu',meaning:'拜托了',scene:'问候'},
+    {word:'いただきます',kana:'itadakimasu',meaning:'我开动了',scene:'餐饮'},
+    {word:'ごちそうさま',kana:'gochisousama',meaning:'我吃好了',scene:'餐饮'},
+    {word:'メニュー',kana:' menyuu',meaning:'菜单',scene:'餐饮'},
+    {word:'水',kana:'mizu',meaning:'水',scene:'餐饮'},
+    {word:'お茶',kana:'ocha',meaning:'茶',scene:'餐饮'},
+    {word:'ご飯',kana:'gohan',meaning:'米饭',scene:'餐饮'},
+    {word:'肉',kana:'niku',meaning:'肉',scene:'餐饮'},
+    {word:'魚',kana:'sakana',meaning:'鱼',scene:'餐饮'},
+    {word:'野菜',kana:'yasai',meaning:'蔬菜',scene:'餐饮'},
+    {word:'美味しい',kana:'oishii',meaning:'好吃的',scene:'餐饮'},
+    {word:'いくらですか',kana:'ikuradesuka',meaning:'多少钱',scene:'购物'},
+    {word:'これ',kana:'kore',meaning:'这个',scene:'购物'},
+    {word:'それ',kana:'sore',meaning:'那个',scene:'购物'},
+    {word:'あれ',kana:'are',meaning:'那个（远处）',scene:'购物'},
+    {word:'買い物',kana:'kaimono',meaning:'购物',scene:'购物'},
+    {word:'店',kana:'mise',meaning:'店',scene:'购物'},
+    {word:'高い',kana:'takai',meaning:'贵的',scene:'购物'},
+    {word:'安い',kana:'yasui',meaning:'便宜的',scene:'购物'},
+    {word:'袋',kana:'fukuro',meaning:'袋子',scene:'购物'},
+    {word:'レシート',kana:'reshiito',meaning:'收据',scene:'购物'},
+    {word:'電車',kana:'densha',meaning:'电车',scene:'交通'},
+    {word:'駅',kana:'eki',meaning:'车站',scene:'交通'},
+    {word:'バス',kana:'basu',meaning:'公交车',scene:'交通'},
+    {word:'タクシー',kana:'takushii',meaning:'出租车',scene:'交通'},
+    {word:'切符',kana:'kippu',meaning:'票',scene:'交通'},
+    {word:'右',kana:'migi',meaning:'右',scene:'交通'},
+    {word:'左',kana:'hidari',meaning:'左',scene:'交通'},
+    {word:'直ぐ',kana:'sugu',meaning:'马上/直走',scene:'交通'},
+    {word:'仕事',kana:'shigoto',meaning:'工作',scene:'工作'},
+    {word:'会社',kana:'kaisha',meaning:'公司',scene:'工作'},
+    {word:'会議',kana:'kaigi',meaning:'会议',scene:'工作'},
+    {word:'休憩',kana:'kyuukei',meaning:'休息',scene:'工作'},
+    {word:'残業',kana:'zangyou',meaning:'加班',scene:'工作'},
+    {word:'上司',kana:'joushi',meaning:'上司',scene:'工作'},
+    {word:'同僚',kana:'douryou',meaning:'同事',scene:'工作'},
+    {word:'家族',kana:'kazoku',meaning:'家人',scene:'家庭'},
+    {word:'父',kana:'chichi',meaning:'父亲',scene:'家庭'},
+    {word:'母',kana:'haha',meaning:'母亲',scene:'家庭'},
+    {word:'兄',kana:'ani',meaning:'哥哥',scene:'家庭'},
+    {word:'姉',kana:'ane',meaning:'姐姐',scene:'家庭'},
+    {word:'弟',kana:'otouto',meaning:'弟弟',scene:'家庭'},
+    {word:'妹',kana:'imouto',meaning:'妹妹',scene:'家庭'},
+    {word:'子供',kana:'kodomo',meaning:'孩子',scene:'家庭'}
+  ],
+  sentences:[
+    {word:'今日はいい天気ですね',kana:'kyou wa ii tenki desu ne',meaning:'今天天气真好啊',scene:'问候'},
+    {word:'お元気ですか',kana:'ogenki desu ka',meaning:'您还好吗',scene:'问候'},
+    {word:'初めまして、よろしくお願いします',kana:'hajimemashite, yoroshiku onegaishimasu',meaning:'初次见面，请多关照',scene:'问候'},
+    {word:'このお店は美味しいです',kana:'kono omise wa oishii desu',meaning:'这家店很好吃',scene:'餐饮'},
+    {word:'お会計をお願いします',kana:'okaikei wo onegaishimasu',meaning:'请结账',scene:'餐饮'},
+    {word:'これをください',kana:'kore wo kudasai',meaning:'请给我这个',scene:'购物'},
+    {word:'もっと安いのはありますか',kana:'motto yasui no wa arimasu ka',meaning:'有更便宜的吗',scene:'购物'},
+    {word:'駅まではどう行けばいいですか',kana:'eki made wa dou ikeba ii desu ka',meaning:'去车站怎么走',scene:'交通'},
+    {word:'次の駅で降ります',kana:'tsugi no eki de orimasu',meaning:'我在下一站下车',scene:'交通'},
+    {word:'会議は何時から始まりますか',kana:'kaigi wa nanji kara hajimarimasu ka',meaning:'会议几点开始',scene:'工作'},
+    {word:'今日は残業があります',kana:'kyou wa zangyou ga arimasu',meaning:'今天要加班',scene:'工作'},
+    {word:'週末は家族と過ごします',kana:'shuumatsu wa kazoku to sugoshimasu',meaning:'周末和家人一起度过',scene:'家庭'},
+    {word:'お母さんは料理が上手です',kana:'okaasan wa ryouri ga jouzu desu',meaning:'妈妈很擅长做饭',scene:'家庭'},
+    {word:'この電車は新宿に行きますか',kana:'kono densha wa shinjuku ni ikimasu ka',meaning:'这趟电车去新宿吗',scene:'交通'},
+    {word:'予約をお願いします',kana:'yoyaku wo onegaishimasu',meaning:'请帮我预约',scene:'餐饮'},
+    {word:'仕事が終わったら連絡します',kana:'shigoto ga owattara renraku shimasu',meaning:'工作结束后联系你',scene:'工作'},
+    {word:'これを試着してもいいですか',kana:'kore wo shichaku shitemo ii desu ka',meaning:'可以试穿这个吗',scene:'购物'},
+    {word:'兄は東京に住んでいます',kana:'ani wa toukyou ni sunde imasu',meaning:'哥哥住在东京',scene:'家庭'},
+    {word:'お疲れ様でした',kana:'otsukaresama deshita',meaning:'辛苦了',scene:'工作'},
+    {word:'いただきます、ごちそうになります',kana:'itadakimasu, gochisou ni narimasu',meaning:'我开动了，承蒙款待',scene:'餐饮'}
+  ]
+};
+
+// ====== Book Bank ======
+const bookBank=[
+  {title:'被讨厌的勇气',author:'岸见一郎 / 古贺史健',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3424984.jpg',summary:'一名深陷自卑、无能与不幸福的青年，听到了一名哲人的主张："世界无比单纯，人人都能幸福"。一场关于"自我启发"的对话由此展开。'},
+  {title:'原子习惯',author:'James Clear',cover:'https://cdnweread.gtimg.com/weread/cover/0/BM3WPM978.jpg',summary:'想要改变人生，不必用力过猛。每天改变1%，一年后你将脱胎换骨。一本关于如何建立好习惯、戒掉坏习惯的实操指南。'},
+  {title:'心流',author:'米哈里·契克森米哈赖',cover:'https://cdnweread.gtimg.com/weread/cover/0/31200195.jpg',summary:'什么时候我们会感到最快乐？心理学家发现，当人全神贯注投入一件事时，会进入一种"心流"状态，这就是最优体验。'},
+  {title:'非暴力沟通',author:'马歇尔·卢森堡',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3354667.jpg',summary:'也许我们并不认为自己的谈话方式是"暴力"的，但我们的语言确实常常引发自己和他人的痛苦。学会观察、感受、需要、请求。'},
+  {title:'认知觉醒',author:'周岭',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3579034.jpg',summary:'人与人之间的根本差异在于认知能力。如何通过脑科学、认知心理学来提升自我认知，实现个人成长。'},
+  {title:'纳瓦尔宝典',author:'埃里克·乔根森',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3597260.jpg',summary:'硅谷知名天使投资人纳瓦尔的智慧合集。关于财富创造和幸福人生的原则，帮你用杠杆撬动人生。'},
+  {title:'刻意练习',author:'安德斯·艾利克森',cover:'https://cdnweread.gtimg.com/weread/cover/0/26559027.jpg',summary:'天才不是天生的。通过"刻意练习"，任何人都能在特定领域达到顶尖水平。揭示专家级能力的秘密。'},
+  {title:'人间值得',author:'中村恒子',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3424984.jpg',summary:'90岁心理医生的人生智慧。人生不必太用力，坦率地接受每一天。一碗不浓不淡、恰到好处的心灵鸡汤。'},
+  {title:'底层逻辑',author:'刘润',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3579034.jpg',summary:'看清世界的底牌。事物间的共同点就是底层逻辑。只有掌握了底层逻辑，才能探寻到万变中的不变。'},
+  {title:'蛤蟆先生去看心理医生',author:'罗伯特·戴博德',cover:'https://cdnweread.gtimg.com/weread/cover/0/cpenergy_3354667.jpg',summary:'一只抑郁的蛤蟆去做心理咨询的故事。用童话的方式讲解心理咨询的过程，帮助你理解自我、获得成长。'}
+];
+
+// Seeded random for daily cards
+function seededRandom(seed){
+  let s=seed;
+  return ()=>{s=(s*9301+49297)%233280;return s/233280};
+}
+function getTodayCards(){
+  const seed=parseInt(today().replace(/-/g,''));
+  const rng=seededRandom(seed);
+  const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  const words=shuffle(japaneseWordBank.words).slice(0,10);
+  const sentences=shuffle(japaneseWordBank.sentences).slice(0,5);
+  return {words,sentences,all:[...words,...sentences]};
+}
 
 const Store={
   envId:'yayaliu-d4g1i1dc2fdb04417',
   credentials:{username:'admin',password:'Admin123'},
-  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]},
+  data:{tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[],virtualData:[],bookRecommends:[]},
   app:null,auth:null,db:null,ready:false,_hadSync:false,
   async initCloud(){
     await loadSDK();
@@ -253,10 +382,11 @@ const Store={
     Object.assign(this.data,{
       tasks:dedup(await sg('tasks')),health:dedup(await sg('health_records')),xhs:dedup(await sg('xiaohongshu')),
       investments:dedup(await sg('investments')),stores:dedup(await sg('stores')),inspirations:dedup(await sg('inspirations')),
-      study:dedup(await sg('study_notes')),checkinRecords:await sg('checkin_records')
+      study:dedup(await sg('study_notes')),checkinRecords:await sg('checkin_records'),
+      virtualData:dedup(await sg('virtual_data')),bookRecommends:dedup(await sg('book_recommends'))
     });
     const has=Object.values(this.data).some(v=>Array.isArray(v)&&v.length>0);
-    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[]};this.saveLocal()}
+    if(has){this.saveLocal();this._hadSync=true}else if(this._hadSync){this.data={tasks:[],health:[],xhs:[],investments:[],stores:[],inspirations:[],study:[],checkinRecords:[],virtualData:[],bookRecommends:[]};this.saveLocal()}
     else if(this.data.tasks.length||this.data.study.length)await this.saveToCloud()
   },
   async saveToCloud(){
@@ -283,70 +413,29 @@ const Store={
       ['investments',this.data.investments||[]],
       ['stores',this.data.stores||[]],
       ['inspirations',this.data.inspirations||[]],
-      ['study_notes',this.data.study||[]]
+      ['study_notes',this.data.study||[]],
+      ['virtual_data',this.data.virtualData||[]],
+      ['book_recommends',this.data.bookRecommends||[]]
     ];
     for(const [name,items] of colls)await upsert(this.db.collection(name),items);
     await upsert(this.db.collection('checkin_records'),this.data.checkinRecords||[]);
     this._hadSync=true;localStorage.setItem('ws_had','1');
   },
-  loadLocal(){try{const r=localStorage.getItem('ws_data_v6a');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
-  saveLocal(){localStorage.setItem('ws_data_v6a',JSON.stringify(this.data))},
+  loadLocal(){try{const r=localStorage.getItem('ws_data_v7');if(r)this.data=Object.assign(this.data,JSON.parse(r));this._hadSync=localStorage.getItem('ws_had')==='1'}catch(e){}},
+  saveLocal(){localStorage.setItem('ws_data_v7',JSON.stringify(this.data))},
   async save(){this.saveLocal();clearTimeout(this._st);this._st=setTimeout(()=>this.saveToCloud(),500)},
-  // Checkin helpers
-  getRecord(type,dateStr){
-    return this.data.checkinRecords.find(r=>r.type===type&&r.date===dateStr);
-  },
-  getWater(){
-    const r=this.getRecord('water',today());return r?r.count:0;
-  },
-  addWater(){
-    const d=today();let r=this.getRecord('water',d);
-    if(r){if(r.count<8)r.count++}else this.data.checkinRecords.push({id:genId(),type:'water',date:d,count:1});
-    this.saveLocal();this.saveToCloud();return this.getWater();
-  },
-  isSleepEarly(){
-    const y=new Date();y.setDate(y.getDate()-1);return !!this.getRecord('sleep_early',y.toISOString().slice(0,10));
-  },
-  toggleSleep(){
-    const d=new Date();d.setDate(d.getDate()-1);const ds=d.toISOString().slice(0,10);
-    const idx=this.data.checkinRecords.findIndex(r=>r.type==='sleep_early'&&r.date===ds);
-    if(idx>=0)this.data.checkinRecords.splice(idx,1);
-    else this.data.checkinRecords.push({id:genId(),type:'sleep_early',date:ds,value:true});
-    this.saveLocal();this.saveToCloud();
-  },
-  isWakeEarly(){return !!this.getRecord('wake_early',today());},
-  toggleWake(){
-    const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='wake_early'&&r.date===d);
-    if(idx>=0)this.data.checkinRecords.splice(idx,1);
-    else this.data.checkinRecords.push({id:genId(),type:'wake_early',date:d,value:true});
-    this.saveLocal();this.saveToCloud();
-  },
-  getMealLevel(meal){
-    const r=this.data.checkinRecords.find(r=>r.type==='meal'&&r.date===today()&&r.meal===meal);
-    return r?r.level:null;
-  },
-  setMeal(meal,level){
-    const d=today();
-    const idx=this.data.checkinRecords.findIndex(r=>r.type==='meal'&&r.date===d&&r.meal===meal);
-    if(level===null&&idx>=0){this.data.checkinRecords.splice(idx,1)}
-    else if(idx>=0){this.data.checkinRecords[idx].level=level}
-    else this.data.checkinRecords.push({id:genId(),type:'meal',date:d,meal,level});
-    this.saveLocal();this.saveToCloud();
-  },
-  getWeekExercises(){
-    const now=new Date(),dow=now.getDay();const mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
-    const ws=mon.toISOString().slice(0,10);
-    return this.data.checkinRecords.filter(r=>r.type==='exercise'&&r.date>=ws).length;
-  },
-  addExercise(){
-    this.data.checkinRecords.push({id:genId(),type:'exercise',date:today(),value:true});
-    this.saveLocal();this.saveToCloud();return this.getWeekExercises();
-  },
-  undoExercise(){
-    const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='exercise'&&r.date===d);
-    if(idx>=0)this.data.checkinRecords.splice(idx,1);
-    this.saveLocal();this.saveToCloud();
-  }
+  getRecord(type,dateStr){return this.data.checkinRecords.find(r=>r.type===type&&r.date===dateStr)},
+  getWater(){const r=this.getRecord('water',today());return r?r.count:0},
+  addWater(){const d=today();let r=this.getRecord('water',d);if(r){if(r.count<8)r.count++}else this.data.checkinRecords.push({id:genId(),type:'water',date:d,count:1});this.saveLocal();this.saveToCloud();return this.getWater()},
+  isSleepEarly(){const y=new Date();y.setDate(y.getDate()-1);return !!this.getRecord('sleep_early',y.toISOString().slice(0,10))},
+  toggleSleep(){const d=new Date();d.setDate(d.getDate()-1);const ds=d.toISOString().slice(0,10);const idx=this.data.checkinRecords.findIndex(r=>r.type==='sleep_early'&&r.date===ds);if(idx>=0)this.data.checkinRecords.splice(idx,1);else this.data.checkinRecords.push({id:genId(),type:'sleep_early',date:ds,value:true});this.saveLocal();this.saveToCloud()},
+  isWakeEarly(){return !!this.getRecord('wake_early',today())},
+  toggleWake(){const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='wake_early'&&r.date===d);if(idx>=0)this.data.checkinRecords.splice(idx,1);else this.data.checkinRecords.push({id:genId(),type:'wake_early',date:d,value:true});this.saveLocal();this.saveToCloud()},
+  getMealLevel(meal){const r=this.data.checkinRecords.find(r=>r.type==='meal'&&r.date===today()&&r.meal===meal);return r?r.level:null},
+  setMeal(meal,level){const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='meal'&&r.date===d&&r.meal===meal);if(level===null&&idx>=0){this.data.checkinRecords.splice(idx,1)}else if(idx>=0){this.data.checkinRecords[idx].level=level}else this.data.checkinRecords.push({id:genId(),type:'meal',date:d,meal,level});this.saveLocal();this.saveToCloud()},
+  getWeekExercises(){const now=new Date(),dow=now.getDay();const mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));const ws=mon.toISOString().slice(0,10);return this.data.checkinRecords.filter(r=>r.type==='exercise'&&r.date>=ws).length},
+  addExercise(){this.data.checkinRecords.push({id:genId(),type:'exercise',date:today(),value:true});this.saveLocal();this.saveToCloud();return this.getWeekExercises()},
+  undoExercise(){const d=today();const idx=this.data.checkinRecords.findIndex(r=>r.type==='exercise'&&r.date===d);if(idx>=0)this.data.checkinRecords.splice(idx,1);this.saveLocal();this.saveToCloud()}
 };
 
 const modules=[
@@ -358,15 +447,17 @@ const modules=[
 const subMenus={
   home:[],
   tasks:[{id:'work',label:'工作待办',icon:'工'},{id:'life',label:'生活待办',icon:'生'},{id:'insp',label:'灵感',icon:'灵'}],
-  revenue:[{id:'invest',label:'投资',icon:'投'},{id:'xhs',label:'小红书',icon:'红'},{id:'store',label:'网店',icon:'店'},{id:'insp',label:'灵感库',icon:'灵'}],
+  revenue:[{id:'schedule',label:'排期日历',icon:'排'},{id:'notes',label:'笔记管理',icon:'记'},{id:'vdata',label:'虚拟资料',icon:'资'}],
   study:[{id:'japanese',label:'日语',icon:'日'},{id:'reading',label:'读书',icon:'读'}]
 };
 const moduleLabels={tasks:'待办',revenue:'赚钱',study:'学习'};
 let currentModule='home',currentSub='work',sidebarOpen=false,aiOpen=false,taskTab='work',calDate=null;
+let flashcardIndex=0,flashcardFlipped=false;
 
 function navigate(mod,sub){
   currentModule=mod;currentSub=sub||(subMenus[mod][0]||{}).id||'';
   if(mod==='tasks')taskTab=sub||'work';
+  flashcardIndex=0;flashcardFlipped=false;
   document.getElementById('page-title').textContent=modules.find(m=>m.id===mod).label;
   document.getElementById('breadcrumb').textContent=(subMenus[mod].find(s=>s.id===currentSub)||{}).label||'';
   let subHTML='<button class="sub-item"'+(!currentModule||currentModule==='home'?' active':'')+' onclick="navigate(\'home\')"><span class="sub-icon">家</span>总览</button>';
@@ -378,18 +469,12 @@ function navigate(mod,sub){
   document.getElementById('sub-nav').innerHTML=subHTML;
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelector('.nav-tab[data-mod="'+mod+'"]')?.classList.add('active');
-  // 手机端导航后自动关闭侧边栏
   if(sidebarOpen)toggleSidebar();
   renderContent();
 }
-function toggleSidebar(){
-  sidebarOpen=!sidebarOpen;
-  document.getElementById('sidebar').classList.toggle('open',sidebarOpen);
-  document.getElementById('sidebar-backdrop').classList.toggle('show',sidebarOpen);
-}
+function toggleSidebar(){sidebarOpen=!sidebarOpen;document.getElementById('sidebar').classList.toggle('open',sidebarOpen);document.getElementById('sidebar-backdrop').classList.toggle('show',sidebarOpen)}
 function toggleAI(){aiOpen=!aiOpen;document.getElementById('ai-panel').classList.toggle('show',aiOpen)}
 
-// ====== 手机端子菜单弹出面板 ======
 function openSubSheet(mod){
   const items=subMenus[mod]||[];
   if(!items.length){navigate(mod);return}
@@ -400,33 +485,18 @@ function openSubSheet(mod){
   sheet.classList.add('show');
   document.getElementById('sub-sheet-overlay').classList.add('show');
 }
-function closeSubSheet(){
-  document.getElementById('sub-sheet').classList.remove('show');
-  document.getElementById('sub-sheet-overlay').classList.remove('show');
-}
-
-// 手机端导航标签点击逻辑：已在当前模块→弹子菜单；不在→先切换模块
-function onNavTab(mod){
-  if(currentModule===mod){
-    openSubSheet(mod);
-  }else{
-    navigate(mod);
-  }
-}
+function closeSubSheet(){document.getElementById('sub-sheet').classList.remove('show');document.getElementById('sub-sheet-overlay').classList.remove('show')}
+function onNavTab(mod){if(currentModule===mod){openSubSheet(mod)}else{navigate(mod)}}
 
 function buildUI(){
   document.getElementById('bottom-nav').innerHTML=modules.map(m=>{
     const hasSub=(subMenus[m.id]||[]).length>0;
-    // 手机端：有子菜单的模块点击弹出面板，无子菜单的直接导航
-    const clickHandler=hasSub
-      ?'onNavTab(\''+m.id+'\')'
-      :'navigate(\''+m.id+'\')';
+    const clickHandler=hasSub?'onNavTab(\''+m.id+'\')':'navigate(\''+m.id+'\')';
     return '<button class="nav-tab'+(hasSub?' has-sub':'')+'" data-mod="'+m.id+'" onclick="'+clickHandler+'"><span class="nav-icon">'+m.icon+'</span>'+m.label+(hasSub?'<span class="nav-arrow">●</span>':'')+'</button>';
   }).join('');
   navigate('home')
 }
 
-// ====== Fetch weather ======
 async function fetchWeather(){
   try{
     const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=34.26&longitude=108.94&current=temperature_2m,weather_code&timezone=Asia/Shanghai');
@@ -437,7 +507,6 @@ async function fetchWeather(){
   }catch(e){return{temp:'--',desc:'',text:'--'}}
 }
 
-// ====== Render ======
 function renderContent(){
   const c=document.getElementById('content');
   if(currentModule==='home'&&currentSub==='calendar')renderCalendar(c);
@@ -455,33 +524,31 @@ async function renderHome(c){
   const todayHealth=health.filter(r=>r.date===today());
   const todayWeight=todayHealth.find(r=>r.weight)?.weight||'--';
   const doneCount=tasks.filter(t=>t.completed).length,total=tasks.length;
-  const taskPct=total?Math.round(doneCount/total*100):0;
 
   const weather=await fetchWeather();
   const now=new Date();
   const dateStr=now.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',weekday:'short'});
 
-  // Task tabs
   const workTasks=pending.filter(t=>t.module==='工作');
   const lifeTasks=pending.filter(t=>t.module==='生活');
 
   c.innerHTML=
-    // Hero card
     '<div class="card hero-card" style="background:linear-gradient(135deg,var(--peach-bg),#f8f0ff)">'+
     '<div style="display:flex;justify-content:space-between;align-items:center">'+
     '<div>'+
     '<div style="font-size:1.3rem;font-weight:700;margin-bottom:6px">'+g+'</div>'+
     '<div style="display:flex;gap:14px;font-size:.82rem">'+
     '<span><span style="color:var(--peach);font-weight:700">'+doneCount+'/'+total+'</span> 任务完成</span>'+
-    '<span><span style="color:var(--mint);font-weight:700">'+todayWeight+'kg</span></span></div></div>'+
+    '<span><span style="color:var(--mint);font-weight:700">'+todayWeight+'kg</span></span>'+
+    '<span style="color:var(--lavender);font-weight:600">📍 西安</span></div>'+
+    '<div style="margin-top:6px"><span id="clock" style="font-size:1.5rem;font-weight:700;color:var(--lavender);font-variant-numeric:tabular-nums">'+new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'</span></div>'+
+    '</div>'+
     '<div style="text-align:right">'+
     '<div style="font-weight:600;color:var(--text)">'+dateStr+'</div>'+
     '<div style="font-size:1.1rem;font-weight:700;color:var(--sky)">'+(weather.temp||'--')+'°</div>'+
     '<div style="font-size:.82rem;color:var(--muted)">'+(weather.desc||'')+'</div></div></div></div>'+
 
-    // Health checkin
     '<div class="card"><div class="card-title"><div class="card-title-left">健康打卡</div></div>'+
-    // Water
     '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="addWater()">'+
     '<div style="flex:1;font-size:.85rem;font-weight:500">喝水</div><div style="display:flex;gap:2px">'+
     Array(8).fill(0).map((_,i)=>i<Store.getWater()
@@ -489,14 +556,12 @@ async function renderHome(c){
       :'<svg class="water-cup" viewBox="0 0 24 28"><rect x="5" y="2" width="14" height="24" rx="2" fill="none" stroke="#ccc" stroke-width="1.5"/></svg>'
     ).join('')+'</div>'+
     '<span class="badge" style="background:'+(Store.getWater()>=8?'var(--mint-bg)':'var(--bg)')+'">'+Store.getWater()+'/8</span></div>'+
-    // Sleep
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
     '<div style="width:36px;text-align:center;font-size:1.2rem">🌙</div><div style="flex:1;font-size:.85rem;font-weight:500">早睡早起</div>'+
     '<div style="display:flex;gap:6px">'+
     '<span onclick="Store.toggleSleep();renderContent()" style="font-size:1.3rem;cursor:pointer;opacity:'+(Store.isSleepEarly()?'1':'.3')+'" title="早睡">🌙</span>'+
     '<span onclick="Store.toggleWake();renderContent()" style="font-size:1.3rem;cursor:pointer;opacity:'+(Store.isWakeEarly()?'1':'.3')+'" title="早起">☀</span>'+
     '</div></div>'+
-    // Meals
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">'+
     '<div style="width:36px;text-align:center;font-size:1.2rem">🍽</div><div style="flex:1;font-size:.85rem;font-weight:500">饮食控制</div>'+
     '<div style="display:flex;flex-direction:column;gap:4px;font-size:.7rem">'+
@@ -505,13 +570,11 @@ async function renderHome(c){
       const mkBtn=(level,color,icon)=>'<span onclick="Store.setMeal(\''+meal+'\',\''+level+'\');renderContent()" style="width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;background:'+(lvl===level?color:'var(--bg)')+'">'+icon+'</span>';
       return '<div style="display:flex;align-items:center;gap:4px"><span style="min-width:16px">'+meal+'</span>'+mkBtn('red','#FCA5A5','')+mkBtn('yellow','#FDE68A','')+mkBtn('green','#86EFAC','')+'</div>';
     }).join('')+'</div></div>'+
-    // Exercise
     '<div style="display:flex;align-items:center;gap:10px;padding:10px 0">'+
     '<div style="width:36px;text-align:center;font-size:1.2rem">🏃</div><div style="flex:1;font-size:.85rem;font-weight:500">每周运动</div>'+
     '<div style="display:flex;align-items:center;gap:8px"><button class="btn btn-xs btn-primary" onclick="addExercise()">+1</button><span class="badge">'+Store.getWeekExercises()+'/5次</span></div></div></div>'+
 
-    // Task list with calendar icon
-    '<div class="card"><div class="card-title"><div class="card-title-left">待办清单 <span class="badge badge-soft">'+pending.length+'项</span></div><button class="btn-outline btn-xs" onclick="navigate(\'home\',\'calendar\')" title="日历">📅</button></div>'+
+    '<div class="card"><div class="card-title"><div class="card-title-left">待办速览 <span class="badge badge-soft">'+pending.length+'项</span></div><button class="btn-outline btn-xs" onclick="navigate(\'home\',\'calendar\')" title="日历">📅</button></div>'+
     '<div style="display:flex;gap:8px;margin-bottom:12px">'+
     '<button class="btn '+(taskTab==='work'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'work\';renderHome(document.getElementById(\'content\'))">工作 ('+workTasks.length+')</button>'+
     '<button class="btn '+(taskTab==='life'?'btn-primary':'btn-outline')+' btn-sm" onclick="taskTab=\'life\';renderHome(document.getElementById(\'content\'))">生活 ('+lifeTasks.length+')</button></div>'+
@@ -519,6 +582,9 @@ async function renderHome(c){
     ((taskTab==='work'?workTasks:lifeTasks).length?
       (taskTab==='work'?workTasks:lifeTasks).slice(0,10).map(t=>taskHTML(t)).join(''):
       '<div style="color:var(--muted);text-align:center;padding:16px">暂无待办</div>')+'</div>';
+
+  if(window._clockInterval)clearInterval(_clockInterval);
+  _clockInterval=setInterval(()=>{const el=document.getElementById('clock');if(el)el.textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
 }
 
 function addWater(){Store.addWater();renderContent();toast(Store.getWater()+'/8杯水')}
@@ -532,7 +598,6 @@ function renderCalendar(c){
   const daysInMonth=new Date(year,month+1,0).getDate();
   const todayStr=today();
 
-  // Get dates with checkins or completed tasks
   const doneDates=new Set();
   Store.data.checkinRecords.forEach(r=>doneDates.add(r.date));
   Store.data.tasks.filter(t=>t.completedAt).forEach(t=>doneDates.add(t.completedAt));
@@ -545,6 +610,7 @@ function renderCalendar(c){
     else if(r.type==='wake_early')title='早起';
     else if(r.type==='meal')title=r.meal+'餐('+(r.level==='green'?'绿灯':r.level==='yellow'?'黄灯':'红灯')+')';
     else if(r.type==='exercise')title='运动';
+    else if(r.type==='japanese')title='日语打卡';
     if(title)selectedEvents.push({type:'checkin',title,date:r.date});
   });
   Store.data.tasks.filter(t=>t.completedAt===selectDate).forEach(t=>selectedEvents.push({type:'task',title:t.title,date:t.completedAt,module:t.module}));
@@ -570,16 +636,35 @@ function renderCalendar(c){
 function renderTasks(c){
   const tasks=Store.data.tasks||[],insp=Store.data.inspirations||[];
   if(currentSub==='insp'){
+    const catBadges={工作:'badge-peach',生活:'badge-mint',创意:'badge-lavender',运营:'badge-sky',学习:'badge-soft'};
     c.innerHTML='<div style="display:flex;gap:8px;margin-bottom:14px">'+
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'work\')">工作待办</button>'+
       '<button class="btn btn-outline btn-sm" onclick="navigate(\'tasks\',\'life\')">生活待办</button>'+
       '<button class="btn btn-primary btn-sm">灵感</button></div>'+
       '<div class="card" style="background:linear-gradient(135deg,var(--lavender-bg),var(--peach-bg))"><div class="card-title"><div class="card-title-left">一闪而过的想法</div></div>'+
-      '<div class="add-bar"><input id="insp-title" placeholder="记下灵感..." onkeypress="if(event.key===\'Enter\')addInsp()"><select id="insp-link"><option value="">关联待办(可选)</option>'+tasks.filter(t=>!t.completed).map(t=>'<option value="'+t.id+'">'+t.title+'</option>').join('')+'</select><button class="btn btn-primary btn-sm" onclick="addInsp()">保存</button></div>'+
-      '<div style="max-height:300px;overflow-y:auto">'+(insp.length?insp.map(i=>{
+      '<div class="add-bar" style="flex-direction:column;align-items:stretch">'+
+      '<input id="insp-title" placeholder="记下灵感..." onkeypress="if(event.key===\'Enter\')addInsp()">'+
+      '<div style="display:flex;gap:8px"><select id="insp-category" style="flex:1"><option value="工作">工作</option><option value="生活">生活</option><option value="创意">创意</option><option value="运营">运营</option><option value="学习">学习</option><option value="自定义">自定义</option></select><input id="insp-custom-cat" placeholder="自定义分类..." style="flex:1;display:none"><button class="btn btn-primary btn-sm" onclick="addInsp()">保存</button></div></div>'+
+      '<div style="max-height:400px;overflow-y:auto;margin-top:8px">'+(insp.length?insp.map(i=>{
         const linked=tasks.find(t=>t.id===i.linkedTaskId);
-        return '<div class="task-row"><div class="task-title">'+i.title+'</div>'+(linked?'<span class="badge badge-soft">→'+linked.title+'</span>':'')+'<span class="badge '+(i.status==='未整理'?'badge-peach':'badge-mint')+'">'+i.status+'</span></div>';
+        const catCls=catBadges[i.category]||'badge-soft';
+        const splitBadge=i.splitStatus==='已拆解'?'<span class="badge badge-mint">已拆解</span>':'<span class="badge badge-soft">未拆解</span>';
+        return '<div class="task-row" style="flex-wrap:wrap">'+
+          '<div class="task-title">'+i.title+'</div>'+
+          '<span class="badge '+catCls+'">'+(i.category||'通用')+'</span>'+
+          splitBadge+
+          (linked?'<span class="badge badge-soft">→'+linked.title+'</span>':'')+
+          '<span class="badge '+(i.status==='未整理'?'badge-peach':'badge-mint')+'">'+i.status+'</span>'+
+          '<button class="btn-outline btn-xs" onclick="splitInspModal(\''+i.id+'\')">拆解</button>'+
+          '<button class="btn-outline btn-xs" onclick="toggleInspStatus(\''+i.id+'\')">'+(i.status==='未整理'?'已整理':'未整理')+'</button>'+
+          '<button class="btn-outline btn-xs" onclick="deleteInsp(\''+i.id+'\')">删</button>'+
+        '</div>';
       }).join(''):'<div style="color:var(--muted);text-align:center;padding:20px">暂无灵感</div>')+'</div></div>';
+    // Toggle custom category input
+    setTimeout(()=>{
+      const sel=document.getElementById('insp-category');
+      if(sel)sel.addEventListener('change',function(){document.getElementById('insp-custom-cat').style.display=this.value==='自定义'?'block':'none'});
+    },0);
     return;
   }
   const filterModule=taskTab==='work'?'工作':'生活';
@@ -599,45 +684,336 @@ function taskHTML(t){
 
 // ====== Revenue ======
 function renderRevenue(c){
-  if(currentSub==='invest')renderInvest(c);
-  else if(currentSub==='xhs')renderXHS(c);
-  else if(currentSub==='store')renderStore(c);
-  else if(currentSub==='insp')renderInspLib(c);
+  if(currentSub==='schedule')renderSchedule(c);
+  else if(currentSub==='notes')renderNotes(c);
+  else if(currentSub==='vdata')renderVData(c);
+  else renderSchedule(c);
 }
-function renderInspLib(c){
-  const insp=Store.data.inspirations||[];
-  c.innerHTML='<div class="card" style="background:linear-gradient(135deg,var(--lavender-bg),var(--peach-bg))"><div class="card-title"><div class="card-title-left">灵感库</div><span class="badge badge-soft">'+insp.length+'条</span></div>'+
-    '<div class="add-bar"><input id="insp-title" placeholder="记下灵感..." onkeypress="if(event.key===\'Enter\')addInsp()"><button class="btn btn-primary btn-sm" onclick="addInsp()">保存</button></div>'+
-    '<div style="max-height:400px;overflow-y:auto">'+(insp.length?insp.map(i=>'<div class="task-row"><div class="task-title">'+i.title+'</div><span class="badge '+(i.status==='未整理'?'badge-peach':'badge-mint')+'">'+i.status+'</span><button class="btn-outline btn-xs" onclick="toggleInspStatus(\''+i.id+'\')">'+(i.status==='未整理'?'已整理':'未整理')+'</button><button class="btn-outline btn-xs" onclick="deleteInsp(\''+i.id+'\')">删</button></div>').join(''):'<div style="color:var(--muted);text-align:center;padding:20px">还没有灵感，快记下来吧</div>')+'</div></div>';
+
+// 排期日历
+function renderSchedule(c){
+  const now=calDate?new Date(calDate):new Date();
+  const year=now.getFullYear(),month=now.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const todayStr=today();
+  const xhs=Store.data.xhs||[];
+
+  // Count scheduled notes per date
+  const schedMap={};
+  xhs.forEach(x=>{if(x.scheduleDate){schedMap[x.scheduleDate]=(schedMap[x.scheduleDate]||0)+1}});
+
+  let calHTML='<div class="cal-header"><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month-1)+',1);renderContent()">◀</button><span style="font-weight:700">'+year+'年'+(month+1)+'月 排期日历</span><button class="btn-outline btn-xs" onclick="calDate=null;calDate=new Date('+year+','+(month+1)+',1);renderContent()">▶</button></div>';
+
+  calHTML+='<div class="cal-grid"><div class="cal-day-header">日</div><div class="cal-day-header">一</div><div class="cal-day-header">二</div><div class="cal-day-header">三</div><div class="cal-day-header">四</div><div class="cal-day-header">五</div><div class="cal-day-header">六</div>';
+
+  for(let i=0;i<firstDay;i++)calHTML+='<div class="cal-day other"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=ds===todayStr;
+    const cnt=schedMap[ds]||0;
+    calHTML+='<div class="cal-day'+(isToday?' today':'')+(cnt>0?' has-sched':'')+'" onclick="openScheduleModal(\''+ds+'\')">'+d+(cnt>0?'<span class="sched-count">'+cnt+'</span>':'')+'</div>';
+  }
+  calHTML+='</div>';
+
+  // Show upcoming scheduled notes
+  const upcoming=xhs.filter(x=>x.scheduleDate&&x.scheduleDate>=todayStr).sort((a,b)=>(a.scheduleDate||'').localeCompare(b.scheduleDate||''));
+  calHTML+='<div style="margin-top:16px"><div class="card-title" style="margin-bottom:8px">即将排期 ('+upcoming.length+')</div>';
+  calHTML+=(upcoming.length?upcoming.slice(0,10).map(x=>'<div class="task-row"><span class="badge badge-lavender">'+(x.scheduleDate||'')+'</span><span class="badge badge-soft">'+(x.account||'')+'</span><div class="task-title">'+x.title+'</div><span class="badge '+(x.stage==='已发布'?'badge-mint':'badge-peach')+'">'+x.stage+'</span></div>').join(''):'<div style="color:var(--muted);text-align:center;padding:16px">暂无排期</div>');
+  calHTML+='</div>';
+
+  c.innerHTML='<div class="card">'+calHTML+'</div>';
 }
-function renderInvest(c){
-  const inv=Store.data.investments||[];
-  c.innerHTML='<div class="add-bar"><input id="inv-name" placeholder="添加投资标的..."><select id="inv-type"><option>股票</option><option>基金</option><option>ETF</option></select><button class="btn btn-primary" onclick="addInvest()">添加</button></div>'+
-    '<div class="card">'+(inv.length?inv.map(i=>'<div class="invest-item" style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:.88rem"><span style="font-weight:600">'+i.name+'</span><span class="badge badge-soft">'+i.type+'</span>'+(i.symbol?'<span style="font-size:.8rem;color:var(--muted)">'+i.symbol+'</span>':'')+'<div style="margin-left:auto"><button class="btn-outline btn-xs" onclick="deleteInvest(\''+i.id+'\')">删</button></div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
+
+function openScheduleModal(dateStr){
+  const xhs=Store.data.xhs||[];
+  const dayItems=xhs.filter(x=>x.scheduleDate===dateStr);
+  document.getElementById('modal-body').innerHTML='<h3>'+dateStr+' 排期管理</h3>'+
+    '<div style="margin-bottom:14px;font-size:.8rem;color:var(--muted)">点击日期可添加排期，当天已有笔记会显示在下方</div>'+
+    (dayItems.length?'<div style="margin-bottom:14px">'+dayItems.map(x=>'<div class="task-row"><span class="badge badge-soft">'+(x.account||'')+'</span><div class="task-title">'+x.title+'</div><span class="badge '+(x.stage==='已发布'?'badge-mint':'badge-peach')+'">'+x.stage+'</span></div>').join('')+'</div>':'<div style="color:var(--muted);text-align:center;padding:12px;margin-bottom:14px">当天暂无排期</div>')+
+    '<div class="modal-field"><label>快速添加排期到 '+dateStr+'</label>'+
+    '<div style="display:flex;gap:8px"><select id="sched-account"><option value="美妆">美妆</option><option value="母婴">母婴</option><option value="虚拟资料">虚拟资料</option></select><input id="sched-title" placeholder="笔记标题..." style="flex:1"></div></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">关闭</button><button class="btn btn-primary" onclick="addSchedule(\''+dateStr+'\')">添加排期</button></div>';
+  document.getElementById('modal-overlay').classList.add('show');
 }
-function renderXHS(c){
-  const items=Store.data.xhs||[],stages=['选题','拍摄','剪辑','已发布'];
-  c.innerHTML='<button class="btn btn-primary btn-sm" style="margin-bottom:12px" onclick="openXHSModal()">+ 添加</button>'+
-    '<div class="card"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">'+stages.map(s=>'<div><div style="font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:8px">'+s+' '+items.filter(x=>x.stage===s).length+'</div>'+
-    (items.filter(x=>x.stage===s).map(x=>'<div style="padding:7px 10px;background:var(--bg);border-radius:8px;margin-bottom:4px;font-size:.82rem">'+x.title+'</div>').join('')||'<div style="color:var(--muted);font-size:.78rem;padding:6px">-</div>')+'</div>').join('')+'</div></div>';
+
+function addSchedule(dateStr){
+  const title=document.getElementById('sched-title')?.value.trim();
+  const account=document.getElementById('sched-account')?.value||'美妆';
+  if(!title){toast('请输入标题');return}
+  Store.data.xhs.push({id:genId(),title,account,stage:'选题',scheduleDate:dateStr,metrics:{reads:0,likes:0,saves:0},cost:0,notes:'',createdAt:today()});
+  closeModal();Store.save();renderContent();toast('排期已添加');
 }
-function renderStore(c){
-  const st=Store.data.stores||[];
-  c.innerHTML='<div class="add-bar"><input id="store-name" placeholder="网店/商品名称..."><button class="btn btn-primary" onclick="addStore()">添加</button></div>'+
-    '<div class="card">'+(st.length?st.map(s=>'<div class="task-row"><span style="font-weight:600">'+s.name+'</span><span class="badge badge-soft">'+(s.platform||'')+'</span><button class="btn-outline btn-xs" onclick="deleteStore(\''+s.id+'\')">删</button></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
+
+// 笔记管理
+function renderNotes(c){
+  const items=Store.data.xhs||[];
+  const stages=['选题','拍摄','剪辑','已发布'];
+  c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<button class="btn btn-primary btn-sm" onclick="openNoteModal()">+ 添加笔记</button>'+
+    '<span class="badge badge-soft">'+items.length+'条笔记</span></div>'+
+    '<div class="card">'+(items.length?items.map(x=>{
+      const m=x.metrics||{};
+      const isPublished=x.stage==='已发布';
+      let metricsHTML='';
+      if(isPublished){
+        metricsHTML='<div style="display:flex;gap:10px;font-size:.75rem;color:var(--muted);margin-top:4px">'+
+          '<span>📖 '+(m.reads||0)+'</span><span>❤ '+(m.likes||0)+'</span><span>⭐ '+(m.saves||0)+'</span>'+
+          '<span>💰 '+(x.cost||0)+'元</span></div>';
+      }else{
+        const stageIdx=stages.indexOf(x.stage);
+        metricsHTML='<div class="timeline" style="margin-top:8px">'+stages.map((s,i)=>{
+          const dotCls=i<stageIdx?'done':(i===stageIdx?'current':'');
+          return '<div class="timeline-item"><div class="timeline-dot '+dotCls+'"></div><div class="timeline-content"><div class="timeline-label">'+s+'</div></div></div>';
+        }).join('')+'</div>';
+      }
+      return '<div class="task-row" style="flex-direction:column;align-items:stretch">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+        '<span class="badge badge-lavender">'+(x.account||'未分类')+'</span>'+
+        '<div class="task-title">'+x.title+'</div>'+
+        '<span class="badge '+(isPublished?'badge-mint':'badge-peach')+'">'+x.stage+'</span>'+
+        (x.scheduleDate?'<span class="badge badge-soft">📅'+x.scheduleDate+'</span>':'')+
+        '<button class="btn-outline btn-xs" onclick="openNoteModal(\''+x.id+'\')">编辑</button>'+
+        '<button class="btn-outline btn-xs" onclick="deleteNote(\''+x.id+'\')">删</button>'+
+        '</div>'+metricsHTML+'</div>';
+    }).join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无笔记，点击添加</div>')+'</div>';
 }
+
+function openNoteModal(id){
+  const d=id?Store.data.xhs.find(x=>x.id===id):null;
+  const stages=['选题','拍摄','剪辑','已发布'];
+  const m=d?.metrics||{reads:0,likes:0,saves:0};
+  document.getElementById('modal-body').innerHTML='<h3>'+(d?'编辑笔记':'添加笔记')+'</h3>'+
+    '<div class="modal-field"><label>账号</label><select id="me-note-account"><option value="美妆"'+(d?.account==='美妆'?' selected':'')+'>美妆</option><option value="母婴"'+(d?.account==='母婴'?' selected':'')+'>母婴</option><option value="虚拟资料"'+(d?.account==='虚拟资料'?' selected':'')+'>虚拟资料</option></select></div>'+
+    '<div class="modal-field"><label>标题</label><input id="me-note-title" value="'+(d?.title||'')+'"></div>'+
+    '<div class="modal-field"><label>排期日期</label><input id="me-note-schedule" type="date" value="'+(d?.scheduleDate||'')+'"></div>'+
+    '<div class="modal-field"><label>阶段</label><select id="me-note-stage">'+stages.map(s=>'<option '+(d?.stage===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div class="modal-field"><label>成本(元)</label><input id="me-note-cost" type="number" value="'+(d?.cost||0)+'"></div>'+
+    '<div class="modal-field"><label>数据（已发布填写）</label><div style="display:flex;gap:8px"><input id="me-note-reads" type="number" placeholder="阅读" value="'+(m.reads||0)+'"><input id="me-note-likes" type="number" placeholder="点赞" value="'+(m.likes||0)+'"><input id="me-note-saves" type="number" placeholder="收藏" value="'+(m.saves||0)+'"></div></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveNote('+(d?'\''+id+'\'':'null')+')">保存</button></div>';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function saveNote(id){
+  const data={
+    account:document.getElementById('me-note-account').value,
+    title:document.getElementById('me-note-title').value.trim(),
+    scheduleDate:document.getElementById('me-note-schedule').value,
+    stage:document.getElementById('me-note-stage').value,
+    cost:parseFloat(document.getElementById('me-note-cost').value)||0,
+    metrics:{
+      reads:parseInt(document.getElementById('me-note-reads').value)||0,
+      likes:parseInt(document.getElementById('me-note-likes').value)||0,
+      saves:parseInt(document.getElementById('me-note-saves').value)||0
+    }
+  };
+  if(!data.title){toast('请输入标题');return}
+  if(id){const idx=Store.data.xhs.findIndex(x=>x.id===id);if(idx>=0)Store.data.xhs[idx]={...Store.data.xhs[idx],...data}}
+  else{Store.data.xhs.push({id:genId(),...data,notes:'',createdAt:today()})}
+  closeModal();Store.save();renderContent();toast('已保存');
+}
+
+function deleteNote(id){Store.data.xhs=Store.data.xhs.filter(x=>x.id!==id);Store.save();renderContent()}
+
+// 虚拟资料
+function renderVData(c){
+  const items=Store.data.virtualData||[];
+  const cats=['电子书','模板','课程','素材包'];
+  const statusCls={未开始:'badge-peach',进行中:'badge-sky',已完成:'badge-mint',已上架:'badge-lavender'};
+  c.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<button class="btn btn-primary btn-sm" onclick="openVDataModal()">+ 添加资料</button>'+
+    '<span class="badge badge-soft">'+items.length+'条</span></div>'+
+    cats.map(cat=>{
+      const catItems=items.filter(v=>v.category===cat);
+      return '<div class="card"><div class="card-title"><div class="card-title-left">'+cat+' <span class="badge badge-soft">'+catItems.length+'</span></div></div>'+
+      (catItems.length?catItems.map(v=>'<div class="task-row" style="flex-direction:column;align-items:stretch">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+        '<div class="task-title">'+v.name+'</div>'+
+        '<span class="badge '+(statusCls[v.status]||'badge-soft')+'">'+v.status+'</span>'+
+        '<button class="btn-outline btn-xs" onclick="cycleVDataStatus(\''+v.id+'\')">切换状态</button>'+
+        '<button class="btn-outline btn-xs" onclick="openVDataModal(\''+v.id+'\')">编辑</button>'+
+        '<button class="btn-outline btn-xs" onclick="deleteVData(\''+v.id+'\')">删</button>'+
+        '</div>'+
+        (v.summary?'<div style="font-size:.78rem;color:var(--muted);margin-top:4px">'+v.summary+'</div>':'')+
+        '<div style="display:flex;gap:10px;font-size:.72rem;color:var(--muted);margin-top:4px;flex-wrap:wrap">'+
+        (v.storage?'<span>📁 '+v.storage+'</span>':'')+
+        '<span>📊 需求 '+v.demandCount+'人</span></div>'+
+      '</div>').join(''):'<div style="color:var(--muted);text-align:center;padding:16px">暂无</div>')+'</div>';
+    }).join('');
+}
+
+function openVDataModal(id){
+  const d=id?Store.data.virtualData.find(v=>v.id===id):null;
+  const cats=['电子书','模板','课程','素材包'];
+  const statuses=['未开始','进行中','已完成','已上架'];
+  document.getElementById('modal-body').innerHTML='<h3>'+(d?'编辑资料':'添加资料')+'</h3>'+
+    '<div class="modal-field"><label>名称</label><input id="me-vd-name" value="'+(d?.name||'')+'"></div>'+
+    '<div class="modal-field"><label>分类</label><select id="me-vd-cat">'+cats.map(c=>'<option '+(d?.category===c?'selected':'')+'>'+c+'</option>').join('')+'</select></div>'+
+    '<div class="modal-field"><label>摘要</label><textarea id="me-vd-summary">'+(d?.summary||'')+'</textarea></div>'+
+    '<div class="modal-field"><label>状态</label><select id="me-vd-status">'+statuses.map(s=>'<option '+(d?.status===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
+    '<div class="modal-field"><label>存储地址</label><input id="me-vd-storage" value="'+(d?.storage||'')+'" placeholder="网盘链接/本地路径..."></div>'+
+    '<div class="modal-field"><label>需求统计(人)</label><input id="me-vd-demand" type="number" value="'+(d?.demandCount||0)+'"></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveVData('+(d?'\''+id+'\'':'null')+')">保存</button></div>';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function saveVData(id){
+  const data={
+    name:document.getElementById('me-vd-name').value.trim(),
+    category:document.getElementById('me-vd-cat').value,
+    summary:document.getElementById('me-vd-summary').value.trim(),
+    status:document.getElementById('me-vd-status').value,
+    storage:document.getElementById('me-vd-storage').value.trim(),
+    demandCount:parseInt(document.getElementById('me-vd-demand').value)||0
+  };
+  if(!data.name){toast('请输入名称');return}
+  if(id){const idx=Store.data.virtualData.findIndex(v=>v.id===id);if(idx>=0)Store.data.virtualData[idx]={...Store.data.virtualData[idx],...data}}
+  else{Store.data.virtualData.push({id:genId(),...data,createdAt:today()})}
+  closeModal();Store.save();renderContent();toast('已保存');
+}
+
+function cycleVDataStatus(id){
+  const v=Store.data.virtualData.find(x=>x.id===id);if(!v)return;
+  const statuses=['未开始','进行中','已完成','已上架'];
+  const idx=statuses.indexOf(v.status);
+  v.status=statuses[(idx+1)%statuses.length];
+  Store.save();renderContent();
+}
+
+function deleteVData(id){Store.data.virtualData=Store.data.virtualData.filter(x=>x.id!==id);Store.save();renderContent()}
 
 // ====== Study ======
 function renderStudy(c){currentSub==='japanese'?renderJapanese(c):renderReading(c)}
+
 function renderJapanese(c){
-  const notes=(Store.data.study||[]).filter(s=>s.subject==='日语');
-  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="标题..."><select id="study-cat"><option>词汇</option><option>语法</option><option>日练</option></select><button class="btn btn-primary" onclick="addStudy(\'日语\')">添加</button></div>'+
-    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.updatedAt||n.createdAt||'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
+  const cards=getTodayCards();
+  const total=cards.all.length;
+  const learned=Store.data.checkinRecords.filter(r=>r.type==='japanese'&&r.date===today());
+  const learnedToday=learned.length>0;
+  const allTimeLearned=Store.data.checkinRecords.filter(r=>r.type==='japanese').length;
+
+  const scenes=[...new Set(cards.all.map(c=>c.scene))];
+  const currentCard=cards.all[flashcardIndex];
+
+  c.innerHTML=
+    '<div class="card"><div class="card-title"><div class="card-title-left">日语闪卡 <span class="badge badge-lavender">N5</span></div><button class="btn-outline btn-xs" onclick="navigate(\'home\',\'calendar\')">📅 打卡日历</button></div>'+
+    '<div class="flashcard-progress">第 '+(flashcardIndex+1)+' / '+total+' 张 · 今日场景: '+scenes.join(' / ')+'</div>'+
+    '<div class="flashcard-container"><div class="flashcard'+(flashcardFlipped?' flipped':'')+'" id="flashcard" onclick="flipFlashcard()">'+
+    '<div class="flashcard-inner">'+
+    '<div class="flashcard-front"><div class="fc-word">'+currentCard.word+'</div><div class="fc-scene">📍 '+currentCard.scene+'</div></div>'+
+    '<div class="flashcard-back"><div class="fc-meaning">'+currentCard.meaning+'</div><div class="fc-kana">'+currentCard.kana+'</div></div>'+
+    '</div></div></div>'+
+    '<div class="flashcard-nav">'+
+    '<button class="btn btn-outline btn-sm" onclick="prevFlashcard()" '+(flashcardIndex===0?'disabled style="opacity:.4"':'')+' style="font-size:1.2rem">◀ 上一张</button>'+
+    '<button class="btn '+(flashcardFlipped?'btn-outline':'btn-primary')+' btn-sm" onclick="flipFlashcard()">'+(flashcardFlipped?'看正面':'看背面')+'</button>'+
+    '<button class="btn btn-outline btn-sm" onclick="nextFlashcard()" '+(flashcardIndex===total-1?'disabled style="opacity:.4"':'')+' style="font-size:1.2rem">下一张 ▶</button>'+
+    '</div></div>'+
+
+    '<div class="card"><div class="card-title"><div class="card-title-left">学习进度</div></div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap">'+
+    '<div style="text-align:center;flex:1;min-width:80px"><div style="font-size:1.8rem;font-weight:700;color:var(--lavender)">'+(flashcardIndex+1)+'</div><div style="font-size:.72rem;color:var(--muted)">今日进度</div></div>'+
+    '<div style="text-align:center;flex:1;min-width:80px"><div style="font-size:1.8rem;font-weight:700;color:var(--mint)">'+(learnedToday?'✓':'--')+'</div><div style="font-size:.72rem;color:var(--muted)">今日打卡</div></div>'+
+    '<div style="text-align:center;flex:1;min-width:80px"><div style="font-size:1.8rem;font-weight:700;color:var(--peach)">'+allTimeLearned+'</div><div style="font-size:.72rem;color:var(--muted)">累计打卡</div></div>'+
+    '</div>'+
+    '<div style="margin-top:14px;text-align:center">'+
+    (flashcardIndex>=total-1?
+      (learnedToday?
+        '<div style="color:var(--mint);font-weight:600;padding:8px">今日已完成全部闪卡并打卡 ✓</div>':
+        '<button class="btn btn-primary" onclick="checkinJapanese()">完成学习并打卡</button>'
+      ):
+      '<div style="color:var(--muted);font-size:.8rem">学完所有闪卡后可打卡</div>'
+    )+'</div></div>'+
+
+    '<div class="card"><div class="card-title"><div class="card-title-left">今日词库 ('+total+')</div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">'+
+    cards.all.map((card,i)=>'<div style="padding:8px 10px;background:'+(i===flashcardIndex?'var(--lavender-bg)':'var(--bg)')+';border-radius:8px;font-size:.78rem;cursor:pointer" onclick="jumpFlashcard('+i+')"><div style="font-weight:600">'+card.word+'</div><div style="color:var(--muted);font-size:.7rem">'+card.meaning+'</div></div>').join('')+
+    '</div></div>';
 }
-function renderReading(c){
-  const notes=(Store.data.study||[]).filter(s=>s.subject==='读书');
-  c.innerHTML='<div class="add-bar"><input id="study-title" placeholder="书名..."><select id="study-cat"><option>书单</option><option>笔记</option></select><button class="btn btn-primary" onclick="addStudy(\'读书\')">添加</button></div>'+
-    '<div class="card">'+(notes.length?notes.map(n=>'<div class="note-item" onclick="openStudyModal(\''+n.id+'\')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer"><span style="font-weight:500">'+n.title+'</span><span class="badge badge-soft">'+(n.category||'')+'</span><div style="margin-left:auto;font-size:.75rem;color:var(--muted)">'+(n.progress?n.progress+'%':'')+'</div></div>').join(''):'<div style="text-align:center;padding:24px;color:var(--muted)">暂无</div>')+'</div>';
+
+function flipFlashcard(){flashcardFlipped=!flashcardFlipped;renderContent()}
+function nextFlashcard(){if(flashcardIndex<getTodayCards().all.length-1){flashcardIndex++;flashcardFlipped=false;renderContent()}}
+function prevFlashcard(){if(flashcardIndex>0){flashcardIndex--;flashcardFlipped=false;renderContent()}}
+function jumpFlashcard(i){flashcardIndex=i;flashcardFlipped=false;renderContent()}
+function checkinJapanese(){
+  const d=today();
+  if(Store.data.checkinRecords.find(r=>r.type==='japanese'&&r.date===d)){toast('今日已打卡');return}
+  Store.data.checkinRecords.push({id:genId(),type:'japanese',date:d,value:true,count:getTodayCards().all.length});
+  Store.save();renderContent();toast('日语学习打卡成功！');
+}
+
+// ====== Reading ======
+async function renderReading(c){
+  const recs=Store.data.bookRecommends||[];
+  const todayRec=recs.find(r=>r.date===today());
+  const history=recs.filter(r=>r.date!==today()).sort((a,b)=>b.date.localeCompare(a.date));
+
+  // Get today's book
+  let book=null;
+  if(todayRec){book=todayRec.book}
+  else{
+    // Try API first, fallback to bookBank
+    book=await fetchBookFromAPI().catch(()=>null);
+    if(!book){
+      const seed=parseInt(today().replace(/-/g,''));
+      const rng=seededRandom(seed);
+      book=bookBank[Math.floor(rng()*bookBank.length)];
+    }
+    // Save as today's recommendation
+    Store.data.bookRecommends.push({id:genId(),date:today(),book,feedback:''});
+    Store.save();
+  }
+
+  c.innerHTML=
+    '<div class="card" style="background:linear-gradient(135deg,var(--mint-bg),var(--sky-bg))"><div class="card-title"><div class="card-title-left">每日好书推荐 <span class="badge badge-mint">'+today()+'</span></div></div>'+
+    '<div style="display:flex;gap:16px;flex-wrap:wrap">'+
+    (book.cover?'<img src="'+book.cover+'" style="width:100px;height:140px;border-radius:8px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,.1)" onerror="this.style.display=\'none\'">':'')+
+    '<div style="flex:1;min-width:200px">'+
+    '<div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">'+book.title+'</div>'+
+    '<div style="font-size:.82rem;color:var(--muted);margin-bottom:8px">'+book.author+'</div>'+
+    '<div style="font-size:.85rem;line-height:1.6">'+book.summary+'</div>'+
+    '</div></div>'+
+    '<div style="display:flex;gap:8px;margin-top:16px">'+
+    (todayRec&&todayRec.feedback?
+      '<div style="flex:1;text-align:center;padding:10px;background:var(--card);border-radius:12px;font-size:.85rem;font-weight:600;color:'+(todayRec.feedback==='想读'?'var(--mint)':'var(--muted)')+'">'+(todayRec.feedback==='想读'?'✓ 已标记想读':'已跳过')+'</div>':
+      '<button class="btn btn-primary btn-sm" style="flex:1" onclick="rateBook(\'想读\')">📖 想读</button><button class="btn btn-outline btn-sm" style="flex:1" onclick="rateBook(\'不感兴趣\')">不感兴趣</button>'
+    )+
+    '</div></div>'+
+
+    '<div class="card"><div class="card-title"><div class="card-title-left">历史推荐 ('+history.length+')</div></div>'+
+    (history.length?history.slice(0,10).map(r=>'<div class="task-row"><div style="width:30px;height:40px;border-radius:4px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--muted);flex-shrink:0">'+(r.book.cover?'📖':'📕')+'</div><div class="task-title">'+r.book.title+'<div style="font-size:.72rem;color:var(--muted)">'+r.book.author+'</div></div><span class="badge '+(r.feedback==='想读'?'badge-mint':'badge-soft')+'">'+(r.feedback||'未反馈')+'</span></div>').join(''):'<div style="color:var(--muted);text-align:center;padding:16px">暂无历史推荐</div>')+
+    '</div>'+
+
+    '<div class="card"><div class="card-title"><div class="card-title-left">内置书库 ('+bookBank.length+'本)</div></div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">'+
+    bookBank.map(b=>'<div style="padding:10px;background:var(--bg);border-radius:8px;font-size:.78rem;cursor:pointer" onclick="recommendBook(\''+b.title.replace(/'/g,'\\\'')+'\')"><div style="font-weight:600;margin-bottom:2px">'+b.title+'</div><div style="color:var(--muted);font-size:.7rem">'+b.author+'</div></div>').join('')+
+    '</div></div>';
+}
+
+async function fetchBookFromAPI(){
+  try{
+    const r=await fetch('https://weread.qq.com/web/search/global?query=&size=1');
+    const d=await r.json();
+    if(d&&d.books&&d.books[0]){
+      const b=d.books[0];
+      return{title:b.title,author:b.author,cover:b.cover,summary:b.intro||b.summary||'暂无简介'};
+    }
+    return null;
+  }catch(e){return null}
+}
+
+function rateBook(feedback){
+  const rec=Store.data.bookRecommends.find(r=>r.date===today());
+  if(rec){rec.feedback=feedback;Store.save();renderContent();toast(feedback==='想读'?'已加入想读清单':'已记录反馈')}
+}
+
+function recommendBook(title){
+  const book=bookBank.find(b=>b.title===title);
+  if(!book)return;
+  // Replace today's recommendation
+  const idx=Store.data.bookRecommends.findIndex(r=>r.date===today());
+  if(idx>=0){Store.data.bookRecommends[idx].book=book;Store.data.bookRecommends[idx].feedback=''}
+  else{Store.data.bookRecommends.push({id:genId(),date:today(),book,feedback:''})}
+  Store.save();renderContent();toast('已切换推荐');
 }
 
 // ====== Actions ======
@@ -654,21 +1030,14 @@ function toggleTask(id){
   Store.save();renderContent();
 }
 function deleteTask(id){Store.data.tasks=Store.data.tasks.filter(x=>x.id!==id);Store.save();renderContent()}
-function addInvest(){
-  const name=document.getElementById('inv-name')?.value.trim();if(!name)return;
-  Store.data.investments.push({id:genId(),name,type:document.getElementById('inv-type')?.value||'股票',symbol:'',notes:'',url:'',createdAt:today()});
-  document.getElementById('inv-name').value='';Store.save();renderContent();
-}
-function deleteInvest(id){Store.data.investments=Store.data.investments.filter(x=>x.id!==id);Store.save();renderContent()}
-function addStore(){
-  const name=document.getElementById('store-name')?.value.trim();if(!name)return;
-  Store.data.stores.push({id:genId(),name,platform:'',product:'',status:'',notes:'',url:'',createdAt:today()});
-  document.getElementById('store-name').value='';Store.save();renderContent();
-}
-function deleteStore(id){Store.data.stores=Store.data.stores.filter(x=>x.id!==id);Store.save();renderContent()}
+
 function addInsp(){
   const title=document.getElementById('insp-title')?.value.trim();if(!title)return;
-  Store.data.inspirations.push({id:genId(),title,category:'通用',status:'未整理',linkedTaskId:document.getElementById('insp-link')?.value||'',tags:[],createdAt:today()});
+  let category=document.getElementById('insp-category')?.value||'工作';
+  if(category==='自定义'){
+    category=document.getElementById('insp-custom-cat')?.value.trim()||'通用';
+  }
+  Store.data.inspirations.push({id:genId(),title,category,status:'未整理',splitStatus:'未拆解',linkedTaskId:'',tags:[],createdAt:today()});
   document.getElementById('insp-title').value='';Store.save();renderContent();toast('灵感已记录');
 }
 function toggleInspStatus(id){
@@ -676,27 +1045,39 @@ function toggleInspStatus(id){
   i.status=i.status==='未整理'?'已整理':'未整理';Store.save();renderContent();
 }
 function deleteInsp(id){Store.data.inspirations=Store.data.inspirations.filter(x=>x.id!==id);Store.save();renderContent()}
+
+function splitInspModal(id){
+  const insp=Store.data.inspirations.find(x=>x.id===id);if(!insp)return;
+  document.getElementById('modal-body').innerHTML='<h3>拆解灵感：'+insp.title+'</h3>'+
+    '<div style="margin-bottom:10px;font-size:.8rem;color:var(--muted)">每行输入一个子任务，将批量创建待办（分类：'+(insp.category||'通用')+'，优先级：中，截止日：3天后）</div>'+
+    '<div class="modal-field"><textarea id="split-tasks" placeholder="子任务1\n子任务2\n子任务3" style="min-height:140px"></textarea></div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="doSplitInsp(\''+id+'\')">批量拆解</button></div>';
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function doSplitInsp(id){
+  const insp=Store.data.inspirations.find(x=>x.id===id);if(!insp)return;
+  const text=document.getElementById('split-tasks')?.value.trim();
+  if(!text){toast('请输入子任务');return}
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l);
+  if(!lines.length){toast('请输入子任务');return}
+  const moduleMap={工作:'工作',生活:'生活',创意:'工作',运营:'工作',学习:'生活'};
+  const module=moduleMap[insp.category]||'工作';
+  const dueDate=addDays(3);
+  lines.forEach(title=>{
+    Store.data.tasks.push({id:genId(),title,module,priority:'中',dueDate,notes:'来源灵感: '+insp.title,completed:false,completedAt:'',createdAt:today()});
+  });
+  insp.splitStatus='已拆解';
+  closeModal();Store.save();renderContent();toast('已拆解 '+lines.length+' 个子任务');
+}
+
 function addStudy(subject){
   const title=document.getElementById('study-title')?.value.trim();if(!title)return;
   Store.data.study.push({id:genId(),title,subject,category:document.getElementById('study-cat')?.value||'词汇',content:'',tags:[],progress:0,createdAt:today(),updatedAt:today()});
   document.getElementById('study-title').value='';Store.save();renderContent();
 }
-function openXHSModal(data){
-  currentModal='xhs';editId=(data||{}).id||null;
-  document.getElementById('modal-body').innerHTML='<h3>'+(data?'编辑':'添加')+'内容</h3>'+
-    '<div class="modal-field"><label>标题</label><input id="me-xhs-title" value="'+(data?.title||'')+'"></div>'+
-    '<div class="modal-field"><label>阶段</label><select id="me-xhs-stage">'+['选题','拍摄','剪辑','已发布'].map(s=>'<option '+(data?.stage===s?'selected':'')+'>'+s+'</option>').join('')+'</select></div>'+
-    '<div class="modal-field"><label>产品</label><input id="me-xhs-product" value="'+(data?.product||'')+'"></div>'+
-    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">取消</button><button class="btn btn-primary" onclick="saveXHS()">保存</button></div>';
-  document.getElementById('modal-overlay').classList.add('show');
-}
-function saveXHS(){
-  const d={id:editId||genId(),title:document.getElementById('me-xhs-title').value,stage:document.getElementById('me-xhs-stage').value,product:document.getElementById('me-xhs-product').value,notes:'',createdAt:today()};
-  if(editId){const idx=Store.data.xhs.findIndex(x=>x.id===editId);if(idx>=0)Store.data.xhs[idx]=d}else Store.data.xhs.push(d);
-  closeModal();Store.save();renderContent();
-}
 function openStudyModal(id){
-  editId=id;currentModal='study';const d=Store.data.study.find(x=>x.id===id);if(!d)return;
+  editId=id;const d=Store.data.study.find(x=>x.id===id);if(!d)return;
   document.getElementById('modal-body').innerHTML='<h3>编辑</h3>'+
     '<div class="modal-field"><label>标题</label><input id="me-sn-title" value="'+(d.title||'')+'"></div>'+
     '<div class="modal-field"><label>正文</label><textarea id="me-sn-content" style="min-height:140px">'+(d.content||'')+'</textarea></div>'+
@@ -705,8 +1086,8 @@ function openStudyModal(id){
 }
 function saveStudy(){const d=Store.data.study.find(x=>x.id===editId);if(!d)return;d.title=document.getElementById('me-sn-title').value;d.content=document.getElementById('me-sn-content').value;d.updatedAt=today();closeModal();Store.save();renderContent()}
 function deleteStudy(id){Store.data.study=Store.data.study.filter(x=>x.id!==id);Store.save();renderContent()}
-function closeModal(){document.getElementById('modal-overlay').classList.remove('show');currentModal=null;editId=null}
-let currentModal=null,editId=null;
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+let editId=null;
 
 // ====== AI ======
 function runAI(){
@@ -716,7 +1097,12 @@ function runAI(){
   else if(q.includes('打卡')||q.includes('健康')){navigate('home');resp='已打开总览'}
   else if(q.includes('日历')||q.includes('历史')){navigate('home','calendar');resp='已打开日历'}
   else if(q.includes('看看')||q.includes('进度')){navigate('home');resp='已打开总览'}
-  else if(q.includes('投资')){navigate('revenue','invest');resp='已打开投资'}
+  else if(q.includes('日语')||q.includes('闪卡')){navigate('study','japanese');resp='已打开日语闪卡'}
+  else if(q.includes('读书')||q.includes('书')){navigate('study','reading');resp='已打开读书推荐'}
+  else if(q.includes('排期')||q.includes('日历排期')){navigate('revenue','schedule');resp='已打开排期日历'}
+  else if(q.includes('笔记')){navigate('revenue','notes');resp='已打开笔记管理'}
+  else if(q.includes('资料')){navigate('revenue','vdata');resp='已打开虚拟资料'}
+  else if(q.includes('灵感')){navigate('tasks','insp');resp='已打开灵感库'}
   else resp='需要大模型协助，配个API Key哦~';
   body.innerHTML='<div style="padding:8px;background:var(--peach-bg);border-radius:8px;margin-bottom:6px">'+resp+'</div>'+body.innerHTML;
 }
